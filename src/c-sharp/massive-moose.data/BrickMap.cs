@@ -1,0 +1,15 @@
+using massive_moose.contracts;
+
+namespace massive_moose.data
+{
+    public class BrickMap : FluentNHibernate.Mapping.ClassMap<Brick>
+    {
+        public BrickMap()
+        {
+            Id(x=>x.Id);
+            Map(x=>x.AddressX);
+            Map(x=>x.AddressY);
+            Map(x=>x.Guid);
+        }
+    }
+}

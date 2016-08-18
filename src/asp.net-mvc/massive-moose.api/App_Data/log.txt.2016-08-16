@@ -1,0 +1,104 @@
+DEBUG [2016-08-16 13:26:03,978] - Opened session massive_moose.server.mvc.Controllers.DrawingSession
+DEBUG [2016-08-16 13:26:18,072] - Opened session massive_moose.server.mvc.Controllers.DrawingSession
+DEBUG [2016-08-16 13:26:23,670] - Receiving data for session 2d062af3-72ab-4030-b949-f09c0b37b70f
+ERROR [2016-08-16 13:26:24,263] - Failed to render canvas
+System.InvalidOperationException: The calling thread must be STA, because many UI components require this.
+   at System.Windows.Input.InputManager..ctor()
+   at System.Windows.Input.InputManager.GetCurrentInputManagerImpl()
+   at System.Windows.Input.KeyboardNavigation..ctor()
+   at System.Windows.FrameworkElement.FrameworkServices..ctor()
+   at System.Windows.FrameworkElement.EnsureFrameworkServices()
+   at System.Windows.FrameworkElement..ctor()
+   at System.Windows.Controls.Panel..ctor()
+   at massive_moose.drawing.BrickRenderer.Render(Canvas canvasContract) in C:\wk\vs\massive-moose\src\c-sharp\massive-moose.drawing\BrickRenderer.cs:line 19
+   at massive_moose.server.mvc.Controllers.ImageController.<Receive>d__4.MoveNext() in C:\wk\vs\massive-moose\src\asp.net-mvc\massive-moose.server.mvc\Controllers\ImageController.cs:line 81
+DEBUG [2016-08-16 13:31:10,776] - Opened session massive_moose.server.mvc.Controllers.DrawingSession
+DEBUG [2016-08-16 13:31:26,704] - Receiving data for session bb63384b-d768-42e7-a257-7253122a6681
+ERROR [2016-08-16 13:31:27,372] - Failed to render canvas
+System.FormatException: Index (zero based) must be greater than or equal to zero and less than the size of the argument list.
+   at System.Text.StringBuilder.AppendFormatHelper(IFormatProvider provider, String format, ParamsArray args)
+   at System.String.FormatHelper(IFormatProvider provider, String format, ParamsArray args)
+   at System.String.Format(String format, Object[] args)
+   at massive_moose.server.mvc.Controllers.ImageController.<Receive>d__4.MoveNext() in C:\wk\vs\massive-moose\src\asp.net-mvc\massive-moose.server.mvc\Controllers\ImageController.cs:line 84
+DEBUG [2016-08-16 13:32:36,226] - Opened session 51ca47f9-a6c1-408b-a626-72996d91010b
+DEBUG [2016-08-16 13:32:47,612] - Receiving data for session 51ca47f9-a6c1-408b-a626-72996d91010b
+DEBUG [2016-08-16 13:33:32,645] - Opened session 6e9741d7-5795-47d4-acc8-4eb5bddb6007
+DEBUG [2016-08-16 13:33:35,548] - Receiving data for session 6e9741d7-5795-47d4-acc8-4eb5bddb6007
+DEBUG [2016-08-16 13:39:49,923] - Opened session 3b97b4a1-6228-4d58-8327-869ec16f5d71
+DEBUG [2016-08-16 13:40:54,187] - Opened session e438f150-28f0-4d33-8da9-15d915d7e27f
+DEBUG [2016-08-16 13:41:02,108] - Receiving data for session e438f150-28f0-4d33-8da9-15d915d7e27f
+DEBUG [2016-08-16 13:42:32,937] - Opened session 7b239f63-4d4d-4450-9072-4997b730b949
+DEBUG [2016-08-16 13:42:38,108] - Receiving data for session 7b239f63-4d4d-4450-9072-4997b730b949
+DEBUG [2016-08-16 14:30:41,591] - Opened session 468147ca-f4bd-427c-919b-8fa0669b8a08
+DEBUG [2016-08-16 14:31:17,194] - Opened session 2b55de37-fd55-44e2-b499-88509b63a711
+DEBUG [2016-08-16 14:32:25,280] - Opened session 1624c333-41e7-4487-b7ac-f4e62cf0ea12
+DEBUG [2016-08-16 14:32:31,117] - Receiving data for session 1624c333-41e7-4487-b7ac-f4e62cf0ea12
+ERROR [2016-08-16 14:32:31,147] - Failed to deserialise canvas
+System.Runtime.Serialization.SerializationException: Error in line 1 position 41. Expecting element 'Canvas' from namespace 'http://schemas.datacontract.org/2004/07/massive_moose.drawing.Contracts'.. Encountered 'Element'  with name 'Canvas', namespace 'http://schemas.datacontract.org/2004/07/massive_moose.client.silverlight.Contracts'. 
+   at System.Runtime.Serialization.DataContractSerializer.InternalReadObject(XmlReaderDelegator xmlReader, Boolean verifyObjectName, DataContractResolver dataContractResolver)
+   at System.Runtime.Serialization.XmlObjectSerializer.ReadObjectHandleExceptions(XmlReaderDelegator reader, Boolean verifyObjectName, DataContractResolver dataContractResolver)
+   at System.Runtime.Serialization.DataContractSerializer.ReadObject(XmlReader reader)
+   at massive_moose.server.mvc.Controllers.ImageController.<Receive>d__4.MoveNext() in C:\wk\vs\massive-moose\src\asp.net-mvc\massive-moose.server.mvc\Controllers\ImageController.cs:line 84
+DEBUG [2016-08-16 14:39:44,797] - Opened session 0d55e228-6a54-4257-bdd3-ae817176d0a3
+DEBUG [2016-08-16 14:39:49,457] - Receiving data for session 0d55e228-6a54-4257-bdd3-ae817176d0a3
+ERROR [2016-08-16 14:39:49,465] - Failed to deserialise canvas
+System.Runtime.Serialization.SerializationException: Error in line 1 position 41. Expecting element 'Canvas' from namespace 'http://schemas.datacontract.org/2004/07/massive_moose.drawing.Contracts'.. Encountered 'Element'  with name 'Canvas', namespace 'http://schemas.datacontract.org/2004/07/massive_moose.client.silverlight.Contracts'. 
+   at System.Runtime.Serialization.DataContractSerializer.InternalReadObject(XmlReaderDelegator xmlReader, Boolean verifyObjectName, DataContractResolver dataContractResolver)
+   at System.Runtime.Serialization.XmlObjectSerializer.ReadObjectHandleExceptions(XmlReaderDelegator reader, Boolean verifyObjectName, DataContractResolver dataContractResolver)
+   at System.Runtime.Serialization.DataContractSerializer.ReadObject(XmlReader reader)
+   at massive_moose.server.mvc.Controllers.ImageController.<Receive>d__4.MoveNext() in C:\wk\vs\massive-moose\src\asp.net-mvc\massive-moose.server.mvc\Controllers\ImageController.cs:line 84
+DEBUG [2016-08-16 14:42:49,320] - Opened session 72817c7a-5805-43b3-9c88-e0ac7458abfa
+DEBUG [2016-08-16 14:42:52,521] - Receiving data for session 72817c7a-5805-43b3-9c88-e0ac7458abfa
+ERROR [2016-08-16 14:42:52,537] - Failed to deserialise canvas
+System.Runtime.Serialization.SerializationException: Error in line 1 position 41. Expecting element 'Canvas' from namespace 'http://schemas.datacontract.org/2004/07/massive_moose.drawing.Contracts'.. Encountered 'Element'  with name 'canvas', namespace 'massive-moose.com/contracts'. 
+   at System.Runtime.Serialization.DataContractSerializer.InternalReadObject(XmlReaderDelegator xmlReader, Boolean verifyObjectName, DataContractResolver dataContractResolver)
+   at System.Runtime.Serialization.XmlObjectSerializer.ReadObjectHandleExceptions(XmlReaderDelegator reader, Boolean verifyObjectName, DataContractResolver dataContractResolver)
+   at System.Runtime.Serialization.DataContractSerializer.ReadObject(XmlReader reader)
+   at massive_moose.server.mvc.Controllers.ImageController.<Receive>d__4.MoveNext() in C:\wk\vs\massive-moose\src\asp.net-mvc\massive-moose.server.mvc\Controllers\ImageController.cs:line 84
+DEBUG [2016-08-16 14:45:52,679] - Opened session dfe7e23d-be88-41b0-a747-5e64bca69fff
+DEBUG [2016-08-16 14:46:48,112] - Opened session 6b38aef3-2745-42bd-b56c-5cd970ec9afc
+DEBUG [2016-08-16 14:48:18,806] - Opened session 18db53f9-b7a1-43c7-ac60-9945bc5c7535
+DEBUG [2016-08-16 14:48:24,097] - Receiving data for session 18db53f9-b7a1-43c7-ac60-9945bc5c7535
+ERROR [2016-08-16 14:48:24,104] - Failed to deserialise canvas
+System.Runtime.Serialization.SerializationException: Error in line 1 position 41. Expecting element 'Canvas' from namespace 'http://schemas.datacontract.org/2004/07/massive_moose.drawing.Contracts'.. Encountered 'Element'  with name 'canvas', namespace 'massive-moose.com/contracts'. 
+   at System.Runtime.Serialization.DataContractSerializer.InternalReadObject(XmlReaderDelegator xmlReader, Boolean verifyObjectName, DataContractResolver dataContractResolver)
+   at System.Runtime.Serialization.XmlObjectSerializer.ReadObjectHandleExceptions(XmlReaderDelegator reader, Boolean verifyObjectName, DataContractResolver dataContractResolver)
+   at System.Runtime.Serialization.DataContractSerializer.ReadObject(XmlReader reader)
+   at massive_moose.server.mvc.Controllers.ImageController.<Receive>d__4.MoveNext() in C:\wk\vs\massive-moose\src\asp.net-mvc\massive-moose.server.mvc\Controllers\ImageController.cs:line 84
+DEBUG [2016-08-16 14:52:35,787] - Opened session d76ccc41-7a9b-4b8e-b741-0a81938d16ac
+DEBUG [2016-08-16 14:52:38,939] - Receiving data for session d76ccc41-7a9b-4b8e-b741-0a81938d16ac
+DEBUG [2016-08-16 15:04:31,319] - Opened session e9983f95-96a7-4709-9bc2-f4060fe56e63
+DEBUG [2016-08-16 15:04:49,664] - Receiving data for session e9983f95-96a7-4709-9bc2-f4060fe56e63
+DEBUG [2016-08-16 15:12:00,910] - Opened session 5efdab3d-283f-47fd-9ff0-e73a28451b48
+DEBUG [2016-08-16 15:12:20,312] - Receiving data for session 5efdab3d-283f-47fd-9ff0-e73a28451b48
+DEBUG [2016-08-16 15:12:30,886] - Opened session 7c1b150f-a72f-49df-ba7f-11793788e091
+DEBUG [2016-08-16 15:13:53,853] - Opened session 32d8be46-7e2c-4ffb-8531-f95e4fdb6c20
+DEBUG [2016-08-16 15:15:31,797] - Opened session 03021ffd-2f4b-4f53-8d4e-9a1bed954cef
+DEBUG [2016-08-16 15:18:09,940] - Opened session 410dc84d-a976-48cd-bf4a-a949f36ef9c4
+DEBUG [2016-08-16 15:19:07,392] - Opened session b6984951-34cd-4f70-922c-de020d928a5e
+DEBUG [2016-08-16 15:23:51,086] - Opened session b3ad7eec-686c-4322-95df-eb2e3f19df3f
+DEBUG [2016-08-16 15:24:03,017] - Receiving data for session b3ad7eec-686c-4322-95df-eb2e3f19df3f
+DEBUG [2016-08-16 15:24:10,705] - Opened session d5b8f57e-711a-4a05-9496-1f5469dc9915
+DEBUG [2016-08-16 15:45:14,880] - Opened session cbfbc7c2-133d-4290-a3ec-e07d2ed3bfb0
+DEBUG [2016-08-16 15:53:17,445] - Opened session f1825903-6d4b-4107-8857-1eff1ad1885c
+DEBUG [2016-08-16 17:00:31,767] - Opened session a7e57e39-d352-454d-8c13-18c974713dd8
+DEBUG [2016-08-16 17:00:31,768] - Opened session 16359ac5-15ab-4e00-a1f8-44d16ec9d7f4
+DEBUG [2016-08-16 17:00:47,093] - Receiving data for session a7e57e39-d352-454d-8c13-18c974713dd8
+DEBUG [2016-08-16 17:03:31,767] - Opened session 91384cd6-6adb-426d-9d33-ecaa21010cfa
+DEBUG [2016-08-16 17:03:46,104] - Receiving data for session 91384cd6-6adb-426d-9d33-ecaa21010cfa
+DEBUG [2016-08-16 17:05:07,513] - Opened session 1c76a351-30cf-4989-b235-6e071fbd969f
+DEBUG [2016-08-16 17:07:38,792] - Opened session 8f2c9436-f5f1-44aa-b12e-b364699258a4
+DEBUG [2016-08-16 17:12:23,430] - Opened session f6d9e33e-7d67-4a77-8bc2-1068f4c427ff
+DEBUG [2016-08-16 17:12:46,188] - Receiving data for session f6d9e33e-7d67-4a77-8bc2-1068f4c427ff
+DEBUG [2016-08-16 17:14:15,052] - Opened session 649080a4-ae33-4959-9892-78c0fca6197c
+DEBUG [2016-08-16 17:15:33,872] - Opened session dca6eba9-298b-46a4-8ded-e1db9d03ab8a
+DEBUG [2016-08-16 17:15:45,959] - Receiving data for session dca6eba9-298b-46a4-8ded-e1db9d03ab8a
+DEBUG [2016-08-16 17:17:06,666] - Receiving data for session dca6eba9-298b-46a4-8ded-e1db9d03ab8a
+DEBUG [2016-08-16 17:19:52,100] - Opened session 204ba744-b713-45c9-9fe0-24937babb2ff
+DEBUG [2016-08-16 17:20:03,094] - Receiving data for session 204ba744-b713-45c9-9fe0-24937babb2ff
+DEBUG [2016-08-16 17:22:02,426] - Opened session 1be43364-17fe-418b-8288-c4fc403f68f6
+DEBUG [2016-08-16 17:23:28,980] - Receiving data for session 1be43364-17fe-418b-8288-c4fc403f68f6
+DEBUG [2016-08-16 17:23:56,831] - Opened session cfebe8d3-441f-4556-94cb-cb89758ca07e
+DEBUG [2016-08-16 17:23:59,589] - Receiving data for session cfebe8d3-441f-4556-94cb-cb89758ca07e
+DEBUG [2016-08-16 17:25:35,031] - Opened session 8cdd87f3-57c3-4b04-bc14-1ecfa5c7c280
+DEBUG [2016-08-16 17:25:51,657] - Receiving data for session 8cdd87f3-57c3-4b04-bc14-1ecfa5c7c280

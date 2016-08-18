@@ -1,0 +1,58 @@
+﻿<UserControl x:Class="massive_moose.client.silverlight.Brick"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="100" d:DesignWidth="200">
+    <Grid x:Name="LayoutRoot" Background="White">
+        <Button Click="ButtonBase_OnClick" IsEnabled="{Binding Enabled}">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border CornerRadius="0">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal">
+                                    <Storyboard>
+                                        <ColorAnimation Duration="0" Storyboard.TargetName="ButtonBackground" Storyboard.TargetProperty="Color" To="#FFED7428" />
+                                        <ColorAnimation Duration="0" Storyboard.TargetName="BorderBrush" Storyboard.TargetProperty="Color" To="Transparent" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="MouseOver">
+                                    <Storyboard>
+                                        <ColorAnimation Duration="0" Storyboard.TargetName="ButtonBackground" Storyboard.TargetProperty="Color" To="#FFED7428" />
+                                        <ColorAnimation Duration="0" Storyboard.TargetName="BorderBrush" Storyboard.TargetProperty="Color" To="Black" />
+                                    </Storyboard>
+                                </VisualState>
+
+                                <!--Change the SolidColorBrush, BorderBrush, to Transparent when the
+            button is pressed.-->
+                                <VisualState x:Name="Pressed">
+                                    
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Border.Background>
+                            <SolidColorBrush x:Name="ButtonBackground" Color="#FFED7428"></SolidColorBrush>
+                        </Border.Background>
+                        <Border.BorderThickness>2</Border.BorderThickness>
+                        <Border.BorderBrush>
+                            <SolidColorBrush x:Name="BorderBrush" Color="Transparent"></SolidColorBrush>
+                        </Border.BorderBrush>
+                    <Grid>
+                        <StackPanel Visibility="Visible">
+                            <TextBlock Text="{Binding AddressLabel}" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                            <TextBlock Text="{Binding Info}" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                        </StackPanel>
+                        <Image Source="{Binding ImageUrl}" x:Name="BrickImage" Stretch="Fill"></Image>
+                        <TextBlock Visibility="{Binding LockedVisibility}" Text="(Busy)"></TextBlock>
+                    </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+    </Grid>
+</UserControl>
