@@ -1,0 +1,30 @@
+﻿html, body {
+    height: 100%;
+    overflow: auto;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+}
+
+#silverlightControlHost {
+    height: 100%;
+    text-align: center;
+}
+
+.finish-and-upload {
+    float: right;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 1;
+}
+
+.cancel {
+    float: right;
+    position: absolute;
+    right: 200px;
+    top: 0;
+    z-index: 1;
+}

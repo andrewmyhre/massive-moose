@@ -1,0 +1,16 @@
+using System;
+
+namespace massive_moose.contracts
+{
+    public class Brick
+    {
+        public Brick()
+        {
+            Guid = Guid.NewGuid();
+        }
+        public virtual int AddressX { get; set; }
+        public virtual int AddressY { get; set; }
+        public virtual Guid Guid { get; set; }
+        public virtual int Id { get; set; }
+    }
+}
