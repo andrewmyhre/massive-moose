@@ -105,7 +105,6 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="MassiveMooseNinjectModule.cs" />
-    <Compile Include="Models\Brick.cs" />
     <Compile Include="Models\BrickDrawingSessionViewModel.cs" />
     <Compile Include="Models\BrickViewModel.cs" />
     <Compile Include="Models\WallViewModel.cs" />

@@ -16,25 +16,30 @@ namespace massive_moose.client.silverlight.Models
             get { return _bricks; }
         }
 
+        public BrickViewModel[,] Wall {  get { return _wall; } }
+
         public WallViewModel()
         {
-            _wall = new BrickViewModel[_viewSize, _viewSize];
-            for (int i = 0; i < _viewSize; i++)
-            {
-                for (int j = 0; j < _viewSize; j++)
-                {
-                    _wall[i,j] = new BrickViewModel()
-                    {
-                        AddressX= i-(_viewSize/4),
-                        AddressY= j- (_viewSize / 4),
-                        ViewSpaceX=i,
-                        ViewSpaceY=j,
-                        Guid =Guid.NewGuid(),Id=int.Parse(string.Concat(Math.Abs(i).ToString(),Math.Abs(j).ToString()))
-                    };
-                }
-            }
+
         }
 
+        public void Update(massive_moose.contracts.Brick[,] bricks)
+        {
+            _wall = new BrickViewModel[bricks.GetLength(0), bricks.GetLength(1)];
+            _bricks.Clear();
+            for (int x = 0; x < bricks.GetLength(0); x++)
+            {
+                for (int y = 0; y < bricks.GetLength(1); y++)
+                {
+                    _wall[x,y] = new BrickViewModel(bricks[x,y]);
+                    _bricks.Add(_wall[x, y]);
+                }
+            }
+            RaisePropertyChanged("Bricks");
+            RaisePropertyChanged("Wall");
+        }
+
+        [Obsolete("Use Update()", true)]
         public void Load(int minX, int minY, int maxX, int maxY)
         {
             _bricks.Clear();

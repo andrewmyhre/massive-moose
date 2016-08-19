@@ -10,6 +10,7 @@ namespace massive_moose.data
             Map(x=>x.AddressX);
             Map(x=>x.AddressY);
             Map(x=>x.Guid);
+            Map(x => x.SnapshotJson).Length(9999999);
         }
     }
 }

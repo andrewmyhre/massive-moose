@@ -114,12 +114,11 @@ namespace massive_moose.client.silverlight.Models
             OnPropertyChanged("ImageUrl");
         }
 
-        public BrickViewModel(Brick brick)
+        public BrickViewModel(massive_moose.contracts.Brick brick)
         {
             this.AddressX = brick.AddressX;
             this.AddressY = brick.AddressY;
             this.Guid = brick.Guid;
-            this.Info = brick.Info;
             _lockedVisibility = Visibility.Collapsed;
         }
     }

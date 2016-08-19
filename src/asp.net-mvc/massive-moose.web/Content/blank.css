@@ -13,18 +13,3 @@ body {
     text-align: center;
 }
 
-.finish-and-upload {
-    float: right;
-    position: absolute;
-    right: 0;
-    top: 0;
-    z-index: 1;
-}
-
-.cancel {
-    float: right;
-    position: absolute;
-    right: 200px;
-    top: 0;
-    z-index: 1;
-}
