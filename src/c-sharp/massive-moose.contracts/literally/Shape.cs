@@ -62,11 +62,13 @@ namespace massive_moose.contracts.literally
 
         [DataMember(Name = "color")]
         public string ColorHSLAString { get; set; }
-        public Hsla Color { get { return ToHsla(ColorHSLAString); } }
+        public Hsla ColorHsla { get { return ToHsla(ColorHSLAString); } }
+        public ColorRGB Color { get {  return ColorRGB.FromHSLA(ColorHsla.Hue,ColorHsla.Saturation, ColorHsla.Lightness, ColorHsla.Alpha);} }
 
         [DataMember(Name="pointColor")]
         public string PointColorHSLAString { get; set; }
-        public Hsla PointColor { get { return ToHsla(PointColorHSLAString); } }
+        public Hsla PointColorHsla { get { return ToHsla(PointColorHSLAString); } }
+        public ColorRGB PointColor { get {  return ColorRGB.FromHSLA(PointColorHsla.Hue, PointColorHsla.Saturation, PointColorHsla.Lightness, PointColorHsla.Alpha);} }
 
         [DataMember(Name="x1")]
         public double X1 { get; set; }
@@ -121,11 +123,21 @@ namespace massive_moose.contracts.literally
 
         [DataMember(Name= "strokeColor")]
         public string StrokeColorHSLAString { get; set; }
-        public Hsla StrokeColor { get { return ToHsla(StrokeColorHSLAString); } }
+        public Hsla StrokeColorHsla { get { return ToHsla(StrokeColorHSLAString); } }
+        public ColorRGB StrokeColor {  get
+        {
+            return ColorRGB.FromHSLA(StrokeColorHsla.Hue, StrokeColorHsla.Saturation, StrokeColorHsla.Lightness,
+                StrokeColorHsla.Alpha);
+        } }
 
         [DataMember(Name = "fillColor")]
         public string FillColorHSLAString { get; set; }
-        public Hsla FillColor { get { return ToHsla(FillColorHSLAString); } }
+        public Hsla FillColorHsla { get { return ToHsla(FillColorHSLAString); } }
+        public ColorRGB FillColor { get
+        {
+            return ColorRGB.FromHSLA(FillColorHsla.Hue, FillColorHsla.Saturation, FillColorHsla.Lightness,
+                FillColorHsla.Alpha);
+        } }
 
         [DataMember(Name="isClosed")]
         public bool IsClosed { get; set; }
@@ -142,7 +154,7 @@ namespace massive_moose.contracts.literally
             double.TryParse(parts[2].Trim('%'), out l);
             float.TryParse(parts[3], out a);
 
-            return new Hsla() {Hue=h,Saturation=s,Lightness=l/100,Alpha=a};
+            return new Hsla() {Hue=h,Saturation=s/100,Lightness=l/100,Alpha=a};
         }
     }
 
@@ -151,6 +163,113 @@ namespace massive_moose.contracts.literally
         public double Hue { get; set; }
         public double Saturation { get; set; }
         public double Lightness { get; set; }
-        public float Alpha { get; set; }
+        public double Alpha { get; set; }
+    }
+
+    public class ColorRGB
+    {
+        public byte R;
+        public byte G;
+        public byte B;
+        public byte A;
+
+        public ColorRGB()
+        {
+            R = 255;
+            G = 255;
+            B = 255;
+            A = 255;
+        }
+
+        public ColorRGB(Color value)
+        {
+            this.R = value.R;
+            this.G = value.G;
+            this.B = value.B;
+            this.A = value.A;
+        }
+
+
+
+        // Given H,S,L in range of 0-1
+        // Returns a Color (RGB struct) in range of 0-255
+        public static ColorRGB FromHSL(double H, double S, double L)
+        {
+            return FromHSLA(H, S, L, 1.0);
+        }
+
+        // Given H,S,L,A in range of 0-1
+        // Returns a Color (RGB struct) in range of 0-255
+        public static ColorRGB FromHSLA(double H, double S, double L, double A)
+        {
+            double v;
+            double r, g, b;
+            if (A > 1.0)
+                A = 1.0;
+
+            r = L;   // default to gray
+            g = L;
+            b = L;
+            v = (L <= 0.5) ? (L * (1.0 + S)) : (L + S - L * S);
+            if (v > 0)
+            {
+                double m;
+                double sv;
+                int sextant;
+                double fract, vsf, mid1, mid2;
+
+                m = L + L - v;
+                sv = (v - m) / v;
+                H /= 360;
+                H *= 6.0;
+                sextant = (int)H;
+                fract = H - sextant;
+                vsf = v * sv * fract;
+                mid1 = m + vsf;
+                mid2 = v - vsf;
+                switch (sextant)
+                {
+                    case 0:
+                        r = v;
+                        g = mid1;
+                        b = m;
+                        break;
+                    case 1:
+                        r = mid2;
+                        g = v;
+                        b = m;
+                        break;
+                    case 2:
+                        r = m;
+                        g = v;
+                        b = mid1;
+                        break;
+                    case 3:
+                        r = m;
+                        g = mid2;
+                        b = v;
+                        break;
+                    case 4:
+                        r = mid1;
+                        g = m;
+                        b = v;
+                        break;
+                    case 5:
+                        r = v;
+                        g = m;
+                        b = mid2;
+                        break;
+                }
+            }
+            ColorRGB rgb = new ColorRGB();
+            rgb.R = Convert.ToByte(r * 255.0f);
+            rgb.G = Convert.ToByte(g * 255.0f);
+            rgb.B = Convert.ToByte(b * 255.0f);
+            rgb.A = Convert.ToByte(A * 255.0f);
+
+            System.Diagnostics.Debug.WriteLine("H:{0} S:{1} L:{2} A:{3} -> R:{4} G:{5} B:{6} A:{7}", H, S, L, A, rgb.R, rgb.G, rgb.B, rgb.A);
+
+            return rgb;
+        }
     }
 }

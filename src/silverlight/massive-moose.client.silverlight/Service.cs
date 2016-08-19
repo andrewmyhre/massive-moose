@@ -17,9 +17,9 @@ namespace massive_moose.client.silverlight
 {
     public class GotBricksEventArgs : EventArgs
     {
-        public IEnumerable<massive_moose.contracts.Brick> Bricks { get; set; }
+        public massive_moose.contracts.Brick[,] Bricks { get; set; }
 
-        public GotBricksEventArgs(IEnumerable<massive_moose.contracts.Brick> bricks)
+        public GotBricksEventArgs(massive_moose.contracts.Brick[,] bricks)
         {
             Bricks = bricks;
         }
@@ -28,16 +28,16 @@ namespace massive_moose.client.silverlight
     public class MassiveMooseService : IMassiveMooseService
     {
         public event EventHandler<GotBricksEventArgs> OnGotBricks;
-        public void GetBricksInRange(int minX, int minY, int maxX, int maxY)
+        public void GetBricksAround(int originX, int originY)
         {
             var webClient = new WebClient();
             webClient.DownloadStringCompleted += (sender, args) =>
             {
-                var bricks = JsonConvert.DeserializeObject<List<massive_moose.contracts.Brick>>(args.Result);
+                var bricks = JsonConvert.DeserializeObject<massive_moose.contracts.Brick[,]>(args.Result);
                 if (OnGotBricks != null)
                     OnGotBricks(this, new GotBricksEventArgs(bricks));
             };
-            webClient.DownloadStringAsync(new Uri(App.MMApiBaseUrl+"/v1/wall"));
+            webClient.DownloadStringAsync(new Uri(App.MMApiBaseUrl + "/v2/wall/"+ originX+"/"+originY));
         }
     }
 }

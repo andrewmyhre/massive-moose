@@ -1,16 +1,12 @@
-﻿@{
+﻿@model massive_moose.web.Models.WallViewModel
+@{
     ViewBag.Title = "Home Page";
 }
 
 @section stylesheets
 {
     <link href="/content/literallycanvas.css" rel="stylesheet">
-    <style>
-        #root {
-            height: 800px;
-        }
-        .literally {height:800px;}
-    </style>
+    <link href="/content/Wall.css" rel="stylesheet">
 }
 
 @section scripts
@@ -24,11 +20,17 @@
     <script src="/scripts/html.js"></script>
 }
 
-<div id="root"></div>
+<div id="wall">
+</div>
+<div id="drawSpace"></div>
 
-<form class="finish-and-upload">
-    <input type="submit" data-action="upload" value="Finish and Upload">
-</form>
-<form class="cancel">
-    <input type="submit" data-action="cancel" value="Cancel">
-</form>
+<div id="save-etc">
+    <span id="messages"></span>
+    <form class="finish-and-upload">
+        <input type="submit" data-action="upload" value="Finish and Upload">
+    </form>
+    <form class="cancel">
+        <input type="submit" data-action="cancel" value="Cancel">
+    </form>
+
+</div>

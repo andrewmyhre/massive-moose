@@ -60,8 +60,8 @@ namespace massive_moose.drawing
         {
             var polygon = new massive_moose.contracts.Polygon();
             polygon.StrokeWidth = shape.Data.StrokeWidth;
-            polygon.FillColor = HslaToColor(shape.Data.FillColor);
-            polygon.StrokeColor = HslaToColor(shape.Data.StrokeColor);
+            polygon.FillColor = new Color(shape.Data.FillColor.R, shape.Data.FillColor.R, shape.Data.FillColor.G, shape.Data.FillColor.B);
+            polygon.StrokeColor = new Color(shape.Data.StrokeColor.A, shape.Data.StrokeColor.R, shape.Data.StrokeColor.G, shape.Data.StrokeColor.B);
             if (shape.Data.Dash != null)
             {
                 polygon.Dash = (double[]) shape.Data.Dash;
@@ -76,7 +76,7 @@ namespace massive_moose.drawing
         {
             var textBlock = new massive_moose.contracts.TextBlock();
             textBlock.Text = shape.Data.Text;
-            textBlock.Color = HslaToColor(shape.Data.Color);
+            textBlock.Color = new Color(shape.Data.Color.A, shape.Data.Color.R, shape.Data.Color.G, shape.Data.Color.B);
             textBlock.Font = shape.Data.Font;
             Console.WriteLine("parsing font info: {0}", shape.Data.Font);
 
@@ -109,8 +109,8 @@ namespace massive_moose.drawing
             ellipse.Width = shape.Data.Width;
             ellipse.Height = shape.Data.Height;
             ellipse.StrokeWidth = shape.Data.StrokeWidth;
-            ellipse.StrokeColor = HslaToColor(shape.Data.StrokeColor);
-            ellipse.FillColor = HslaToColor(shape.Data.FillColor);
+            ellipse.StrokeColor = new Color(shape.Data.StrokeColor.A, shape.Data.StrokeColor.R, shape.Data.StrokeColor.G, shape.Data.StrokeColor.B);
+            ellipse.FillColor = new Color(shape.Data.FillColor.A, shape.Data.FillColor.R, shape.Data.FillColor.G, shape.Data.FillColor.B);
             canvas.Children.Add(ellipse);
         }
 
@@ -122,8 +122,8 @@ namespace massive_moose.drawing
             rect.Width = shape.Data.Width;
             rect.Height = shape.Data.Height;
             rect.StrokeWidth = shape.Data.StrokeWidth;
-            rect.StrokeColor = HslaToColor(shape.Data.StrokeColor);
-            rect.FillColor = HslaToColor(shape.Data.FillColor);
+            rect.StrokeColor = new Color(shape.Data.StrokeColor.A, shape.Data.StrokeColor.R, shape.Data.StrokeColor.G, shape.Data.StrokeColor.B);
+            rect.FillColor = new Color(shape.Data.FillColor.A, shape.Data.FillColor.R, shape.Data.FillColor.G, shape.Data.FillColor.B);
             canvas.Children.Add(rect);
         }
 
@@ -136,7 +136,7 @@ namespace massive_moose.drawing
             line.Y2 = shape.Data.Y2;
             if (shape.Data.Dash != null)
                 line.Dash = shape.Data.Dash.Select(d=>d/shape.Data.StrokeWidth).ToArray();
-            line.Brush = new SolidColorBrush(HslaToColor(shape.Data.Color));
+            line.Brush = new SolidColorBrush(new Color(shape.Data.Color.A, shape.Data.Color.R, shape.Data.Color.G, shape.Data.Color.B));
             line.LineThickness = shape.Data.StrokeWidth;
             canvas.Children.Add(line);
         }
@@ -153,26 +153,19 @@ namespace massive_moose.drawing
             {
                 var stroke = new Stroke();
                 stroke.DrawingAttributes.Width = stroke.DrawingAttributes.Height = shape.Data.PointSize;
-                stroke.DrawingAttributes.Color = HslaToColor(shape.Data.PointColor);
+                stroke.DrawingAttributes.Color = new Color(shape.Data.PointColor.A, shape.Data.PointColor.R, shape.Data.PointColor.G, shape.Data.PointColor.B);
                 stroke.StylusPoints.AddRange(shape.Data.SmoothedPointCoordinatePairs.Select(p => new StylusPoint() { X = p[0], Y = p[1], PressureFactor = 1.0f }));
                 inkPresenter.Strokes.Add(stroke);
             }
             else if (shape.Data.PointCoordinatePairs != null)
             {
                 var stroke = new Stroke();
-                stroke.DrawingAttributes.Color = HslaToColor(shape.Data.PointColor);
+                stroke.DrawingAttributes.Color = new Color(shape.Data.PointColor.A, shape.Data.PointColor.R, shape.Data.PointColor.G, shape.Data.PointColor.B);
                 stroke.DrawingAttributes.Width = stroke.DrawingAttributes.Height = shape.Data.PointSize;
                 stroke.StylusPoints.AddRange(shape.Data.PointCoordinatePairs.Select(p=>new StylusPoint() {X=p[0],Y=p[1], PressureFactor = 1.0f}));
                 inkPresenter.Strokes.Add(stroke);
             }
             
-        }
-
-        Color HslaToColor(Hsla hsla)
-        {
-            var rgb = HslToRgb(hsla.Hue, hsla.Saturation, hsla.Lightness);
-            Console.WriteLine("HSLA to RGB: {0},{1}%,{2}%,{3} -> {4},{5},{6},{7}", hsla.Hue, hsla.Saturation, hsla.Lightness, hsla.Alpha, Math.Round(hsla.Alpha * 255),rgb[0],rgb[1],rgb[2]);
-            return new Color((byte)Math.Round(hsla.Alpha * 255), rgb[0], rgb[1], rgb[2]);
         }
 
         byte[] HslToRgb(double h, double s, double l)

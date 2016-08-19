@@ -29,7 +29,7 @@ namespace massive_moose.client.silverlight
             _massiveMooseService = new MassiveMooseService();
             _kernel = new StandardKernel(new MassiveMooseNinjectModule());
             _wallVm = _kernel.Get<WallViewModel>();
-            _wallVm.Load(0,0,0,0);
+            
 
             BrickCanvas.OnBrickUpdated += (sender, args) =>
             {
@@ -64,37 +64,52 @@ namespace massive_moose.client.silverlight
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            foreach (var b in _wallVm.Bricks)
-            {
-                var bUc = new Brick();
-                bUc.RenderTransform = new TranslateTransform() { X = b.ViewSpaceY % 2 == 0 ? 0 : 100, Y = 0 };
-                bUc.DataContext = b;
-                Wall.Children.Add(bUc);
+            UpdateAllData();
+        }
 
-                Grid.SetColumn(bUc, b.ViewSpaceX);
-                Grid.SetRow(bUc, b.ViewSpaceY);
-                bUc.Select += (s, args) =>
-                {
-                    try
-                    {
-                        OpenDrawingSession(b);
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine(ex.Message);
-                    }
-
-                };
-            }
+        private void UpdateAllData()
+        {
             _massiveMooseService.OnGotBricks += (o, args) =>
             {
-                foreach (var brick in args.Bricks)
+                _wallVm.Update(args.Bricks);
+                for (int x = 0; x < args.Bricks.GetLength(0); x++)
                 {
-                    var bvm = _wallVm.Bricks.SingleOrDefault(b=>b.AddressX == brick.AddressX && b.AddressY == brick.AddressY);
-                    bvm.ImageUrl = App.MMApiBaseUrl + "/v1/image/"+brick.AddressX+"/"+brick.AddressY;
+                    for (int y = 0; y < args.Bricks.GetLength(1); y++)
+                    {
+                        var brick = args.Bricks[x, y];
+                        if (brick != null)
+                        {
+                            var bvm = _wallVm.Bricks.SingleOrDefault(b => b.AddressX == brick.AddressX && b.AddressY == brick.AddressY);
+                            //bvm.ImageUrl = App.MMApiBaseUrl + "/v1/image/"+brick.AddressX+"/"+brick.AddressY;
+                            if (brick.Guid != Guid.Empty)
+                            {
+                                bvm.Info=bvm.ImageUrl = "http://placehold.it/200x100?text=" + x + ',' + y;
+                            }
+
+                            var bUc = new Brick();
+                            bUc.RenderTransform = new TranslateTransform() { X = y % 2 == 0 ? 0 : 100, Y = 0 };
+                            bUc.DataContext = bvm;
+                            Wall.Children.Add(bUc);
+
+                            Grid.SetColumn(bUc, x);
+                            Grid.SetRow(bUc, y);
+                            bUc.Select += (s, args2) =>
+                            {
+                                try
+                                {
+                                    OpenDrawingSession(bvm);
+                                }
+                                catch (Exception ex)
+                                {
+                                    System.Diagnostics.Debug.WriteLine(ex.Message);
+                                }
+
+                            };
+                        }
+                    }
                 }
             };
-            _massiveMooseService.GetBricksInRange(0, 0, 0, 0);
+            _massiveMooseService.GetBricksAround(0, 0);
 
             UpdateActiveSessions();
         }

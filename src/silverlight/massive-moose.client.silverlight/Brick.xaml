@@ -43,11 +43,8 @@
                             <SolidColorBrush x:Name="BorderBrush" Color="Transparent"></SolidColorBrush>
                         </Border.BorderBrush>
                     <Grid>
-                        <StackPanel Visibility="Visible">
-                            <TextBlock Text="{Binding AddressLabel}" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
-                            <TextBlock Text="{Binding Info}" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
-                        </StackPanel>
-                        <Image Source="{Binding ImageUrl}" x:Name="BrickImage" Stretch="Fill"></Image>
+                        <Image Source="{Binding ImageUrl,Mode=OneWay}" x:Name="BrickImage" Stretch="Fill"></Image>
+                        <TextBlock Text="WHAT" />
                         <TextBlock Visibility="{Binding LockedVisibility}" Text="(Busy)"></TextBlock>
                     </Grid>
                     </Border>

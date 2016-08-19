@@ -15,12 +15,14 @@ using massive_moose.data;
 using massive_moose.drawing;
 using massive_moose.storage.azure;
 using NHibernate.Criterion;
+using System.Web.Http.Cors;
 
 namespace massive_moose.server.api.Controllers
 {
-    public class ImageController : ApiController
+    [EnableCors(origins: "*", headers: "*", methods: "*")]
+    public class V1Controller : ApiController
     {
-        private static ILog Log = LogManager.GetLogger(typeof(ImageController));
+        private static ILog Log = LogManager.GetLogger(typeof(V1Controller));
         private static AzureFileStorage _fileStorage = new AzureFileStorage(ConfigurationManager.ConnectionStrings["azure-storage"].ConnectionString);
 
         [HttpGet]
@@ -50,6 +52,7 @@ namespace massive_moose.server.api.Controllers
 
         [HttpPost]
         [Route("v1/image/begin/{addressX}/{addressY}")]
+        [EnableCors(origins: "http://local.massivemoose.com", headers: "*", methods: "*")]
         public IHttpActionResult Begin(int addressX, int addressY)
         {
             using (var session = SessionFactory.Instance.OpenSession())
@@ -57,6 +60,8 @@ namespace massive_moose.server.api.Controllers
                 if (session.CreateCriteria<DrawingSession>()
                     .Add(Restrictions.Eq("Closed", false))
                     .Add(Restrictions.Gt("Opened", DateTime.Now.Subtract(TimeSpan.FromMinutes(5))))
+                    .Add(Restrictions.Eq("AddressX", addressX))
+                    .Add(Restrictions.Eq("AddressY",addressY))
                     .SetProjection(Projections.Count("Id"))
                     .UniqueResult<int>() > 0)
                     return Conflict();
@@ -64,13 +69,24 @@ namespace massive_moose.server.api.Controllers
                 var drawingSession = new DrawingSession(addressX, addressY);
                 session.Save(drawingSession);
                 session.Flush();
+
                 Log.DebugFormat("Opened session {0}", drawingSession.SessionToken);
-                return Ok(drawingSession.SessionToken);
+                var brick = session.CreateCriteria<Brick>()
+                    .Add(Restrictions.Eq("AddressX", addressX))
+                    .Add(Restrictions.Eq("AddressY", addressY))
+                    .UniqueResult<Brick>();
+
+                return Ok(new
+                {
+                    sessionToken= drawingSession.SessionToken,
+                    snapshotJson=brick != null ? brick.SnapshotJson : null
+                });
             }
         }
 
         [HttpPost]
         [Route("v1/image/receive/{token}")]
+        [EnableCors(origins: "http://local.massivemoose.com", headers: "*", methods: "*")]
         public async Task<IHttpActionResult> Receive(Guid token)
         {
             using (var session = SessionFactory.Instance.OpenSession())
@@ -109,18 +125,7 @@ namespace massive_moose.server.api.Controllers
 
                 try
                 {
-                    string outputPath = string.Format("{0}/brick_{1}-{2}.png",
-                        ConfigurationManager.AppSettings["storageContainer"],
-                        drawingSession.AddressX, drawingSession.AddressY);
-
-                    System.IO.Stream inputStream = null;
-                    if (_fileStorage.Exists(outputPath))
-                    {
-                        inputStream = new System.IO.MemoryStream(_fileStorage.Get(outputPath));
-                    }
-                    var imageData = new BrickRenderer().Render(canvas, inputStream);
-
-                    _fileStorage.Store(outputPath, imageData, true);
+                    ExportImageToFile(drawingSession, canvas);
                 }
                 catch (Exception ex)
                 {
@@ -154,12 +159,60 @@ namespace massive_moose.server.api.Controllers
             }
         }
 
+        private static void ExportImageToFile(DrawingSession drawingSession, Canvas canvas)
+        {
+            string outputPath = string.Format("{0}/brick_{1}-{2}.png",
+                ConfigurationManager.AppSettings["storageContainer"],
+                        drawingSession.AddressX, drawingSession.AddressY);
+
+            System.IO.Stream inputStream = null;
+            if (_fileStorage.Exists(outputPath))
+            {
+                inputStream = new System.IO.MemoryStream(_fileStorage.Get(outputPath));
+            }
+            var imageData = new BrickRenderer().Render(canvas, inputStream);
+
+            _fileStorage.Store(outputPath, imageData, true);
+
+            System.IO.MemoryStream myMemStream = new System.IO.MemoryStream(imageData);
+            System.Drawing.Image fullsizeImage = System.Drawing.Image.FromStream(myMemStream);
+            System.Drawing.Image newImage = fullsizeImage.GetThumbnailImage(200, 100, null, IntPtr.Zero);
+            System.IO.MemoryStream myResult = new System.IO.MemoryStream();
+            newImage.Save(myResult, System.Drawing.Imaging.ImageFormat.Gif);
+
+            outputPath = string.Format("{0}/brick_{1}-{2}_1.png",
+                ConfigurationManager.AppSettings["storageContainer"],
+                        drawingSession.AddressX, drawingSession.AddressY);
+            _fileStorage.Store(outputPath, myResult.ToArray(), true);
+        }
+
         [HttpGet]
         [Route("v1/image/{addressX}/{addressY}")]
         public HttpResponseMessage ViewImage(int addressX, int addressY)
         {
             HttpResponseMessage result = new HttpResponseMessage();
             string filePath = string.Format("{0}/brick_{1}-{2}.png",
+                    ConfigurationManager.AppSettings["storageContainer"],
+                    addressX, addressY);
+
+            if (!_fileStorage.Exists(filePath))
+            {
+                result.StatusCode = HttpStatusCode.NotFound;
+                return result;
+            }
+
+            var data = _fileStorage.Get(filePath);
+            result.Content = new ByteArrayContent(data);
+            result.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("image/png");
+            return result;
+        }
+
+        [HttpGet]
+        [Route("v1/image/t/{addressX}/{addressY}")]
+        public HttpResponseMessage ViewThumbnail(int addressX, int addressY)
+        {
+            HttpResponseMessage result = new HttpResponseMessage();
+            string filePath = string.Format("{0}/brick_{1}-{2}_1.png",
                     ConfigurationManager.AppSettings["storageContainer"],
                     addressX, addressY);
 

@@ -12,5 +12,6 @@ namespace massive_moose.contracts
         public virtual int AddressY { get; set; }
         public virtual Guid Guid { get; set; }
         public virtual int Id { get; set; }
+        public virtual string SnapshotJson { get; set; }
     }
 }

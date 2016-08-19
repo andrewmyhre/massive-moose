@@ -23,16 +23,16 @@ namespace massive_moose.client.silverlight
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
         {
             if (Select != null)
-                Select(this, new SelectBrickEventArgs(this.DataContext as Models.Brick));
+                Select(this, new SelectBrickEventArgs(this.DataContext as massive_moose.contracts.Brick));
         }
     }
 
     public class SelectBrickEventArgs : EventArgs
     {
-        public SelectBrickEventArgs(Models.Brick brick)
+        public SelectBrickEventArgs(massive_moose.contracts.Brick brick)
         {
             this.Brick = brick;
         }
-        public Models.Brick Brick { get; private set; }
+        public massive_moose.contracts.Brick Brick { get; private set; }
     }
 }

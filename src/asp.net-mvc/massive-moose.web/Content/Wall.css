@@ -1,0 +1,53 @@
+﻿ #root {
+    height: 800px;
+    display: none;
+}
+.literally {height:800px;}
+#wall {
+    height: 100%;
+}
+.row {
+    height: 8%;
+    width: 100%;
+}
+.row_offset {
+    height: 8%;
+    width: 100%;
+    margin-left: 50px;
+}
+.brick {
+    display: inline-block;
+    width: 8%;
+    height: 98%;
+    background-color: #ED7428;
+    border: 1px solid white;
+}
+.brick:hover {
+    border: 1px solid black;
+}
+.brick img {
+    width: 100%;
+    height: 100%;
+    float: left;
+}
+.brick span{
+    float: left;
+    z-index: 1;
+    position: relative;
+}
+#drawSpace {
+    z-index: 100;
+}
+#save-etc {
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 101;
+    padding: 3px;
+    border: 1px solid black;
+    background: white;
+    width: 500px;
+}
+#save-etc form {
+    display: inline;
+}
