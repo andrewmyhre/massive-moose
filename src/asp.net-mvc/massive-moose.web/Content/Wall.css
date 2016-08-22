@@ -1,6 +1,6 @@
-﻿ #root {
-    min-height: 800px;
-    display: none;
+﻿ body {
+     min-width: 1600px;
+     min-height: 900px;
 }
 .literally {
     height: 100%;
