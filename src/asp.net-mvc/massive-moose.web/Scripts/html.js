@@ -75,6 +75,7 @@
         }
 
         var zoomAmount = _drawZoom;
+        viewport = document.querySelector("meta[name=viewport]");
         viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
         
         var adjustedWidth = 1600 * zoomAmount;
