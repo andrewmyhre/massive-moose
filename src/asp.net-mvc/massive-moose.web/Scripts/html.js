@@ -75,7 +75,7 @@
         }
 
         var zoomAmount = _drawZoom;
-        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+        viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
         
         var adjustedWidth = 1600 * zoomAmount;
         if (window.innerWidth < adjustedWidth) {
