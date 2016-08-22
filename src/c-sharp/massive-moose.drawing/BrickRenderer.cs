@@ -21,9 +21,9 @@ namespace massive_moose.drawing
 
                 System.Windows.Controls.Grid grid = new System.Windows.Controls.Grid();
                 grid.ClipToBounds = true;
-                grid.Background = new System.Windows.Media.SolidColorBrush(brick);
+                grid.Background =
+                grid.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(canvasContract.BackgroundColor.A, canvasContract.BackgroundColor.R, canvasContract.BackgroundColor.G, canvasContract.BackgroundColor.B));
                 System.Windows.Controls.Canvas canvas = new System.Windows.Controls.Canvas();
-                //canvas.Background = new System.Windows.Media.SolidColorBrush(brick);
 
                 if (imageSource != null)
                 {
@@ -178,6 +178,8 @@ namespace massive_moose.drawing
                 // VERY IMPORTANT
                 grid.Measure(size);
                 grid.Arrange(new System.Windows.Rect(size));
+                grid.Background =
+                    new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 255, 0, 0));
 
                 using (var outputStream = new MemoryStream())
                 {

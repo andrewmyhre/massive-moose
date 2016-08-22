@@ -12,6 +12,7 @@ namespace massive_moose.contracts
         public List<UIElement> Children { get; private set; }
         public double Width { get; set; }
         public double Height { get; set; }
+        public Color BackgroundColor { get; set; }
 
         public Canvas()
         {

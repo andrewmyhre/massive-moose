@@ -15,6 +15,7 @@ namespace massive_moose.drawing
             var canvas = new Canvas();
             canvas.Width = drawing.ImageSize.Width;
             canvas.Height = drawing.ImageSize.Height;
+            canvas.BackgroundColor = new Color(drawing.Colors.Background.A, drawing.Colors.Background.R, drawing.Colors.Background.G, drawing.Colors.Background.B);
 
             var drawingShapes = drawing.Shapes.OrderBy(s => s.Data.Order);
 
