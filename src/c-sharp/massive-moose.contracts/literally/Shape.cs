@@ -14,6 +14,28 @@ namespace massive_moose.contracts.literally
 
         [DataMember(Name="imageSize")]
         public Size ImageSize { get; set; }
+
+        [DataMember(Name="colors")]
+        public DrawingColors Colors { get; set; }
+    }
+
+    [DataContract(Name = "colors")]
+    public class DrawingColors
+    {
+        [DataMember(Name="primary")]
+        public string PrimaryHslaString { get; set; }
+        public Hsla PrimaryHsla { get { return ShapeData.ToHsla(PrimaryHslaString); } }
+        public ColorRGB Primary { get { return ColorRGB.FromHSLA(PrimaryHsla.Hue, PrimaryHsla.Saturation, PrimaryHsla.Lightness, PrimaryHsla.Alpha); } }
+
+        [DataMember(Name = "secondary")]
+        public string SecondaryHslaString { get; set; }
+        public Hsla SecondaryHsla { get { return ShapeData.ToHsla(SecondaryHslaString); } }
+        public ColorRGB Secondary { get { return ColorRGB.FromHSLA(SecondaryHsla.Hue, SecondaryHsla.Saturation, SecondaryHsla.Lightness, SecondaryHsla.Alpha); } }
+
+        [DataMember(Name = "background")]
+        public string BackgroundHslaString { get; set; }
+        public Hsla BackgroundHsla { get { return ShapeData.ToHsla(BackgroundHslaString); } }
+        public ColorRGB Background { get { return ColorRGB.FromHSLA(BackgroundHsla.Hue, BackgroundHsla.Saturation, BackgroundHsla.Lightness, BackgroundHsla.Alpha); } }
     }
 
     [DataContract(Name = "size")]
@@ -142,8 +164,9 @@ namespace massive_moose.contracts.literally
         [DataMember(Name="isClosed")]
         public bool IsClosed { get; set; }
 
-        private Hsla ToHsla(string input)
+        public static Hsla ToHsla(string input)
         {
+            if (input == "transparent") return new Hsla() {Alpha=0,Saturation=0,Lightness=0,Hue=0};
             var parts = input.Replace("hsla","").Trim('(',')').Split(',');
             var hsla = new Hsla();
             double h, s, l;
