@@ -1,6 +1,6 @@
 ﻿$(document).ready(function () {
     if (!_baseApiUrl) { _baseApiUrl  = 'http://local.api.massivemoose.com';}
-    updateWall();
+    setTimeout(10, updateWall);
     var _brickInUse = null;
     var _lc = null;
     var _wall = null;
@@ -94,6 +94,8 @@
                     $('#wall').append(row);
                 }
             });
+
+        setTimeout(10000, updateWall);
     }
 
     function openSession(x, y,addressX,addressY) {
