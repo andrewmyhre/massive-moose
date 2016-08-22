@@ -59,8 +59,15 @@
             backgroundColor:"transparent",
             toolbarPosition: 'top'
         });
+        
         if (brick.snapshotJson) {
             _lc.loadSnapshot(JSON.parse(brick.snapshotJson));
+        }
+
+        if (window.innerWidth < 1600) {
+            _lc.setZoom((window.innerWidth - 100) / 1600);
+            var dx = (1600 - window.innerWidth) / 2, dy = (800 - window.innerHeight) / 2;
+            _lc.setPan(dx, dy);
         }
         //_lc.setColor('background', "#ED7428");
     }
