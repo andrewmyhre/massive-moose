@@ -29,7 +29,7 @@
                 $('#drawingSpace').hide();
                 $('#wall').show();
                 $('#messages').html('');
-                updateWall();
+                updateWall(brickView[0].id);
         });
         return false;
     });
@@ -72,7 +72,7 @@
         
         var adjustedWidth = 1600 * zoomAmount;
         if (window.innerWidth < adjustedWidth) {
-            $('body').css({ 'min-width': 0, 'min-height':0 });
+            //$('body').css({ 'min-width': 0, 'min-height':0 });
             _lc.setZoom((window.innerWidth - 100) / adjustedWidth);
             //var dx = (1600 - window.innerWidth) / 2, dy = (800 - window.innerHeight) / 2;
             //_lc.setPan(dx, dy);
@@ -80,7 +80,7 @@
         //_lc.setColor('background', "#ED7428");
     }
 
-    function updateWall() {
+    function updateWall(scrollToId) {
         if (!_brickInUse)
         {
             $('#drawSpace').hide();
@@ -88,12 +88,10 @@
             $.getJSON(_baseApiUrl+'/v2/wall/0/0',null,
                 function (data) {
                     _wall = data;
-                    $('#wall').html('');
-                    var tbl = $('<table id="tblWall"></table>');
                     for (var y = 0; y < data.length; y++) {
-                        var row = $('<tr class="' + (y % 2 == 1 ? 'row_offset' : 'row') + '"></tr>');
+                        
                         for (var x = 0; x < data[y].length; x++) {
-                            var brickView = $('<td id="' + x.toString() + y.toString() + '" class="brick"></td>');
+                            var brickView = $('#c' + (y * 12 + x));
                             var brick = data[x][y];
                             brick.element = brickView;
                             if (brick && brick.Id != 0) {
@@ -108,14 +106,15 @@
                             brickView.click(function (bv) {
                                 openSession($(this).attr('data-viewx'), $(this).attr('data-viewy'), $(this).attr('data-addressx'), $(this).attr('data-addressy'));
                             });
-                            row.append(brickView);
                         }
-                        tbl.append(row);
                     }
                     $('body').css({ 'min-width': '1600px', 'min-height': '900px' });
                     viewport = document.querySelector("meta[name=viewport]");
                     viewport.setAttribute('content', 'width=1600, height=900, initial-scale=3.0');
-                    $('#wall').append(tbl);
+
+                    if (scrollToId) {
+                        document.getElementById(scrollToId).scrollIntoView();
+                    }
                 });
         }
 

@@ -28,7 +28,7 @@
     position: relative;
     left: 0%;
 }
-.brick {
+#tblWall tr td {
     /*background-color: #ED7428;*/
     margin: 1px;
     -webkit-background-size: cover;
@@ -36,7 +36,7 @@
     -o-background-size: cover;
     background-size: 100% 100%;
 }
-.brick:hover {
+#tblWall tr td:hover {
     background: #ffb6c1;
     margin: 1px;
     -webkit-background-size: cover;
@@ -45,12 +45,12 @@
     background-size: 100% 100%;
 }
 
-.brick img {
+#tblWall tr td img {
     width: 100%;
     height: 100%;
     float: left;
 }
-.brick span{
+#tblWall tr td span{
     float: left;
     z-index: 1;
     position: relative;
