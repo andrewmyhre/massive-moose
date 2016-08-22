@@ -133,7 +133,7 @@
                     }
                     $('body').css({ 'min-width': '1600px', 'min-height': '900px' });
                     viewport = document.querySelector("meta[name=viewport]");
-                    viewport.setAttribute('content', 'width=1600, height=900, initial-scale=3.0');
+                    viewport.setAttribute('content', 'width=device-width, initial-scale='+_viewportScale);
 
                     if (scrollToId) {
                         document.getElementById(scrollToId).scrollIntoView();
