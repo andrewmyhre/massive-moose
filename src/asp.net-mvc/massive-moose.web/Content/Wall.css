@@ -72,3 +72,13 @@
 #save-etc form {
     display: inline;
 }
+
+#vpdebug {
+    position: fixed;
+    width: 300px;
+    bottom: 0;
+}
+#vpdebug button {
+    width: 40px;
+    height: 40px;
+}
