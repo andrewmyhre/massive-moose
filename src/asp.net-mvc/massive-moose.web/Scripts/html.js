@@ -1,4 +1,5 @@
 ﻿$(document).ready(function () {
+    if (!_baseApiUrl) { _baseApiUrl  = 'http://local.api.massivemoose.com';}
     updateWall();
     var _brickInUse = null;
     var _lc = null;
@@ -11,7 +12,7 @@
         $('.cancel').hide();
         $('#messages').html('Uploading...');
 
-        $.post('http://local.api.massivemoose.com/literally/receive/' + _brickInUse.sessionToken,
+        $.post(_baseApiUrl+'/literally/receive/' + _brickInUse.sessionToken,
                 JSON.stringify(_lc.getSnapshot()))
             .done(function() {
                 $('.finish-and-upload').show();
@@ -21,7 +22,7 @@
                 var brickView = $(_brickInUse.element);
                 if (brickView) {
                     brickView.remove('img');
-                    brickView.append('<img src="http://local.api.massivemoose.com/v1/image/t/' + _brickInUse.AddressX + '/' + _brickInUse.AddressY);
+                    brickView.append('<img src="'+_baseApiUrl+'/v1/image/t/' + _brickInUse.AddressX + '/' + _brickInUse.AddressY);
                 }
 
                 _brickInUse = null;
@@ -67,7 +68,7 @@
     function updateWall() {
         $('#drawSpace').hide();
         $('#save-etc').hide();
-        $.getJSON('http://local.api.massivemoose.com/v2/wall/0/0',null,
+        $.getJSON(_baseApiUrl+'/v2/wall/0/0',null,
             function (data) {
                 _wall = data;
                 $('#wall').html('');
@@ -78,7 +79,7 @@
                         var brick = data[x][y];
                         brick.element = brickView;
                         if (brick && brick.Id != 0) {
-                            brickView.append('<img src="http://local.api.massivemoose.com/v1/image/t/' + brick.AddressX + '/' + brick.AddressY + '" />');
+                            brickView.append('<img src="'+_baseApiUrl+'/v1/image/t/' + brick.AddressX + '/' + brick.AddressY + '" />');
                         }
                         $(brickView).attr('data-addressX', brick.AddressX);
                         $(brickView).attr('data-addressY', brick.AddressY);
@@ -96,7 +97,7 @@
     }
 
     function openSession(x, y,addressX,addressY) {
-        $.post('http://local.api.massivemoose.com/v1/image/begin/' + addressX + '/' + addressY)
+        $.post(_baseApiUrl+'/v1/image/begin/' + addressX + '/' + addressY)
             .done(function (data) {
                 _brickInUse = _wall[x][y];
                 _brickInUse.sessionToken = data.sessionToken;
