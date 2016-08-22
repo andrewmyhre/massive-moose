@@ -191,6 +191,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ClientBin\massive-moose.client.silverlight.xap" />
+    <Content Include="Content\066da1cdd70fafc6c8c1ad2eae48b95d.jpg" />
+    <Content Include="Content\2858936-red-brick-wall-texture.jpg" />
     <Content Include="Content\blank.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
@@ -217,7 +219,9 @@
     <Content Include="Content\img\undo.png" />
     <Content Include="Content\img\zoom-in.png" />
     <Content Include="Content\img\zoom-out.png" />
+    <Content Include="Content\industrial-wall-decals.jpg" />
     <Content Include="Content\literallycanvas.css" />
+    <Content Include="Content\Seamless_Brick_Wall_Texture.jpg" />
     <Content Include="Content\Tiled_bricks.jpg" />
     <Content Include="Content\Wall.css" />
     <Content Include="favicon.ico" />
