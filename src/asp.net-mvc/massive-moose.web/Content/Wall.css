@@ -20,11 +20,11 @@
 .row_offset {
     width: 104%;
 }
-.row_offset .brick {
+.row_offset td {
     position: relative;
     left: -4%;
 }
-.row .brick {
+.row td {
     position: relative;
     left: 0%;
 }
