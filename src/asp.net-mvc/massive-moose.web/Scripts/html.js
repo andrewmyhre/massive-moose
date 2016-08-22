@@ -68,7 +68,7 @@
         }
 
         if (window.innerWidth < 1600) {
-            $('body').css({ 'min-width': 0, 'min-height':0 });
+            //$('body').css({ 'min-width': 0, 'min-height':0 });
             //_lc.setZoom((window.innerWidth - 100) / 1600);
             //var dx = (1600 - window.innerWidth) / 2, dy = (800 - window.innerHeight) / 2;
             //_lc.setPan(dx, dy);
