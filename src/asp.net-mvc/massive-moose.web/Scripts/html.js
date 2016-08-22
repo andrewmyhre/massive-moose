@@ -5,6 +5,13 @@
     var _lc = null;
     var _wall = null;
 
+    $('#tblWall tr td').click(function (bv) {
+        openSession($(this).attr('data-viewx'),
+            $(this).attr('data-viewy'),
+            $(this).attr('data-addressx'),
+            $(this).attr('data-addressy'));
+    });
+
     $('[data-action=upload]').click(function (e) {
         e.preventDefault();
 
@@ -105,10 +112,6 @@
                             $(brickView).attr('data-addressY', brick.AddressY);
                             $(brickView).attr('data-viewX', x);
                             $(brickView).attr('data-viewY', y);
-
-                            brickView.click(function (bv) {
-                                openSession($(this).attr('data-viewx'), $(this).attr('data-viewy'), $(this).attr('data-addressx'), $(this).attr('data-addressy'));
-                            });
                         }
                     }
                     $('body').css({ 'min-width': '1600px', 'min-height': '900px' });
