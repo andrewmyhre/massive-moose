@@ -96,7 +96,7 @@ namespace massive_moose.api.Controllers
             System.Drawing.Image fullsizeImage = System.Drawing.Image.FromStream(myMemStream);
             System.Drawing.Image newImage = fullsizeImage.GetThumbnailImage(200, 100, null, IntPtr.Zero);
             System.IO.MemoryStream myResult = new System.IO.MemoryStream();
-            newImage.Save(myResult, System.Drawing.Imaging.ImageFormat.Gif);
+            newImage.Save(myResult, System.Drawing.Imaging.ImageFormat.Png);
 
             outputPath = string.Format("{0}/brick_{1}-{2}_1.png",
                 ConfigurationManager.AppSettings["storageContainer"],
