@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace massive_moose.server.api.Models
+namespace massive_moose.api.Models
 {
     // Models used as parameters to AccountController actions.
 

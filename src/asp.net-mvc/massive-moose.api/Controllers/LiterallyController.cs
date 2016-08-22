@@ -1,22 +1,17 @@
-﻿using log4net;
-using massive_moose.drawing;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Configuration;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Cors;
+using log4net;
+using massive_moose.contracts;
+using massive_moose.data;
+using massive_moose.drawing;
 using massive_moose.storage.azure;
 using Newtonsoft.Json;
-using massive_moose.data;
 using NHibernate.Criterion;
-using massive_moose.contracts;
-using System.Web.Http.Cors;
 
-namespace massive_moose.server.api.Controllers
+namespace massive_moose.api.Controllers
 {
     
     public class LiterallyController : ApiController

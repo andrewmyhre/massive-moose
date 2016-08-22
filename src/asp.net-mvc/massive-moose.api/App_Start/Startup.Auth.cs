@@ -1,13 +1,13 @@
 ﻿using System;
-using massive_moose.server.api.Models;
-using massive_moose.server.api.Providers;
+using massive_moose.api.Models;
+using massive_moose.api.Providers;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.OAuth;
 using Owin;
 
-namespace massive_moose.server.api
+namespace massive_moose.api
 {
     public partial class Startup
     {

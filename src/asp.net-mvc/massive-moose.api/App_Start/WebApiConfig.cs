@@ -1,7 +1,7 @@
 ﻿using System.Web.Http;
 using Microsoft.Owin.Security.OAuth;
 
-namespace massive_moose.server.api
+namespace massive_moose.api
 {
     public static class WebApiConfig
     {

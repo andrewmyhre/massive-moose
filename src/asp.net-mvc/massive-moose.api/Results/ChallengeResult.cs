@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 
-namespace massive_moose.server.api.Results
+namespace massive_moose.api.Results
 {
     public class ChallengeResult : IHttpActionResult
     {

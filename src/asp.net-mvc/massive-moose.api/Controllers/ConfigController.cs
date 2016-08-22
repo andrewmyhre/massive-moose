@@ -6,7 +6,7 @@ using System.Web.Http;
 using log4net;
 using massive_moose.data;
 
-namespace massive_moose.server.api.Controllers
+namespace massive_moose.api.Controllers
 {
     public class ConfigController : ApiController
     {

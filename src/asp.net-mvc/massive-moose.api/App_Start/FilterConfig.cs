@@ -1,6 +1,6 @@
 ﻿using System.Web.Mvc;
 
-namespace massive_moose.server.api
+namespace massive_moose.api
 {
     public class FilterConfig
     {

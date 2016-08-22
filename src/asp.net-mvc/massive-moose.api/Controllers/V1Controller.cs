@@ -8,6 +8,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Cors;
 using System.Xml;
 using log4net;
 using massive_moose.contracts;
@@ -15,9 +16,8 @@ using massive_moose.data;
 using massive_moose.drawing;
 using massive_moose.storage.azure;
 using NHibernate.Criterion;
-using System.Web.Http.Cors;
 
-namespace massive_moose.server.api.Controllers
+namespace massive_moose.api.Controllers
 {
     [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class V1Controller : ApiController

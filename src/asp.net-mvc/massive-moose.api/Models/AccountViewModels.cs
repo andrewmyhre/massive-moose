@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace massive_moose.server.api.Models
+namespace massive_moose.api.Models
 {
     // Models returned by AccountController actions.
 
