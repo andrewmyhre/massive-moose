@@ -152,7 +152,10 @@ namespace massive_moose.drawing
 
                         
                         }
-                        shape.MaxWidth = input.ForcedWidth;
+                        if (input.ForcedWidth != 0)
+                        {
+                            shape.MaxWidth = input.ForcedWidth;
+                        }
                         //shape.MaxHeight = input.ForcedHeight;
                         shape.TextWrapping = TextWrapping.Wrap;
                         canvas.Children.Add(shape);
