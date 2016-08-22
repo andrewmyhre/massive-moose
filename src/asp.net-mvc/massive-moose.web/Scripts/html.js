@@ -74,7 +74,7 @@
             _lc.loadSnapshot(JSON.parse(brick.snapshotJson));
         }
 
-        var zoomAmount = 1.0;
+        var zoomAmount = 0.3;
         viewport.setAttribute('content', 'width=device-width, initial-scale='+zoomAmount);
         
         var adjustedWidth = 1600 * zoomAmount;
