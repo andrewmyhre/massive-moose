@@ -59,19 +59,19 @@
 
     $('#vp_increase')
         .click(function () {
-            _viewportScale += 0.1;
+            _viewportScaleWhenDrawing += 0.1;
             viewport = document.querySelector("meta[name=viewport]");
-            viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
-            $('#vp-info').html('vp: ' + parseFloat(_viewportScale).toFixed(2));
+            viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScaleWhenDrawing);
+            $('#vp-info').html('vp: ' + parseFloat(_viewportScaleWhenDrawing).toFixed(2));
         });
     $('#vp_decrease')
         .click(function () {
-            _viewportScale -= 0.1;
+            _viewportScaleWhenDrawing -= 0.1;
             viewport = document.querySelector("meta[name=viewport]");
-            viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
-            $('#vp-info').html('vp: ' + parseFloat(_viewportScale).toFixed(2));
+            viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScaleWhenDrawing);
+            $('#vp-info').html('vp: ' + parseFloat(_viewportScaleWhenDrawing).toFixed(2));
         });
-    $('#vp-info').html('vp: ' + parseFloat(_viewportScale).toFixed(2));
+    $('#vp-info').html('vp: ' + parseFloat(_viewportScaleWhenDrawing).toFixed(2));
 
     function openCanvas(brick) {
         $('#wall').hide();
@@ -92,7 +92,7 @@
 
         var zoomAmount = _drawZoom;
         viewport = document.querySelector("meta[name=viewport]");
-        viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
+        viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScaleWhenDrawing);
         
         var adjustedWidth = 1600 * zoomAmount;
         if (window.innerWidth < adjustedWidth) {
@@ -112,6 +112,8 @@
         {
             $('#drawSpace').hide();
             $('#save-etc').hide();
+            viewport = document.querySelector("meta[name=viewport]");
+            viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
             $.getJSON(_baseApiUrl+'/v2/wall/0/0',null,
                 function (data) {
                     _wall = data;
