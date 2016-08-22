@@ -71,11 +71,11 @@
         $.getJSON(_baseApiUrl+'/v2/wall/0/0',null,
             function (data) {
                 _wall = data;
-                $('#wall').html('');
+                $('#wall').html('<table class="tblwall"></table>');
                 for (var y = 0; y < data.length; y++) {
-                    var row = $('<div class="' + (y % 2 == 1 ? 'row_offset' : 'row') + '"></div>');
+                    var row = $('<tr class="' + (y % 2 == 1 ? 'row_offset' : 'row') + '"></tr>');
                     for (var x = 0; x < data[y].length; x++) {
-                        var brickView = $('<div id="' + x.toString() + y.toString() + '" class="brick"></div>');
+                        var brickView = $('<td id="' + x.toString() + y.toString() + '" class="brick"></td>');
                         var brick = data[x][y];
                         brick.element = brickView;
                         if (brick && brick.Id != 0) {
