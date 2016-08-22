@@ -52,7 +52,7 @@ namespace massive_moose.server.api.Controllers
 
         [HttpPost]
         [Route("v1/image/begin/{addressX}/{addressY}")]
-        [EnableCors(origins: "http://local.massivemoose.com", headers: "*", methods: "*")]
+        [EnableCors(origins: "*", headers: "*", methods: "*")]
         public IHttpActionResult Begin(int addressX, int addressY)
         {
             using (var session = SessionFactory.Instance.OpenSession())
@@ -86,7 +86,7 @@ namespace massive_moose.server.api.Controllers
 
         [HttpPost]
         [Route("v1/image/receive/{token}")]
-        [EnableCors(origins: "http://local.massivemoose.com", headers: "*", methods: "*")]
+        [EnableCors(origins: "*", headers: "*", methods: "*")]
         public async Task<IHttpActionResult> Receive(Guid token)
         {
             using (var session = SessionFactory.Instance.OpenSession())
