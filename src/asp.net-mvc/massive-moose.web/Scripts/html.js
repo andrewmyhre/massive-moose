@@ -57,6 +57,22 @@
             return false;
         });
 
+    $('#vp_increase')
+        .click(function () {
+            _viewportScale += 0.1;
+            viewport = document.querySelector("meta[name=viewport]");
+            viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
+            $('#vp-info').html('vp: ' + parseFloat(_viewportScale).toFixed(2));
+        });
+    $('#vp_decrease')
+        .click(function () {
+            _viewportScale -= 0.1;
+            viewport = document.querySelector("meta[name=viewport]");
+            viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
+            $('#vp-info').html('vp: ' + parseFloat(_viewportScale).toFixed(2));
+        });
+    $('#vp-info').html('vp: ' + parseFloat(_viewportScale).toFixed(2));
+
     function openCanvas(brick) {
         $('#wall').hide();
         $('#save-etc').show();
