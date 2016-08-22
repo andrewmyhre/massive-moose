@@ -13,7 +13,8 @@
 #tblWall {
     width: 104%;
     height: 100%;
-    background-image: url('/Content/Tiled_bricks.jpg');
+    background-image: url('/Content/066da1cdd70fafc6c8c1ad2eae48b95d.jpg');
+    background-repeat: repeat;
 }
 .row {
 }
