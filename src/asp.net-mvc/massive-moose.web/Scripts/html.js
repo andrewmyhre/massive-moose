@@ -73,6 +73,7 @@
             var dx = (1600 - window.innerWidth) / 2, dy = (800 - window.innerHeight) / 2;
             _lc.setPan(dx, dy);
         }
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
         //_lc.setColor('background', "#ED7428");
     }
 
@@ -109,6 +110,8 @@
                         tbl.append(row);
                     }
                     $('body').css({ 'min-width': '1600px', 'min-height': '900px' });
+                    viewport = document.querySelector("meta[name=viewport]");
+                    viewport.setAttribute('content', 'width=1600, height=900, initial-scale=3.0');
                     $('#wall').append(tbl);
                 });
         }
