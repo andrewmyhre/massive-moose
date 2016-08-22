@@ -25,7 +25,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <SilverlightApplicationList>{FF175C7A-D04E-4E13-BD4F-BD42CEAED52B}|..\massive-moose.client.silverlight\massive-moose.client.silverlight.csproj|ClientBin|False</SilverlightApplicationList>
+    <SilverlightApplicationList>{FF175C7A-D04E-4E13-BD4F-BD42CEAED52B}|..\..\silverlight\massive-moose.client.silverlight\massive-moose.client.silverlight.csproj|ClientBin|False</SilverlightApplicationList>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -225,6 +225,7 @@
     <Content Include="Content\Site.css" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <None Include="Properties\PublishProfiles\massivemoose.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\html.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
