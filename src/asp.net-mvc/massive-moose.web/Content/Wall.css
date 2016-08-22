@@ -74,10 +74,12 @@
 }
 
 #vpdebug {
-    position: fixed;
-    width: 300px;
-    bottom: 100px;
+        position: fixed;
+    top: 30px;
     left: 100px;
+    background-color: white;
+    z-index: 100000;
+    padding: 3px;
 }
 #vpdebug button {
     width: 40px;
