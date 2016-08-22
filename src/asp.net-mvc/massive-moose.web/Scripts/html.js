@@ -77,6 +77,9 @@
             //var dx = (1600 - window.innerWidth) / 2, dy = (800 - window.innerHeight) / 2;
             //_lc.setPan(dx, dy);
         }
+        $('html, body').animate({
+            scrollTop: 0, scrollLeft: 0
+        }, 500);
         //_lc.setColor('background', "#ED7428");
     }
 
