@@ -1,6 +1,10 @@
 ﻿$(document).ready(function () {
+<<<<<<< HEAD
     if (!_baseApiUrl) { _baseApiUrl  = 'http://local.api.massivemoose.com';}
-    setTimeout(updateWall,10);
+=======
+    var _apiBaseUrl='http://massivemoose-api.azurewebsites.net';
+>>>>>>> 3a504a9fcbd00a85557704dbff8dc718732743c9
+    updateWall();
     var _brickInUse = null;
     var _lc = null;
     var _wall = null;
@@ -12,16 +16,25 @@
         $('.cancel').hide();
         $('#messages').html('Uploading...');
 
+<<<<<<< HEAD
         $.post(_baseApiUrl+'/literally/receive/' + _brickInUse.sessionToken,
+=======
+        $.post(_apiBaseUrl+'/literally/receive/' + _brickInUse.sessionToken,
+>>>>>>> 3a504a9fcbd00a85557704dbff8dc718732743c9
                 JSON.stringify(_lc.getSnapshot()))
             .done(function() {
                 $('.finish-and-upload').show();
                 $('.cancel').show();
-                $('#messages').html('');
+                $('#messages').html('Uploaded!');
 
                 var brickView = $(_brickInUse.element);
                 if (brickView) {
-                    brickView.css({ 'backgroundImage': 'url("' + _baseApiUrl + '/v1/image/t/' + _brickInUse.AddressX + '/' + _brickInUse.AddressY + '?r=' + Math.floor((Math.random() * 10000) + 1) + '")' });
+                    brickView.remove('img');
+<<<<<<< HEAD
+                    brickView.append('<img src="'+_baseApiUrl+'/v1/image/t/' + _brickInUse.AddressX + '/' + _brickInUse.AddressY);
+=======
+                    brickView.append('<img src="'+_apiBaseUrl+'/v1/image/t/' + _brickInUse.AddressX + '/' + _brickInUse.AddressY);
+>>>>>>> 3a504a9fcbd00a85557704dbff8dc718732743c9
                 }
 
                 _brickInUse = null;
@@ -55,8 +68,7 @@
         {
             imageURLPrefix: "/content/img",
             imageSize: { width: 1600, height: 800 },
-            //backgroundColor: "#ED7428",
-            backgroundColor:"transparent",
+            backgroundColor: "#ED7428",
             toolbarPosition: 'top'
         });
         if (brick.snapshotJson) {
@@ -68,20 +80,26 @@
     function updateWall() {
         $('#drawSpace').hide();
         $('#save-etc').hide();
+<<<<<<< HEAD
         $.getJSON(_baseApiUrl+'/v2/wall/0/0',null,
+=======
+        $.getJSON(_apiBaseUrl+'/v2/wall/0/0',null,
+>>>>>>> 3a504a9fcbd00a85557704dbff8dc718732743c9
             function (data) {
                 _wall = data;
                 $('#wall').html('');
-                var tbl = $('<table id="tblWall"></table>');
                 for (var y = 0; y < data.length; y++) {
-                    var row = $('<tr class="' + (y % 2 == 1 ? 'row_offset' : 'row') + '"></tr>');
+                    var row = $('<div class="' + (y % 2 == 1 ? 'row_offset' : 'row') + '"></div>');
                     for (var x = 0; x < data[y].length; x++) {
-                        var brickView = $('<td id="' + x.toString() + y.toString() + '" class="brick"></td>');
+                        var brickView = $('<div id="' + x.toString() + y.toString() + '" class="brick"></div>');
                         var brick = data[x][y];
                         brick.element = brickView;
                         if (brick && brick.Id != 0) {
-                            brickView.css({ 'backgroundImage': 'url("' + _baseApiUrl + '/v1/image/t/' + brick.AddressX + '/' + brick.AddressY+'")' });
-                            //brickView.append('<img src="'+_baseApiUrl+'/v1/image/t/' + brick.AddressX + '/' + brick.AddressY + '" />');
+<<<<<<< HEAD
+                            brickView.append('<img src="'+_baseApiUrl+'/v1/image/t/' + brick.AddressX + '/' + brick.AddressY + '" />');
+=======
+                            brickView.append('<img src="'+_apiBaseUrl+'/v1/image/t/' + brick.AddressX + '/' + brick.AddressY + '" />');
+>>>>>>> 3a504a9fcbd00a85557704dbff8dc718732743c9
                         }
                         $(brickView).attr('data-addressX', brick.AddressX);
                         $(brickView).attr('data-addressY', brick.AddressY);
@@ -93,16 +111,17 @@
                         });
                         row.append(brickView);
                     }
-                    tbl.append(row);
+                    $('#wall').append(row);
                 }
-                $('#wall').append(tbl);
             });
-
-        //setTimeout(updateWall, 10000);
     }
 
     function openSession(x, y,addressX,addressY) {
+<<<<<<< HEAD
         $.post(_baseApiUrl+'/v1/image/begin/' + addressX + '/' + addressY)
+=======
+        $.post(_apiBaseUrl+'/v1/image/begin/' + addressX + '/' + addressY)
+>>>>>>> 3a504a9fcbd00a85557704dbff8dc718732743c9
             .done(function (data) {
                 _brickInUse = _wall[x][y];
                 _brickInUse.sessionToken = data.sessionToken;
