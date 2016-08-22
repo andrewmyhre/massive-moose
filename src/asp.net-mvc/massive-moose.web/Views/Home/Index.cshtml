@@ -25,6 +25,17 @@
 }
 
 <div id="wall">
+    <table id="tblWall">
+        @for (int y = 0; y < 12; y++)
+        {
+            <tr class="@(y%2==1?"row":"offset_row")">
+                @for (int x = 0; x < 12; x++)
+                {
+                <td id="c@(y*12 + x)"></td>
+                }
+            </tr>
+        }
+    </table>
 </div>
 <div id="drawSpace"></div>
 
