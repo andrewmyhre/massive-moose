@@ -51,6 +51,30 @@ namespace massive_moose.api.Controllers
         }
 
         [HttpPost]
+        [Route("v1/image/release/{addressX}/{addressY}/{token}")]
+        [EnableCors(origins: "*", headers: "*", methods: "*")]
+        public IHttpActionResult Release(int addressX, int addressY, Guid token)
+        {
+            using (var session = SessionFactory.Instance.OpenSession())
+            {
+                Log.DebugFormat("Receiving data for session {0}", token);
+                var drawingSession = session.CreateCriteria<DrawingSession>()
+                    .Add(Restrictions.Eq("SessionToken", token))
+                    .Add(Restrictions.Eq("AddressX", addressX))
+                    .Add(Restrictions.Eq("AddressY", addressY))
+                    .UniqueResult<DrawingSession>();
+
+                if (drawingSession == null)
+                    return NotFound();
+
+                drawingSession.Closed = true;
+                session.Flush();
+
+                return Ok();
+            }
+        }
+
+        [HttpPost]
         [Route("v1/image/begin/{addressX}/{addressY}")]
         [EnableCors(origins: "*", headers: "*", methods: "*")]
         public IHttpActionResult Begin(int addressX, int addressY)
@@ -90,6 +114,7 @@ namespace massive_moose.api.Controllers
         public async Task<IHttpActionResult> Receive(Guid token)
         {
             using (var session = SessionFactory.Instance.OpenSession())
+                using (var tx = session.BeginTransaction())
             {
                 Log.DebugFormat("Receiving data for session {0}", token);
                 var drawingSession = session.CreateCriteria<DrawingSession>()
@@ -153,7 +178,7 @@ namespace massive_moose.api.Controllers
                     session.Save(brick);
                 }
 
-                session.Flush();
+                tx.Commit();
 
                 return Ok();
             }
