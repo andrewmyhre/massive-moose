@@ -67,10 +67,13 @@
             _lc.loadSnapshot(JSON.parse(brick.snapshotJson));
         }
 
-        viewport.setAttribute('content', 'width=device-width, initial-scale=0.8');
-        if (window.innerWidth < 1280) {
+        var zoomAmount = 0.7;
+        viewport.setAttribute('content', 'width=device-width, initial-scale='+zoomAmount);
+        
+        var adjustedWidth = 1600 * zoomAmount;
+        if (window.innerWidth < adjustedWidth) {
             //$('body').css({ 'min-width': 0, 'min-height':0 });
-            _lc.setZoom((window.innerWidth - 100) / 1280);
+            _lc.setZoom((window.innerWidth - 100) / adjustedWidth);
             //var dx = (1600 - window.innerWidth) / 2, dy = (800 - window.innerHeight) / 2;
             //_lc.setPan(dx, dy);
         }
