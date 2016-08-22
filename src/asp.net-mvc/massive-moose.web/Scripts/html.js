@@ -38,11 +38,14 @@
         .click(function (e) {
             e.preventDefault();
 
-            _brickInUse = null;
-            _lc = null;
-            $('#drawingSpace').hide();
-            $('#wall').show();
-            updateWall();
+            $.post(_baseApiUrl + '/v1/image/release/' + _brickInUse.AddressX + '/' + _brickInUse.AddressY + '/' + _brickInUse.sessionToken, null)
+            .done(function() {
+                    _brickInUse = null;
+                    _lc = null;
+                    $('#drawingSpace').hide();
+                    $('#wall').show();
+                    updateWall();
+                });
 
             return false;
         });
@@ -65,6 +68,7 @@
         }
 
         if (window.innerWidth < 1600) {
+            $('body').css({ 'min-width': 0, 'min-height':0 });
             _lc.setZoom((window.innerWidth - 100) / 1600);
             var dx = (1600 - window.innerWidth) / 2, dy = (800 - window.innerHeight) / 2;
             _lc.setPan(dx, dy);
@@ -73,39 +77,43 @@
     }
 
     function updateWall() {
-        $('#drawSpace').hide();
-        $('#save-etc').hide();
-        $.getJSON(_baseApiUrl+'/v2/wall/0/0',null,
-            function (data) {
-                _wall = data;
-                $('#wall').html('');
-                var tbl = $('<table id="tblWall"></table>');
-                for (var y = 0; y < data.length; y++) {
-                    var row = $('<tr class="' + (y % 2 == 1 ? 'row_offset' : 'row') + '"></tr>');
-                    for (var x = 0; x < data[y].length; x++) {
-                        var brickView = $('<td id="' + x.toString() + y.toString() + '" class="brick"></td>');
-                        var brick = data[x][y];
-                        brick.element = brickView;
-                        if (brick && brick.Id != 0) {
-                            brickView.css({ 'backgroundImage': 'url("' + _baseApiUrl + '/v1/image/t/' + brick.AddressX + '/' + brick.AddressY+'")' });
-                            //brickView.append('<img src="'+_baseApiUrl+'/v1/image/t/' + brick.AddressX + '/' + brick.AddressY + '" />');
+        if (!_brickInUse)
+        {
+            $('#drawSpace').hide();
+            $('#save-etc').hide();
+            $.getJSON(_baseApiUrl+'/v2/wall/0/0',null,
+                function (data) {
+                    _wall = data;
+                    $('#wall').html('');
+                    var tbl = $('<table id="tblWall"></table>');
+                    for (var y = 0; y < data.length; y++) {
+                        var row = $('<tr class="' + (y % 2 == 1 ? 'row_offset' : 'row') + '"></tr>');
+                        for (var x = 0; x < data[y].length; x++) {
+                            var brickView = $('<td id="' + x.toString() + y.toString() + '" class="brick"></td>');
+                            var brick = data[x][y];
+                            brick.element = brickView;
+                            if (brick && brick.Id != 0) {
+                                brickView.css({ 'backgroundImage': 'url("' + _baseApiUrl + '/v1/image/t/' + brick.AddressX + '/' + brick.AddressY+'")' });
+                                //brickView.append('<img src="'+_baseApiUrl+'/v1/image/t/' + brick.AddressX + '/' + brick.AddressY + '" />');
+                            }
+                            $(brickView).attr('data-addressX', brick.AddressX);
+                            $(brickView).attr('data-addressY', brick.AddressY);
+                            $(brickView).attr('data-viewX', x);
+                            $(brickView).attr('data-viewY', y);
+
+                            brickView.click(function (bv) {
+                                openSession($(this).attr('data-viewx'), $(this).attr('data-viewy'), $(this).attr('data-addressx'), $(this).attr('data-addressy'));
+                            });
+                            row.append(brickView);
                         }
-                        $(brickView).attr('data-addressX', brick.AddressX);
-                        $(brickView).attr('data-addressY', brick.AddressY);
-                        $(brickView).attr('data-viewX', x);
-                        $(brickView).attr('data-viewY', y);
-
-                        brickView.click(function (bv) {
-                            openSession($(this).attr('data-viewx'), $(this).attr('data-viewy'), $(this).attr('data-addressx'), $(this).attr('data-addressy'));
-                        });
-                        row.append(brickView);
+                        tbl.append(row);
                     }
-                    tbl.append(row);
-                }
-                $('#wall').append(tbl);
-            });
+                    $('body').css({ 'min-width': '1600px', 'min-height': '900px' });
+                    $('#wall').append(tbl);
+                });
+        }
 
-        //setTimeout(updateWall, 10000);
+        setTimeout(updateWall, 10000);
     }
 
     function openSession(x, y,addressX,addressY) {
