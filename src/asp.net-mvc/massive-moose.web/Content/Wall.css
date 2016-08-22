@@ -76,7 +76,8 @@
 #vpdebug {
     position: fixed;
     width: 300px;
-    bottom: 0;
+    bottom: 100px;
+    left: 100px;
 }
 #vpdebug button {
     width: 40px;
