@@ -1,7 +1,7 @@
 ﻿using System.Web.Mvc;
 using System.Web.Routing;
 
-namespace massive_moose.server.api
+namespace massive_moose.api
 {
     public class RouteConfig
     {

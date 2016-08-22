@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Cors;
+using log4net;
 using massive_moose.contracts;
 using massive_moose.data;
-using log4net;
-using System.Web.Http.Cors;
 
-namespace massive_moose.server.api.Controllers
+namespace massive_moose.api.Controllers
 {
     [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class V2Controller : ApiController

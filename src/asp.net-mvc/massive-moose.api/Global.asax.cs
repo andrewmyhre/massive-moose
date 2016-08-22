@@ -1,12 +1,12 @@
-﻿using log4net;
-using System;
+﻿using System;
 using System.Web;
 using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
+using log4net;
 
-namespace massive_moose.server.api
+namespace massive_moose.api
 {
     public class WebApiApplication : System.Web.HttpApplication
     {

@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using massive_moose.server.api.Models;
+using massive_moose.api.Models;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.OAuth;
 
-namespace massive_moose.server.api.Providers
+namespace massive_moose.api.Providers
 {
     public class ApplicationOAuthProvider : OAuthAuthorizationServerProvider
     {

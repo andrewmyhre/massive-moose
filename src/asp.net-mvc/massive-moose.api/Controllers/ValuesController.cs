@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Web.Http;
 using massive_moose.contracts;
 
-namespace massive_moose.server.api.Controllers
+namespace massive_moose.api.Controllers
 {
     [Authorize]
     public class BricksController : ApiController
