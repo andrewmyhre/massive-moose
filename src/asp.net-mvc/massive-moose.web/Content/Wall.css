@@ -17,10 +17,10 @@
 }
 .row {
 }
-.row_offset {
+.offset_row {
     width: 104%;
 }
-.row_offset td {
+.offset_row td {
     position: relative;
     left: -4%;
 }
@@ -38,6 +38,7 @@
 }
 #tblWall tr td:hover {
     background: #ffb6c1;
+    opacity=0.5;
     margin: 1px;
     -webkit-background-size: cover;
     -moz-background-size: cover;
