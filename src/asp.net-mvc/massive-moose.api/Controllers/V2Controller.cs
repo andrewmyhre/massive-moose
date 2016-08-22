@@ -17,6 +17,7 @@ namespace massive_moose.server.api.Controllers
         private static ILog Log = LogManager.GetLogger(typeof(V2Controller));
         [HttpGet]
         [Route("v2/wall/{originX}/{originY}")]
+        [EnableCors(origins: "*", headers: "*", methods: "*")]
         public Brick[,] Wall(int originX, int originY)
         {
             using (var session = SessionFactory.Instance.OpenSession())
