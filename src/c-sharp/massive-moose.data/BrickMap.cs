@@ -1,4 +1,5 @@
 using massive_moose.contracts;
+using massive_moose.contracts.drawing;
 
 namespace massive_moose.data
 {

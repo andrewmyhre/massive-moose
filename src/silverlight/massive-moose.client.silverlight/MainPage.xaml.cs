@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using massive_moose.contracts;
+using massive_moose.contracts.drawing;
 
 namespace massive_moose.client.silverlight
 {

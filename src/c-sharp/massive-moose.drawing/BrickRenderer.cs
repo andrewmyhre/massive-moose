@@ -7,6 +7,8 @@ using System.Windows.Ink;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using massive_moose.contracts;
+using massive_moose.contracts.drawing;
+using SolidColorBrush = massive_moose.contracts.drawing.SolidColorBrush;
 
 namespace massive_moose.drawing
 {
@@ -21,7 +23,6 @@ namespace massive_moose.drawing
 
                 System.Windows.Controls.Grid grid = new System.Windows.Controls.Grid();
                 grid.ClipToBounds = true;
-                grid.Background =
                 grid.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(canvasContract.BackgroundColor.A, canvasContract.BackgroundColor.R, canvasContract.BackgroundColor.G, canvasContract.BackgroundColor.B));
                 System.Windows.Controls.Canvas canvas = new System.Windows.Controls.Canvas();
 
@@ -66,7 +67,7 @@ namespace massive_moose.drawing
                     }else if (child is Line)
                     {
                         var input = child as Line;
-                        var brush = input.Brush as massive_moose.contracts.SolidColorBrush;
+                        var brush = input.Brush as SolidColorBrush;
                         var line = new System.Windows.Shapes.Line();
                         line.X1 = input.X1;
                         line.Y1 = input.Y1;
@@ -86,7 +87,7 @@ namespace massive_moose.drawing
                     else if (child is Polyline)
                     {
                         var input = child as Polyline;
-                        var brush = input.Brush as massive_moose.contracts.SolidColorBrush;
+                        var brush = input.Brush as SolidColorBrush;
                         var drawingAttributes = new System.Windows.Ink.DrawingAttributes()
                         {
                             Color = System.Windows.Media.Color.FromArgb(brush.Color.A, brush.Color.R, brush.Color.G, brush.Color.B),
@@ -168,9 +169,6 @@ namespace massive_moose.drawing
                 // reset current transform (in case it is scaled or rotated)
                 canvas.LayoutTransform = null;
                 grid.Children.Add(canvas);
-
-
-
                 grid.Width = 1600;
                 grid.Height = 900;
 
@@ -181,8 +179,6 @@ namespace massive_moose.drawing
                 // VERY IMPORTANT
                 grid.Measure(size);
                 grid.Arrange(new System.Windows.Rect(size));
-                grid.Background =
-                    new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 255, 0, 0));
 
                 using (var outputStream = new MemoryStream())
                 {

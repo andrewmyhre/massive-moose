@@ -23,7 +23,7 @@ namespace massive_moose.client.silverlight.Models
 
         }
 
-        public void Update(massive_moose.contracts.Brick[,] bricks)
+        public void Update(contracts.drawing.Brick[,] bricks)
         {
             _wall = new BrickViewModel[bricks.GetLength(0), bricks.GetLength(1)];
             _bricks.Clear();

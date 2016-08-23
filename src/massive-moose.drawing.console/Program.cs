@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.IO;
+using massive_moose.contracts.drawing;
 
 namespace massive_moose.drawing.console
 {
@@ -69,7 +70,7 @@ namespace massive_moose.drawing.console
 
         private static void RenderSilverlight(string input)
         {
-            massive_moose.contracts.Canvas canvas = JsonConvert.DeserializeObject<massive_moose.contracts.Canvas>(input);
+            Canvas canvas = JsonConvert.DeserializeObject<Canvas>(input);
 
             var imageData = new BrickRenderer().Render(canvas);
 

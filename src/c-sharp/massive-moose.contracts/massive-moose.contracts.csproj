@@ -37,24 +37,28 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Brick.cs" />
-    <Compile Include="Brush.cs" />
-    <Compile Include="Canvas.cs" />
-    <Compile Include="Color.cs" />
-    <Compile Include="DrawingAttributes.cs" />
-    <Compile Include="DrawingSession.cs" />
-    <Compile Include="InkPresenter.cs" />
+    <Compile Include="drawing\Brick.cs" />
+    <Compile Include="drawing\Brush.cs" />
+    <Compile Include="drawing\Canvas.cs" />
+    <Compile Include="drawing\Color.cs" />
+    <Compile Include="drawing\DrawingAttributes.cs" />
+    <Compile Include="drawing\DrawingSession.cs" />
+    <Compile Include="drawing\Ellipse.cs" />
+    <Compile Include="drawing\InkPresenter.cs" />
+    <Compile Include="drawing\Point.cs" />
+    <Compile Include="drawing\PointCollection.cs" />
+    <Compile Include="drawing\Polygon.cs" />
+    <Compile Include="drawing\Polyline.cs" />
+    <Compile Include="drawing\Rectangle.cs" />
+    <Compile Include="drawing\SolidColorBrush.cs" />
+    <Compile Include="drawing\Stroke.cs" />
+    <Compile Include="drawing\StrokeCollection.cs" />
+    <Compile Include="drawing\StylusPoint.cs" />
+    <Compile Include="drawing\StylusPointCollection.cs" />
+    <Compile Include="drawing\TextBlock.cs" />
+    <Compile Include="drawing\UIElement.cs" />
     <Compile Include="literally\Shape.cs" />
-    <Compile Include="Point.cs" />
-    <Compile Include="PointCollection.cs" />
-    <Compile Include="Polyline.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SolidColorBrush.cs" />
-    <Compile Include="Stroke.cs" />
-    <Compile Include="StrokeCollection.cs" />
-    <Compile Include="StylusPoint.cs" />
-    <Compile Include="StylusPointCollection.cs" />
-    <Compile Include="UIElement.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
