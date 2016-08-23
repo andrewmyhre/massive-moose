@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using massive_moose.contracts;
+using massive_moose.contracts.drawing;
 using massive_moose.contracts.literally;
 
 namespace massive_moose.drawing
@@ -59,7 +60,7 @@ namespace massive_moose.drawing
 
         private void MapPolygon(ref Canvas canvas, Shape shape)
         {
-            var polygon = new massive_moose.contracts.Polygon();
+            var polygon = new Polygon();
             polygon.StrokeWidth = shape.Data.StrokeWidth;
             polygon.FillColor = new Color(shape.Data.FillColor.R, shape.Data.FillColor.R, shape.Data.FillColor.G, shape.Data.FillColor.B);
             polygon.StrokeColor = new Color(shape.Data.StrokeColor.A, shape.Data.StrokeColor.R, shape.Data.StrokeColor.G, shape.Data.StrokeColor.B);
@@ -75,7 +76,7 @@ namespace massive_moose.drawing
 
         private void MapText(ref Canvas canvas, Shape shape)
         {
-            var textBlock = new massive_moose.contracts.TextBlock();
+            var textBlock = new TextBlock();
             textBlock.Text = shape.Data.Text;
             textBlock.Color = new Color(shape.Data.Color.A, shape.Data.Color.R, shape.Data.Color.G, shape.Data.Color.B);
             textBlock.Font = shape.Data.Font;
@@ -104,7 +105,7 @@ namespace massive_moose.drawing
 
         private void MapEllipse(ref Canvas canvas, Shape shape)
         {
-            var ellipse = new massive_moose.contracts.Ellipse();
+            var ellipse = new Ellipse();
             ellipse.X = shape.Data.X;
             ellipse.Y = shape.Data.Y;
             ellipse.Width = shape.Data.Width;
@@ -117,7 +118,7 @@ namespace massive_moose.drawing
 
         private void MapRectangle(ref Canvas canvas, Shape shape)
         {
-            var rect = new massive_moose.contracts.Rectangle();
+            var rect = new Rectangle();
             rect.X = shape.Data.X;
             rect.Y = shape.Data.Y;
             rect.Width = shape.Data.Width;
@@ -130,7 +131,7 @@ namespace massive_moose.drawing
 
         private void MapLine(ref Canvas canvas, ref InkPresenter inkPresenter, Shape shape)
         {
-            var line = new massive_moose.contracts.Line();
+            var line = new Line();
             line.X1 = shape.Data.X1;
             line.Y1 = shape.Data.Y1;
             line.X2 = shape.Data.X2;

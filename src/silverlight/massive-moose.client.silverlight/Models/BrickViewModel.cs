@@ -114,7 +114,7 @@ namespace massive_moose.client.silverlight.Models
             OnPropertyChanged("ImageUrl");
         }
 
-        public BrickViewModel(massive_moose.contracts.Brick brick)
+        public BrickViewModel(contracts.drawing.Brick brick)
         {
             this.AddressX = brick.AddressX;
             this.AddressY = brick.AddressY;

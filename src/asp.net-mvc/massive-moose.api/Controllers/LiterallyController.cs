@@ -5,6 +5,7 @@ using System.Web.Http;
 using System.Web.Http.Cors;
 using log4net;
 using massive_moose.contracts;
+using massive_moose.contracts.drawing;
 using massive_moose.data;
 using massive_moose.drawing;
 using massive_moose.storage.azure;

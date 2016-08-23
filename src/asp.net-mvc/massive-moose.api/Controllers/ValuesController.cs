@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Web.Http;
 using massive_moose.contracts;
+using massive_moose.contracts.drawing;
 
 namespace massive_moose.api.Controllers
 {

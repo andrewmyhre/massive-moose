@@ -99,7 +99,7 @@ namespace massive_moose.client.silverlight
             };
             using (var xmlWriter = System.Xml.XmlWriter.Create(sb, settings))
             {
-                new DataContractSerializer(typeof(massive_moose.contracts.Canvas)).WriteObject(xmlWriter, canvas);
+                new DataContractSerializer(typeof(contracts.drawing.Canvas)).WriteObject(xmlWriter, canvas);
                 xmlWriter.Flush();
             }
             var data = sb.ToString();

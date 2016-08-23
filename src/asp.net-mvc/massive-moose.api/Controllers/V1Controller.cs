@@ -12,6 +12,7 @@ using System.Web.Http.Cors;
 using System.Xml;
 using log4net;
 using massive_moose.contracts;
+using massive_moose.contracts.drawing;
 using massive_moose.data;
 using massive_moose.drawing;
 using massive_moose.storage.azure;
@@ -125,7 +126,7 @@ namespace massive_moose.api.Controllers
                     return NotFound();
 
                 var inputString = await Request.Content.ReadAsStringAsync();
-                massive_moose.contracts.Canvas canvas = null;
+                Canvas canvas = null;
                 try
                 {
                     StringBuilder sb = new StringBuilder();
@@ -134,8 +135,8 @@ namespace massive_moose.api.Controllers
                     using (var xmlReader = XmlReader.Create(textReader))
                     {
                         canvas =
-                            new DataContractSerializer(typeof(massive_moose.contracts.Canvas)).ReadObject(xmlReader) as
-                                massive_moose.contracts.Canvas;
+                            new DataContractSerializer(typeof(Canvas)).ReadObject(xmlReader) as
+                                Canvas;
                         if (canvas == null)
                         {
                             throw new Exception("Deserializing data produced a null object");

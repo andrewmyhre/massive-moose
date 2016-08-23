@@ -17,9 +17,9 @@ namespace massive_moose.client.silverlight
 {
     public class GotBricksEventArgs : EventArgs
     {
-        public massive_moose.contracts.Brick[,] Bricks { get; set; }
+        public contracts.drawing.Brick[,] Bricks { get; set; }
 
-        public GotBricksEventArgs(massive_moose.contracts.Brick[,] bricks)
+        public GotBricksEventArgs(contracts.drawing.Brick[,] bricks)
         {
             Bricks = bricks;
         }
@@ -33,7 +33,7 @@ namespace massive_moose.client.silverlight
             var webClient = new WebClient();
             webClient.DownloadStringCompleted += (sender, args) =>
             {
-                var bricks = JsonConvert.DeserializeObject<massive_moose.contracts.Brick[,]>(args.Result);
+                var bricks = JsonConvert.DeserializeObject<contracts.drawing.Brick[,]>(args.Result);
                 if (OnGotBricks != null)
                     OnGotBricks(this, new GotBricksEventArgs(bricks));
             };

@@ -1,6 +1,6 @@
 using System;
 
-namespace massive_moose.contracts
+namespace massive_moose.contracts.drawing
 {
     public class Brick
     {

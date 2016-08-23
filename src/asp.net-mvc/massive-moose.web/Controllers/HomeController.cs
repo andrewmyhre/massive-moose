@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using massive_moose.contracts.drawing;
 
 namespace massive_moose.web.Controllers
 {
