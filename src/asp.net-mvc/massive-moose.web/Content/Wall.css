@@ -1,11 +1,22 @@
-﻿ body {
+﻿html,body{margin:0;padding:0;}
+body {
      min-width: 1600px;
      min-height: 900px;
+     margin:0px !important;
 }
 .literally {
     height: 100%;
     position: static;
-
+    left:0px;
+    top:0px;
+    background-color:#fff !important;
+}
+.literally .lc-drawing.with-gui,.lc-drawing.with-gui {
+    left:0px;
+    top:0px;
+}
+.lc-picker, .lc-options{
+    background-color:#fff !important;
 }
 #wall {
     height: 100%;
@@ -39,7 +50,7 @@
 }
 #tblWall tr td:hover {
     background: #ffb6c1;
-    opacity=0.5;
+    opacity:0.5;
     margin: 1px;
     -webkit-background-size: cover;
     -moz-background-size: cover;
@@ -86,4 +97,13 @@
 #vpdebug button {
     width: 40px;
     height: 40px;
+}
+.session-options {
+    display:inline-block;
+    right:0px;
+    position:absolute;
+}
+.session-options button {
+    height: 30px;
+    width: 100px;
 }

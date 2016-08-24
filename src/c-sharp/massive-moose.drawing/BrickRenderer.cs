@@ -6,8 +6,6 @@ using System.Windows;
 using System.Windows.Ink;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using massive_moose.contracts;
-using massive_moose.contracts.drawing;
 using SolidColorBrush = massive_moose.contracts.drawing.SolidColorBrush;
 
 namespace massive_moose.drawing

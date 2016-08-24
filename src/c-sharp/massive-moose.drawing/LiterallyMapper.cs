@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using massive_moose.contracts;
-using massive_moose.contracts.drawing;
-using massive_moose.contracts.literally;
 
 namespace massive_moose.drawing
 {

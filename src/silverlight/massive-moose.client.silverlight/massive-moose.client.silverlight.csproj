@@ -154,12 +154,6 @@
   <ItemGroup>
     <Resource Include="Themes\Transparent.PNG" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\c-sharp\massive-moose.contracts\massive-moose.contracts.csproj">
-      <Project>{30cc7bd9-31ef-440d-9c93-9ec7b7b888f6}</Project>
-      <Name>massive-moose.contracts</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

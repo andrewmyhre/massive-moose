@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.IO;
-using massive_moose.contracts.drawing;
 
 namespace massive_moose.drawing.console
 {

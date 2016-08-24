@@ -1,162 +1,18 @@
-DEBUG [2016-08-19 13:27:44,761] - Opened session bbaa6eb8-4ac4-4752-9cc6-d8b726e73b97
-DEBUG [2016-08-19 13:44:53,355] - Receiving literallycanvas data for 5,5
-DEBUG [2016-08-19 13:45:23,990] - Receiving literallycanvas data for 5,5
-DEBUG [2016-08-19 13:47:06,147] - Receiving literallycanvas data for 5,5
-DEBUG [2016-08-19 13:49:15,501] - Receiving literallycanvas data for 5,5
-DEBUG [2016-08-19 13:50:30,217] - Receiving literallycanvas data for 5,5
-DEBUG [2016-08-19 13:59:08,802] - Receiving literallycanvas data for 5,5
-DEBUG [2016-08-19 14:32:16,908] - Opened session 0a7b348a-ca77-4aad-a229-8912318b02ab
-DEBUG [2016-08-19 14:32:25,676] - Receiving data for session 0a7b348a-ca77-4aad-a229-8912318b02ab
-DEBUG [2016-08-19 14:32:27,333] - Updated brick (5,5) for session 0a7b348a-ca77-4aad-a229-8912318b02ab
-DEBUG [2016-08-19 14:33:12,236] - Opened session 37f91fd2-2036-432c-b0b5-3d8b2307052a
-DEBUG [2016-08-19 14:33:16,367] - Receiving data for session 37f91fd2-2036-432c-b0b5-3d8b2307052a
-DEBUG [2016-08-19 14:33:16,809] - Updated brick (5,5) for session 37f91fd2-2036-432c-b0b5-3d8b2307052a
-DEBUG [2016-08-19 14:34:44,172] - Opened session 3bfb9e2e-b8ab-4ee1-af82-ec8f56c550e2
-DEBUG [2016-08-19 14:34:56,224] - Receiving data for session 3bfb9e2e-b8ab-4ee1-af82-ec8f56c550e2
-DEBUG [2016-08-19 14:35:19,819] - Updated brick (5,5) for session 3bfb9e2e-b8ab-4ee1-af82-ec8f56c550e2
-DEBUG [2016-08-19 14:44:21,378] - Opened session 4bffe4f2-8b3f-47ea-971e-a2dff5b41791
-DEBUG [2016-08-19 14:53:56,341] - Opened session a3f830fb-a034-411c-9788-a271d2f29428
-DEBUG [2016-08-19 15:00:24,004] - Opened session 7c7f6325-4fa3-4a3c-acc8-1846f748cb11
-DEBUG [2016-08-19 15:08:56,406] - Opened session 50a57a01-a3dc-4df0-bb88-66f93a685f7f
-DEBUG [2016-08-19 15:13:12,679] - Opened session d5956e05-25b0-41ec-8767-61cdb59185a2
-DEBUG [2016-08-19 15:13:44,616] - Receiving data for session d5956e05-25b0-41ec-8767-61cdb59185a2
-DEBUG [2016-08-19 15:13:46,260] - Updated brick (0,3) for session d5956e05-25b0-41ec-8767-61cdb59185a2
-DEBUG [2016-08-19 15:16:02,231] - Opened session 595c73d7-3a00-4136-8341-246285f2104f
-DEBUG [2016-08-19 15:16:14,627] - Opened session daf5ba35-8ccd-41a5-b02b-c96830a1e7d7
-DEBUG [2016-08-19 15:20:51,209] - Opened session 468944f3-2559-4478-8d22-a91a471ebc65
-DEBUG [2016-08-19 15:21:04,016] - Receiving data for session 468944f3-2559-4478-8d22-a91a471ebc65
-DEBUG [2016-08-19 15:21:05,011] - Updated brick (-2,2) for session 468944f3-2559-4478-8d22-a91a471ebc65
-DEBUG [2016-08-19 15:25:47,035] - Opened session e74e9f0f-20d0-4a84-8b1f-07f51a8a256e
-DEBUG [2016-08-19 15:25:53,073] - Receiving data for session e74e9f0f-20d0-4a84-8b1f-07f51a8a256e
-DEBUG [2016-08-19 15:25:53,977] - Updated brick (-1,3) for session e74e9f0f-20d0-4a84-8b1f-07f51a8a256e
-DEBUG [2016-08-19 15:26:52,817] - Opened session fbd1bf4f-b8da-4ddb-9f2e-d43ca0bf164e
-DEBUG [2016-08-19 15:26:56,654] - Receiving data for session fbd1bf4f-b8da-4ddb-9f2e-d43ca0bf164e
-DEBUG [2016-08-19 15:26:57,089] - Updated brick (-1,2) for session fbd1bf4f-b8da-4ddb-9f2e-d43ca0bf164e
-DEBUG [2016-08-19 15:27:19,420] - Opened session b9781756-b612-4b62-a8f3-f3be16c8d487
-DEBUG [2016-08-19 15:27:21,717] - Receiving data for session b9781756-b612-4b62-a8f3-f3be16c8d487
-DEBUG [2016-08-19 15:27:22,102] - Updated brick (0,2) for session b9781756-b612-4b62-a8f3-f3be16c8d487
-DEBUG [2016-08-19 15:37:23,864] - Opened session 1fd5e733-5a70-490f-adf2-86d565f78b81
-DEBUG [2016-08-19 15:42:13,336] - Opened session 6750fe62-c814-441c-9937-9c275a43b3ed
-DEBUG [2016-08-19 15:42:19,138] - Receiving data for session 6750fe62-c814-441c-9937-9c275a43b3ed
-DEBUG [2016-08-19 15:42:21,009] - Updated brick (0,2) for session 6750fe62-c814-441c-9937-9c275a43b3ed
-DEBUG [2016-08-19 15:43:58,535] - Opened session 4a6cd213-df22-4a65-a9e3-3b990e5f1d53
-DEBUG [2016-08-19 15:44:02,037] - Opened session 56974a2d-ea2b-474c-9274-659e8a5fdc33
-DEBUG [2016-08-19 15:44:06,140] - Receiving data for session 56974a2d-ea2b-474c-9274-659e8a5fdc33
-DEBUG [2016-08-19 15:44:06,860] - Updated brick (-2,-2) for session 56974a2d-ea2b-474c-9274-659e8a5fdc33
-DEBUG [2016-08-19 15:55:05,107] - Opened session 5c5fbf34-3b0f-4410-b930-bc64242fe6dc
-DEBUG [2016-08-19 15:55:10,787] - Receiving data for session 5c5fbf34-3b0f-4410-b930-bc64242fe6dc
-DEBUG [2016-08-19 15:55:12,029] - Updated brick (-1,-2) for session 5c5fbf34-3b0f-4410-b930-bc64242fe6dc
-DEBUG [2016-08-19 15:55:32,624] - Opened session ae4894fc-9e43-42cd-b91d-4e2efc852573
-DEBUG [2016-08-19 15:55:39,617] - Receiving data for session ae4894fc-9e43-42cd-b91d-4e2efc852573
-DEBUG [2016-08-19 15:55:40,840] - Updated brick (2,-2) for session ae4894fc-9e43-42cd-b91d-4e2efc852573
-DEBUG [2016-08-19 15:56:30,640] - Opened session 35ac8921-d70a-4651-aa0f-47c1cee052e6
-DEBUG [2016-08-19 15:56:40,714] - Receiving data for session 35ac8921-d70a-4651-aa0f-47c1cee052e6
-DEBUG [2016-08-19 15:56:41,562] - Updated brick (1,-2) for session 35ac8921-d70a-4651-aa0f-47c1cee052e6
-DEBUG [2016-08-19 15:56:44,545] - Opened session cce1686d-ff3a-4a0b-9ca7-1692a6123ba4
-DEBUG [2016-08-19 15:56:48,134] - Receiving data for session cce1686d-ff3a-4a0b-9ca7-1692a6123ba4
-DEBUG [2016-08-19 15:56:49,371] - Updated brick (1,-2) for session cce1686d-ff3a-4a0b-9ca7-1692a6123ba4
-DEBUG [2016-08-19 16:04:53,662] - Opened session 56be1ac6-1ea1-44bd-982e-ecc6f5b0b5d3
-DEBUG [2016-08-19 16:08:57,313] - Opened session 1780f3de-fe23-462c-9231-2b273c814001
-DEBUG [2016-08-19 16:10:38,775] - Opened session 493ba09a-5d7e-457e-9539-26c5ef3a1c2b
-DEBUG [2016-08-19 16:13:06,037] - Opened session 16b9275c-05db-4881-b645-db50691c75ea
-DEBUG [2016-08-19 16:13:21,640] - Receiving data for session 16b9275c-05db-4881-b645-db50691c75ea
-DEBUG [2016-08-19 16:13:22,180] - Updated brick (-1,0) for session 16b9275c-05db-4881-b645-db50691c75ea
-DEBUG [2016-08-19 16:13:29,644] - Opened session cd56a47f-780e-4d91-8405-cec6b97d7a66
-DEBUG [2016-08-19 16:13:38,798] - Receiving data for session cd56a47f-780e-4d91-8405-cec6b97d7a66
-DEBUG [2016-08-19 16:13:39,348] - Updated brick (-2,-2) for session cd56a47f-780e-4d91-8405-cec6b97d7a66
-DEBUG [2016-08-19 16:14:45,218] - Opened session de99cd4b-9246-4e14-9453-83ad997773fc
-DEBUG [2016-08-19 16:14:58,743] - Receiving data for session de99cd4b-9246-4e14-9453-83ad997773fc
-DEBUG [2016-08-19 16:16:09,951] - Updated brick (-2,-2) for session de99cd4b-9246-4e14-9453-83ad997773fc
-DEBUG [2016-08-19 16:16:13,141] - Opened session 8ad65438-91af-43b9-a78e-27dc842140f5
-DEBUG [2016-08-19 16:16:23,933] - Receiving data for session 8ad65438-91af-43b9-a78e-27dc842140f5
-DEBUG [2016-08-19 16:16:24,741] - Updated brick (-2,-2) for session 8ad65438-91af-43b9-a78e-27dc842140f5
-DEBUG [2016-08-19 16:16:45,148] - Opened session aa773edf-b912-4e0d-ad48-e19a481027e2
-DEBUG [2016-08-19 16:17:07,397] - Receiving data for session aa773edf-b912-4e0d-ad48-e19a481027e2
-DEBUG [2016-08-19 16:17:07,971] - Updated brick (-3,-3) for session aa773edf-b912-4e0d-ad48-e19a481027e2
-DEBUG [2016-08-19 16:19:47,754] - Opened session df486d04-2aae-4aa5-aef2-67e1dec40fde
-DEBUG [2016-08-19 16:20:07,825] - Receiving data for session df486d04-2aae-4aa5-aef2-67e1dec40fde
-DEBUG [2016-08-19 16:20:09,727] - Updated brick (-3,-3) for session df486d04-2aae-4aa5-aef2-67e1dec40fde
-DEBUG [2016-08-19 16:24:24,339] - Opened session a8116c55-1a4d-457c-b92c-859e4fca5481
-DEBUG [2016-08-19 16:25:57,909] - Receiving data for session a8116c55-1a4d-457c-b92c-859e4fca5481
-DEBUG [2016-08-19 16:26:00,716] - Updated brick (-2,-3) for session a8116c55-1a4d-457c-b92c-859e4fca5481
-DEBUG [2016-08-19 16:26:12,062] - Opened session 97f33d4d-a28f-44a2-bf67-647de3259cec
-DEBUG [2016-08-19 16:26:42,692] - Receiving data for session 97f33d4d-a28f-44a2-bf67-647de3259cec
-DEBUG [2016-08-19 16:26:43,311] - Updated brick (-2,-3) for session 97f33d4d-a28f-44a2-bf67-647de3259cec
-DEBUG [2016-08-19 16:34:41,959] - Opened session 1fbd30c1-93e3-4066-9b6c-f652c6f12b68
-DEBUG [2016-08-19 16:35:09,183] - Receiving data for session 1fbd30c1-93e3-4066-9b6c-f652c6f12b68
-DEBUG [2016-08-19 16:35:48,034] - Updated brick (-2,-3) for session 1fbd30c1-93e3-4066-9b6c-f652c6f12b68
-DEBUG [2016-08-19 16:52:41,201] - Opened session a0fae292-a864-4178-8d80-8b7c972785cb
-DEBUG [2016-08-19 16:52:57,293] - Receiving data for session a0fae292-a864-4178-8d80-8b7c972785cb
-DEBUG [2016-08-19 16:52:59,493] - Updated brick (-2,0) for session a0fae292-a864-4178-8d80-8b7c972785cb
-DEBUG [2016-08-19 16:54:24,954] - Opened session d862ffa8-41d8-405f-89c7-b97f32ddeeeb
-DEBUG [2016-08-19 16:54:31,145] - Receiving data for session d862ffa8-41d8-405f-89c7-b97f32ddeeeb
-DEBUG [2016-08-19 16:54:31,820] - Updated brick (1,-2) for session d862ffa8-41d8-405f-89c7-b97f32ddeeeb
-DEBUG [2016-08-19 16:58:06,775] - Opened session b76c9af6-ce84-4648-84b5-6d375396d1ca
-DEBUG [2016-08-19 16:58:19,872] - Receiving data for session b76c9af6-ce84-4648-84b5-6d375396d1ca
-DEBUG [2016-08-19 16:58:21,888] - Updated brick (-3,-3) for session b76c9af6-ce84-4648-84b5-6d375396d1ca
-DEBUG [2016-08-19 16:59:57,468] - Opened session 29d4ede2-088b-45c1-8de5-4555f1a775a2
-DEBUG [2016-08-19 17:00:06,656] - Receiving data for session 29d4ede2-088b-45c1-8de5-4555f1a775a2
-DEBUG [2016-08-19 17:00:08,580] - Updated brick (-2,-2) for session 29d4ede2-088b-45c1-8de5-4555f1a775a2
-ERROR [2016-08-19 17:02:27,506] - Failed saving brick
-NHibernate.PropertyValueException: Error dehydrating property value for massive_moose.contracts.Brick.SnapshotJson ---> NHibernate.HibernateException: The length of the string value exceeds the length configured in the mapping/parameter.
-   at NHibernate.Type.AbstractStringType.Set(IDbCommand cmd, Object value, Int32 index)
-   at NHibernate.Type.NullableType.NullSafeSet(IDbCommand st, Object value, Int32 index, Boolean[] settable, ISessionImplementor session)
-   at NHibernate.Persister.Entity.AbstractEntityPersister.Dehydrate(Object id, Object[] fields, Object rowId, Boolean[] includeProperty, Boolean[][] includeColumns, Int32 table, IDbCommand statement, ISessionImplementor session, Int32 index)
-   --- End of inner exception stack trace ---
-   at NHibernate.Persister.Entity.AbstractEntityPersister.Dehydrate(Object id, Object[] fields, Object rowId, Boolean[] includeProperty, Boolean[][] includeColumns, Int32 table, IDbCommand statement, ISessionImplementor session, Int32 index)
-   at NHibernate.Persister.Entity.AbstractEntityPersister.GeneratedIdentifierBinder.BindValues(IDbCommand ps)
-   at NHibernate.Id.Insert.AbstractReturningDelegate.PerformInsert(SqlCommandInfo insertSQL, ISessionImplementor session, IBinder binder)
-   at NHibernate.Persister.Entity.AbstractEntityPersister.Insert(Object[] fields, Object obj, ISessionImplementor session)
-   at NHibernate.Action.EntityIdentityInsertAction.Execute()
-   at NHibernate.Engine.ActionQueue.Execute(IExecutable executable)
-   at NHibernate.Event.Default.AbstractSaveEventListener.PerformSaveOrReplicate(Object entity, EntityKey key, IEntityPersister persister, Boolean useIdentityColumn, Object anything, IEventSource source, Boolean requiresImmediateIdAccess)
-   at NHibernate.Event.Default.AbstractSaveEventListener.SaveWithGeneratedId(Object entity, String entityName, Object anything, IEventSource source, Boolean requiresImmediateIdAccess)
-   at NHibernate.Event.Default.DefaultSaveOrUpdateEventListener.SaveWithGeneratedOrRequestedId(SaveOrUpdateEvent event)
-   at NHibernate.Event.Default.DefaultSaveOrUpdateEventListener.EntityIsTransient(SaveOrUpdateEvent event)
-   at NHibernate.Event.Default.DefaultSaveOrUpdateEventListener.OnSaveOrUpdate(SaveOrUpdateEvent event)
-   at NHibernate.Impl.SessionImpl.FireSave(SaveOrUpdateEvent event)
-   at NHibernate.Impl.SessionImpl.Save(Object obj)
-   at massive_moose.server.api.Controllers.LiterallyController.<Receive>d__2.MoveNext() in C:\wk\vs\massive-moose\src\asp.net-mvc\massive-moose.api\Controllers\LiterallyController.cs:line 76
-DEBUG [2016-08-19 17:04:44,425] - Opened session f1ad787d-61d4-4f61-abdc-1dcf6f3cc3fd
-DEBUG [2016-08-19 17:04:56,832] - Receiving data for session f1ad787d-61d4-4f61-abdc-1dcf6f3cc3fd
-DEBUG [2016-08-19 17:04:58,802] - Updated brick (-3,-1) for session f1ad787d-61d4-4f61-abdc-1dcf6f3cc3fd
-DEBUG [2016-08-19 17:05:05,848] - Opened session c12bf332-2e89-4f5b-bf12-dc5ba8ecb8c1
-DEBUG [2016-08-19 17:05:36,368] - Receiving data for session c12bf332-2e89-4f5b-bf12-dc5ba8ecb8c1
-DEBUG [2016-08-19 17:05:37,091] - Updated brick (-3,-1) for session c12bf332-2e89-4f5b-bf12-dc5ba8ecb8c1
-DEBUG [2016-08-19 17:05:57,272] - Opened session 3ef0394c-db86-4252-895c-51d305d1bd37
-DEBUG [2016-08-19 17:06:23,079] - Receiving data for session 3ef0394c-db86-4252-895c-51d305d1bd37
-DEBUG [2016-08-19 17:06:23,838] - Updated brick (-3,-1) for session 3ef0394c-db86-4252-895c-51d305d1bd37
-DEBUG [2016-08-19 17:07:27,680] - Opened session 61312058-92bc-472e-82c2-3c3a92fac3fc
-DEBUG [2016-08-19 17:07:43,755] - Receiving data for session 61312058-92bc-472e-82c2-3c3a92fac3fc
-DEBUG [2016-08-19 17:07:44,574] - Updated brick (-3,-1) for session 61312058-92bc-472e-82c2-3c3a92fac3fc
-DEBUG [2016-08-19 17:08:19,600] - Opened session 7e9b6c10-4bf7-42ad-bc40-9eaee5cf5c77
-DEBUG [2016-08-19 17:08:22,946] - Receiving data for session 7e9b6c10-4bf7-42ad-bc40-9eaee5cf5c77
-DEBUG [2016-08-19 17:08:23,753] - Updated brick (-3,-1) for session 7e9b6c10-4bf7-42ad-bc40-9eaee5cf5c77
-DEBUG [2016-08-19 17:08:26,014] - Opened session d636abbc-9b10-46ff-bd26-0e105733d788
-DEBUG [2016-08-19 17:08:37,256] - Receiving data for session d636abbc-9b10-46ff-bd26-0e105733d788
-DEBUG [2016-08-19 17:08:38,150] - Updated brick (-3,-1) for session d636abbc-9b10-46ff-bd26-0e105733d788
-DEBUG [2016-08-19 17:09:08,773] - Opened session 9f9e99a1-91b0-4882-8272-fc5617ee286a
-DEBUG [2016-08-19 17:12:43,605] - Opened session 8cdd8ab0-c139-4125-a7b1-cf8499516e8d
-DEBUG [2016-08-19 17:12:59,909] - Receiving data for session 8cdd8ab0-c139-4125-a7b1-cf8499516e8d
-DEBUG [2016-08-19 17:15:44,985] - Updated brick (-1,-1) for session 8cdd8ab0-c139-4125-a7b1-cf8499516e8d
-DEBUG [2016-08-19 17:44:27,665] - Opened session 494d884e-68ec-4d76-8ca4-91641fbd6201
-DEBUG [2016-08-19 17:44:34,153] - Receiving data for session 494d884e-68ec-4d76-8ca4-91641fbd6201
-DEBUG [2016-08-19 17:44:36,025] - Updated brick (-3,-1) for session 494d884e-68ec-4d76-8ca4-91641fbd6201
-DEBUG [2016-08-19 17:44:56,125] - Opened session 0ab6825b-caa4-4830-b72d-4d2a225c05e3
-DEBUG [2016-08-19 17:45:23,705] - Receiving data for session 0ab6825b-caa4-4830-b72d-4d2a225c05e3
-DEBUG [2016-08-19 17:45:25,256] - Updated brick (-2,-1) for session 0ab6825b-caa4-4830-b72d-4d2a225c05e3
-DEBUG [2016-08-19 17:48:09,285] - Opened session ab98c94b-9e8f-4bdc-963f-e963f1070e58
-DEBUG [2016-08-19 17:48:59,241] - Receiving data for session ab98c94b-9e8f-4bdc-963f-e963f1070e58
-DEBUG [2016-08-19 17:49:24,528] - Updated brick (-2,-1) for session ab98c94b-9e8f-4bdc-963f-e963f1070e58
-DEBUG [2016-08-19 17:55:44,735] - Opened session 28e2290f-4a9c-435b-8d6d-df0db9d483d2
-DEBUG [2016-08-19 17:55:47,967] - Receiving data for session 28e2290f-4a9c-435b-8d6d-df0db9d483d2
-DEBUG [2016-08-19 17:55:57,305] - Updated brick (-2,-1) for session 28e2290f-4a9c-435b-8d6d-df0db9d483d2
-DEBUG [2016-08-19 18:04:29,192] - Opened session 9749dc5d-b2f3-4403-bf9b-e09d730b5206
-DEBUG [2016-08-19 18:04:31,163] - Receiving data for session 9749dc5d-b2f3-4403-bf9b-e09d730b5206
-DEBUG [2016-08-19 18:04:32,787] - Updated brick (-2,-1) for session 9749dc5d-b2f3-4403-bf9b-e09d730b5206
-DEBUG [2016-08-19 18:18:39,541] - Opened session af78da24-a8db-4c6a-9471-a433194b7f86
-DEBUG [2016-08-19 18:18:41,966] - Receiving data for session af78da24-a8db-4c6a-9471-a433194b7f86
-DEBUG [2016-08-19 18:21:08,959] - Updated brick (-2,-1) for session af78da24-a8db-4c6a-9471-a433194b7f86
-DEBUG [2016-08-19 18:22:51,103] - Opened session 719533d8-1b7f-44b2-89a8-a7a2a87b9925
-DEBUG [2016-08-19 18:22:54,911] - Receiving data for session 719533d8-1b7f-44b2-89a8-a7a2a87b9925
-DEBUG [2016-08-19 18:23:38,965] - Updated brick (-2,-1) for session 719533d8-1b7f-44b2-89a8-a7a2a87b9925
+ERROR [2016-08-23 14:40:43,063] - Unhandled exception
+System.ArgumentNullException: Value cannot be null.
+Parameter name: context
+   at NHibernate.AspNet.Identity.UserStore`1..ctor(ISession context)
+   at massive_moose.api.ApplicationUserManager.Create(IdentityFactoryOptions`1 options, IOwinContext context) in C:\wk\vs\massive-moose\src\asp.net-mvc\massive-moose.api\App_Start\IdentityConfig.cs:line 21
+   at Microsoft.AspNet.Identity.Owin.IdentityFactoryMiddleware`2.<Invoke>d__0.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Microsoft.Owin.Host.SystemWeb.IntegratedPipeline.IntegratedPipelineContextStage.<RunApp>d__5.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Microsoft.Owin.Host.SystemWeb.IntegratedPipeline.IntegratedPipelineContext.<DoFinalWork>d__2.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at Microsoft.Owin.Host.SystemWeb.IntegratedPipeline.StageAsyncResult.End(IAsyncResult ar)
+   at System.Web.HttpApplication.AsyncEventExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)

@@ -1,5 +1,7 @@
 ﻿using System.Web.Http;
 using Microsoft.Owin.Security.OAuth;
+using WebApiContrib.IoC.Ninject;
+using massive_moose.api.App_Start;
 
 namespace massive_moose.api
 {
@@ -21,6 +23,9 @@ namespace massive_moose.api
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }
             );
+            
+            config.DependencyResolver = new NinjectResolver(NinjectWebCommon.CreateKernel());
+            
         }
     }
 }
