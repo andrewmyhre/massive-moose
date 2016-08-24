@@ -11,9 +11,11 @@ using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Xml;
 using log4net;
-using massive_moose.drawing;
 using massive_moose.storage.azure;
 using NHibernate.Criterion;
+using massive_moose.services.models;
+using massive_moose.services;
+using massive_moose.services.models.drawing;
 
 namespace massive_moose.api.Controllers
 {
@@ -38,6 +40,7 @@ namespace massive_moose.api.Controllers
 
         [HttpGet]
         [Route("v1/wall")]
+        [EnableCors(origins: "*", headers: "*", methods: "*")]
         public IEnumerable<Brick> Wall()
         {
             using (var session = SessionFactory.Instance.OpenSession())

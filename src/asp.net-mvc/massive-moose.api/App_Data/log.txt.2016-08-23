@@ -1,0 +1,18 @@
+ERROR [2016-08-23 14:40:43,063] - Unhandled exception
+System.ArgumentNullException: Value cannot be null.
+Parameter name: context
+   at NHibernate.AspNet.Identity.UserStore`1..ctor(ISession context)
+   at massive_moose.api.ApplicationUserManager.Create(IdentityFactoryOptions`1 options, IOwinContext context) in C:\wk\vs\massive-moose\src\asp.net-mvc\massive-moose.api\App_Start\IdentityConfig.cs:line 21
+   at Microsoft.AspNet.Identity.Owin.IdentityFactoryMiddleware`2.<Invoke>d__0.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Microsoft.Owin.Host.SystemWeb.IntegratedPipeline.IntegratedPipelineContextStage.<RunApp>d__5.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Microsoft.Owin.Host.SystemWeb.IntegratedPipeline.IntegratedPipelineContext.<DoFinalWork>d__2.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at Microsoft.Owin.Host.SystemWeb.IntegratedPipeline.StageAsyncResult.End(IAsyncResult ar)
+   at System.Web.HttpApplication.AsyncEventExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)

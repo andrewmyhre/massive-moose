@@ -1,16 +1,15 @@
-﻿using massive_moose.api;
-using Microsoft.Owin;
+﻿using Microsoft.Owin;
+using Microsoft.Owin.Security.Cookies;
 using Owin;
 
-[assembly: OwinStartup(typeof(Startup))]
-
+[assembly: OwinStartupAttribute(typeof(massive_moose.api.Startup))]
 namespace massive_moose.api
 {
     public partial class Startup
     {
         public void Configuration(IAppBuilder app)
         {
-            ConfigureAuth(app);
+            app.UseCookieAuthentication(new CookieAuthenticationOptions());
         }
     }
 }
