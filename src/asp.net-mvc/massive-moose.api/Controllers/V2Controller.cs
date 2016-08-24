@@ -5,6 +5,8 @@ using System.Web.Http.Cors;
 using log4net;
 using massive_moose.services.models;
 using massive_moose.services;
+using NHibernate.Criterion;
+using massive_moose.api.Models;
 
 namespace massive_moose.api.Controllers
 {
@@ -15,23 +17,43 @@ namespace massive_moose.api.Controllers
         [HttpGet]
         [Route("v2/wall/{originX}/{originY}")]
         [EnableCors(origins: "*", headers: "*", methods: "*")]
-        public Brick[,] Wall(int originX, int originY)
+        public BrickViewModel[,] Wall(int originX, int originY)
         {
             using (var session = SessionFactory.Instance.OpenSession())
             {
-                var bricks = session.CreateCriteria<Brick>()
-                    .List<Brick>();
+                var bricks = session.QueryOver<Brick>()
+                    .Select(
+                        b => b.AddressX,
+                        b => b.AddressY,
+                        b => b.Id,
+                        b => b.Guid).List<object[]>();
 
-                var wall = new Brick[12, 12];
+                var wall = new BrickViewModel[12, 12];
                 for (int y = 0; y < 12; y++)
                 {
                     for (int x = 0; x < 12; x++)
                     {
                         var relativeX = originX - 6 + x;
                         var relativeY = originY - 6 + y;
-                        wall[x, y] = bricks.SingleOrDefault(b => b.AddressX == relativeX && b.AddressY == relativeY);
-                        if (wall[x, y] == null)
-                            wall[x, y] = new Brick() {AddressX=relativeX, AddressY=relativeY,Guid=Guid.Empty,Id=0};
+                        var o= bricks.SingleOrDefault(b => (int)b[0] == relativeX && (int)b[1] == relativeY);
+                        if (o != null)
+                        {
+                            wall[x, y] = new BrickViewModel()
+                            {
+                                X = (int) o[0],
+                                Y = (int) o[1],
+                                G = o[3].ToString()
+                            };
+                        }
+                        else
+                        {
+                            wall[x, y] = new BrickViewModel()
+                            {
+                                X = relativeX,
+                                Y = relativeY,
+                                G = ""
+                            };
+                        }
                     }
                 }
 

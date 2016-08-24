@@ -100,42 +100,54 @@
     }
 
     function updateWall(scrollToId) {
-        if (!_brickInUse)
-        {
+        if (!_brickInUse) {
             $('#drawSpace').hide();
             $('#save-etc').hide();
             viewport = document.querySelector("meta[name=viewport]");
             viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
-            $.getJSON(_baseApiUrl+'/v2/wall/0/0',null,
-                function (data) {
+            $.getJSON(_baseApiUrl + '/v2/wall/0/0',
+                null,
+                function(data) {
                     _wall = data;
                     for (var y = 0; y < data.length; y++) {
-                        
+
                         for (var x = 0; x < data[y].length; x++) {
                             var brickView = $('#c' + (y * 12 + x));
                             var brick = data[x][y];
                             brick.element = brickView;
-                            if (brick && brick.Id != 0) {
-                                brickView.css({ 'backgroundImage': 'url("' + _baseApiUrl + '/v1/image/t/' + brick.AddressX + '/' + brick.AddressY + '?r=' + Math.floor((Math.random() * 10000) + 1) + '")' });
-                                //brickView.append('<img src="'+_baseApiUrl+'/v1/image/t/' + brick.AddressX + '/' + brick.AddressY + '" />');
+                            if (brick && brick.G != '') {
+                                brickView.css({
+                                    'backgroundImage': 'url("' +
+                                        _baseApiUrl +
+                                        '/v1/image/t/' +
+                                        brick.X +
+                                        '/' +
+                                        brick.Y +
+                                        '?r=' +
+                                        Math.floor((Math.random() * 10000) + 1) +
+                                        '")'
+                                });
                             }
-                            $(brickView).attr('data-addressX', brick.AddressX);
-                            $(brickView).attr('data-addressY', brick.AddressY);
+                            $(brickView).attr('data-addressX', brick.X);
+                            $(brickView).attr('data-addressY', brick.Y);
                             $(brickView).attr('data-viewX', x);
                             $(brickView).attr('data-viewY', y);
                         }
                     }
                     $('body').css({ 'min-width': '1600px', 'min-height': '900px' });
                     viewport = document.querySelector("meta[name=viewport]");
-                    viewport.setAttribute('content', 'width=device-width, initial-scale='+_viewportScale);
+                    viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
 
                     if (scrollToId) {
                         document.getElementById(scrollToId).scrollIntoView();
                     }
+                    setTimeout(updateWall, 10000);
                 });
+        } else {
+            
         }
 
-        setTimeout(updateWall, 10000);
+        
     }
 
     function openSession(x, y,addressX,addressY) {
@@ -172,9 +184,9 @@
                         'backgroundImage': 'url("' +
                             _baseApiUrl +
                             '/v1/image/t/' +
-                            _brickInUse.AddressX +
+                            _brickInUse.X +
                             '/' +
-                            _brickInUse.AddressY +
+                            _brickInUse.Y +
                             '?r=' +
                             Math.floor((Math.random() * 10000) + 1) +
                             '")'
@@ -193,7 +205,7 @@
     function ClickCancel(e) {
         e.preventDefault();
 
-        $.post(_baseApiUrl + '/v1/image/release/' + _brickInUse.AddressX + '/' + _brickInUse.AddressY + '/' + _brickInUse.sessionToken, null)
+        $.post(_baseApiUrl + '/v1/image/release/' + _brickInUse.X + '/' + _brickInUse.Y + '/' + _brickInUse.sessionToken, null)
         .done(function() {
             _brickInUse = null;
             _lc = null;
