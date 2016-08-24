@@ -1,0 +1,196 @@
+ INFO [2016-08-24 14:25:38,937] - NHibernate 4.0.4.GA (assembly 4.0.0.4000)
+ INFO [2016-08-24 14:25:39,015] - hibernate-configuration section not found in application configuration file
+ INFO [2016-08-24 14:25:39,022] - Bytecode provider name : lcg
+ INFO [2016-08-24 14:25:39,028] - Using reflection optimizer
+DEBUG [2016-08-24 14:25:39,942] - Mapping XML:
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"><class xmlns="urn:nhibernate-mapping-2.2" name="massive_moose.services.models.ApplicationUser, massive-moose.services, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" table="`ApplicationUser`"><id name="Id" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="Id" /><generator class="identity" /></id><bag name="Logins"><key><column name="ApplicationUserId" /></key><one-to-many class="massive_moose.services.models.IdentityUserLogin, massive-moose.services, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" /></bag><property name="UserName" type="System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="UserName" /></property><property name="PasswordHash" type="System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="PasswordHash" /></property><property name="Email" type="System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="Email" /></property><property name="EmailConfirmed" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="EmailConfirmed" /></property></class></hibernate-mapping>
+ INFO [2016-08-24 14:25:41,490] - Using dialect: NHibernate.Dialect.MsSql2012Dialect
+ INFO [2016-08-24 14:25:41,692] - Mapping class: massive_moose.services.models.ApplicationUser -> ApplicationUser
+DEBUG [2016-08-24 14:25:41,803] - Mapped property: Id -> Id, type: Int32
+DEBUG [2016-08-24 14:25:41,913] - Mapped property: Logins, type: System.Collections.Generic.ICollection`1[[massive_moose.services.models.IdentityUserLogin, massive-moose.services, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]](massive_moose.services.models.ApplicationUser.Logins)
+DEBUG [2016-08-24 14:25:41,925] - Mapped property: UserName -> UserName, type: String
+DEBUG [2016-08-24 14:25:41,926] - Mapped property: PasswordHash -> PasswordHash, type: String
+DEBUG [2016-08-24 14:25:41,927] - Mapped property: Email -> Email, type: String
+DEBUG [2016-08-24 14:25:41,928] - Mapped property: EmailConfirmed -> EmailConfirmed, type: Boolean
+DEBUG [2016-08-24 14:25:41,948] - Mapping XML:
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"><class xmlns="urn:nhibernate-mapping-2.2" name="massive_moose.services.models.Brick, massive-moose.services, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" table="`Brick`"><id name="Id" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="Id" /><generator class="identity" /></id><property name="AddressX" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="AddressX" /></property><property name="AddressY" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="AddressY" /></property><property name="Guid" type="System.Guid, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="Guid" /></property><property name="SnapshotJson" type="System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="SnapshotJson" length="9999999" /></property></class></hibernate-mapping>
+ INFO [2016-08-24 14:25:41,952] - Using dialect: NHibernate.Dialect.MsSql2012Dialect
+ INFO [2016-08-24 14:25:41,955] - Mapping class: massive_moose.services.models.Brick -> Brick
+DEBUG [2016-08-24 14:25:41,956] - Mapped property: Id -> Id, type: Int32
+DEBUG [2016-08-24 14:25:41,957] - Mapped property: AddressX -> AddressX, type: Int32
+DEBUG [2016-08-24 14:25:41,957] - Mapped property: AddressY -> AddressY, type: Int32
+DEBUG [2016-08-24 14:25:41,958] - Mapped property: Guid -> Guid, type: Guid
+DEBUG [2016-08-24 14:25:41,966] - Mapped property: SnapshotJson -> SnapshotJson, type: String
+DEBUG [2016-08-24 14:25:41,968] - Mapping XML:
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"><class xmlns="urn:nhibernate-mapping-2.2" name="massive_moose.services.models.DrawingSession, massive-moose.services, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" table="`DrawingSession`"><id name="Id" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="Id" /><generator class="identity" /></id><property name="AddressX" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="AddressX" /></property><property name="AddressY" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="AddressY" /></property><property name="Closed" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="Closed" /></property><property name="Opened" type="System.DateTime, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="Opened" /></property><property name="SessionToken" type="System.Guid, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="SessionToken" /></property></class></hibernate-mapping>
+ INFO [2016-08-24 14:25:41,971] - Using dialect: NHibernate.Dialect.MsSql2012Dialect
+ INFO [2016-08-24 14:25:41,973] - Mapping class: massive_moose.services.models.DrawingSession -> DrawingSession
+DEBUG [2016-08-24 14:25:41,974] - Mapped property: Id -> Id, type: Int32
+DEBUG [2016-08-24 14:25:41,975] - Mapped property: AddressX -> AddressX, type: Int32
+DEBUG [2016-08-24 14:25:41,975] - Mapped property: AddressY -> AddressY, type: Int32
+DEBUG [2016-08-24 14:25:41,976] - Mapped property: Closed -> Closed, type: Boolean
+DEBUG [2016-08-24 14:25:41,977] - Mapped property: Opened -> Opened, type: DateTime
+DEBUG [2016-08-24 14:25:41,978] - Mapped property: SessionToken -> SessionToken, type: Guid
+DEBUG [2016-08-24 14:25:41,991] - Mapping XML:
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"><class xmlns="urn:nhibernate-mapping-2.2" name="massive_moose.services.models.IdentityUserLogin, massive-moose.services, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" table="`IdentityUserLogin`"><id name="Id" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="Id" /><generator class="identity" /></id><property name="LoginProvider" type="System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="LoginProvider" not-null="true" /></property><property name="ProviderKey" type="System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><column name="ProviderKey" not-null="true" /></property><many-to-one cascade="none" class="massive_moose.services.models.ApplicationUser, massive-moose.services, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="ApplicationUser"><column name="ApplicationUserId" /></many-to-one></class></hibernate-mapping>
+ INFO [2016-08-24 14:25:42,043] - Using dialect: NHibernate.Dialect.MsSql2012Dialect
+ INFO [2016-08-24 14:25:42,045] - Mapping class: massive_moose.services.models.IdentityUserLogin -> IdentityUserLogin
+DEBUG [2016-08-24 14:25:42,047] - Mapped property: Id -> Id, type: Int32
+DEBUG [2016-08-24 14:25:42,047] - Mapped property: LoginProvider -> LoginProvider, type: String
+DEBUG [2016-08-24 14:25:42,048] - Mapped property: ProviderKey -> ProviderKey, type: String
+DEBUG [2016-08-24 14:25:42,084] - Mapped property: ApplicationUser -> ApplicationUserId, type: massive_moose.services.models.ApplicationUser
+ INFO [2016-08-24 14:25:42,089] - Using dialect: NHibernate.Dialect.MsSql2012Dialect
+ INFO [2016-08-24 14:25:42,102] - Running hbm2ddl schema update
+ INFO [2016-08-24 14:25:42,105] - fetching database metadata
+ INFO [2016-08-24 14:25:42,110] - Initializing connection provider: NHibernate.Connection.DriverConnectionProvider
+ INFO [2016-08-24 14:25:42,113] - Configuring ConnectionProvider
+DEBUG [2016-08-24 14:25:42,121] - Obtaining IDbConnection from Driver
+ INFO [2016-08-24 14:25:42,358] - updating schema
+ INFO [2016-08-24 14:25:42,377] - checking mappings queue
+ INFO [2016-08-24 14:25:42,379] - processing one-to-many association mappings
+DEBUG [2016-08-24 14:25:42,381] - Second pass for collection: massive_moose.services.models.ApplicationUser.Logins
+ INFO [2016-08-24 14:25:42,388] - mapping collection: massive_moose.services.models.ApplicationUser.Logins -> IdentityUserLogin
+DEBUG [2016-08-24 14:25:42,406] - Mapped collection key: ApplicationUserId, one-to-many: massive_moose.services.models.IdentityUserLogin
+ INFO [2016-08-24 14:25:42,406] - processing one-to-one association property references
+ INFO [2016-08-24 14:25:42,407] - processing foreign key constraints
+DEBUG [2016-08-24 14:25:42,414] - resolving reference to class: massive_moose.services.models.ApplicationUser
+ INFO [2016-08-24 14:25:42,419] - processing filters (second pass)
+ INFO [2016-08-24 14:25:42,608] - table found: massivemoose.dbo.ApplicationUser
+ INFO [2016-08-24 14:25:42,611] - columns: id, username, passwordhash, email, emailconfirmed
+ INFO [2016-08-24 14:25:42,612] - foreign keys: 
+ INFO [2016-08-24 14:25:42,613] - indexes: pk__applicat__3214ec07bb4fbef6
+ INFO [2016-08-24 14:25:42,789] - table found: massivemoose.dbo.Brick
+ INFO [2016-08-24 14:25:42,790] - columns: id, addressx, addressy, guid, snapshotjson
+ INFO [2016-08-24 14:25:42,791] - foreign keys: 
+ INFO [2016-08-24 14:25:42,792] - indexes: pk__brick__3214ec07fd1f609d
+ INFO [2016-08-24 14:25:42,937] - table found: massivemoose.dbo.DrawingSession
+ INFO [2016-08-24 14:25:42,937] - columns: id, addressx, addressy, closed, opened, sessiontoken
+ INFO [2016-08-24 14:25:42,938] - foreign keys: 
+ INFO [2016-08-24 14:25:42,939] - indexes: pk__drawings__3214ec077bdcf5b8
+ INFO [2016-08-24 14:25:43,143] - table found: massivemoose.dbo.IdentityUserLogin
+ INFO [2016-08-24 14:25:43,144] - columns: id, loginprovider, providerkey, applicationuserid
+ INFO [2016-08-24 14:25:43,145] - foreign keys: fk25fb0774fdbbc5f6, fka422a822b9ae978d
+ INFO [2016-08-24 14:25:43,146] - indexes: pk__identity__3214ec0731666ffa
+ INFO [2016-08-24 14:25:43,204] - schema update complete
+DEBUG [2016-08-24 14:25:43,207] - Closing connection
+ INFO [2016-08-24 14:25:43,210] - checking mappings queue
+ INFO [2016-08-24 14:25:43,211] - processing one-to-many association mappings
+ INFO [2016-08-24 14:25:43,212] - processing one-to-one association property references
+ INFO [2016-08-24 14:25:43,214] - processing foreign key constraints
+DEBUG [2016-08-24 14:25:43,215] - resolving reference to class: massive_moose.services.models.ApplicationUser
+ INFO [2016-08-24 14:25:43,217] - processing filters (second pass)
+ INFO [2016-08-24 14:25:43,315] - Using dialect: NHibernate.Dialect.MsSql2012Dialect
+ INFO [2016-08-24 14:25:43,353] - Using dialect: NHibernate.Dialect.MsSql2012Dialect
+ INFO [2016-08-24 14:25:43,676] - Using dialect defined converter
+ INFO [2016-08-24 14:25:43,678] - Generate SQL with comments: disabled
+ INFO [2016-08-24 14:25:43,679] - Initializing connection provider: NHibernate.Connection.DriverConnectionProvider
+ INFO [2016-08-24 14:25:43,680] - Configuring ConnectionProvider
+ INFO [2016-08-24 14:25:43,683] - Transaction factory: NHibernate.Transaction.AdoNetWithDistributedTransactionFactory
+ INFO [2016-08-24 14:25:43,686] - Optimize cache for minimal puts: False
+ INFO [2016-08-24 14:25:43,687] - Connection release mode: auto
+ INFO [2016-08-24 14:25:43,689] - Default batch fetch size: 1
+ INFO [2016-08-24 14:25:43,690] - Statistics: disabled
+ INFO [2016-08-24 14:25:43,692] - Deleted entity synthetic identifier rollback: disabled
+ INFO [2016-08-24 14:25:43,696] - Query translator: NHibernate.Hql.Ast.ANTLR.ASTQueryTranslatorFactory
+ INFO [2016-08-24 14:25:43,708] - Query language substitutions: {'true'='1', 'false'='0', 'yes'=''Y'', 'no'=''N''}
+ INFO [2016-08-24 14:25:43,714] - cache provider: NHibernate.Cache.NoCacheProvider, NHibernate, Version=4.0.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4
+ INFO [2016-08-24 14:25:43,719] - Order SQL inserts for batching: enabled
+DEBUG [2016-08-24 14:25:43,720] - Wrap result sets: disabled
+ INFO [2016-08-24 14:25:43,728] - Batcher factory: NHibernate.AdoNet.SqlClientBatchingBatcherFactory, NHibernate, Version=4.0.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4
+ INFO [2016-08-24 14:25:43,731] - Default entity-mode: Poco
+ INFO [2016-08-24 14:25:43,733] - Named query checking : enabled
+ INFO [2016-08-24 14:25:43,734] - Ignoring exceptions in BeforeTransactionCompletion : disabled
+ INFO [2016-08-24 14:25:43,827] - building session factory
+DEBUG [2016-08-24 14:25:43,829] - Session factory constructed with filter configurations : {}
+DEBUG [2016-08-24 14:25:43,835] - instantiating session factory with properties: {'use_reflection_optimizer'='True', 'connection.provider'='NHibernate.Connection.DriverConnectionProvider', 'connection.driver_class'='NHibernate.Driver.SqlClientDriver, NHibernate, Version=4.0.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4', 'dialect'='NHibernate.Dialect.MsSql2012Dialect, NHibernate, Version=4.0.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4', 'hibernate.dialect'='NHibernate.Dialect.MsSql2012Dialect, NHibernate, Version=4.0.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4', 'connection.connection_string'='Server=tcp:massivemoose.database.windows.net,1433;Initial Catalog=massivemoose;Persist Security Info=False;User ID=massivemoose;Password=T5._4pC:6j7+9aU;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'}
+DEBUG [2016-08-24 14:25:43,842] - Obtaining IDbConnection from Driver
+DEBUG [2016-08-24 14:25:43,854] - Closing connection
+DEBUG [2016-08-24 14:25:44,117] - No custom accessors found for entity: massive_moose.services.models.ApplicationUser
+DEBUG [2016-08-24 14:25:44,138] - No custom accessors found for entity: massive_moose.services.models.ApplicationUser
+DEBUG [2016-08-24 14:25:44,203] - Create Instantiator using optimizer for:massive_moose.services.models.ApplicationUser
+DEBUG [2016-08-24 14:25:44,312] - No custom accessors found for entity: massive_moose.services.models.Brick
+DEBUG [2016-08-24 14:25:44,313] - No custom accessors found for entity: massive_moose.services.models.Brick
+DEBUG [2016-08-24 14:25:44,316] - Create Instantiator using optimizer for:massive_moose.services.models.Brick
+DEBUG [2016-08-24 14:25:44,318] - No custom accessors found for entity: massive_moose.services.models.DrawingSession
+DEBUG [2016-08-24 14:25:44,319] - No custom accessors found for entity: massive_moose.services.models.DrawingSession
+DEBUG [2016-08-24 14:25:44,321] - Create Instantiator using optimizer for:massive_moose.services.models.DrawingSession
+DEBUG [2016-08-24 14:25:44,324] - No custom accessors found for entity: massive_moose.services.models.IdentityUserLogin
+DEBUG [2016-08-24 14:25:44,325] - No custom accessors found for entity: massive_moose.services.models.IdentityUserLogin
+DEBUG [2016-08-24 14:25:44,326] - Create Instantiator using optimizer for:massive_moose.services.models.IdentityUserLogin
+DEBUG [2016-08-24 14:25:44,428] - Static SQL for collection: massive_moose.services.models.ApplicationUser.Logins
+DEBUG [2016-08-24 14:25:44,437] -  Row insert: UPDATE [IdentityUserLogin] SET ApplicationUserId = ? WHERE Id = ?
+DEBUG [2016-08-24 14:25:44,438] -  Row delete: UPDATE [IdentityUserLogin] SET ApplicationUserId = null WHERE ApplicationUserId = ? AND Id = ?
+DEBUG [2016-08-24 14:25:44,439] -  One-shot delete: UPDATE [IdentityUserLogin] SET ApplicationUserId = null WHERE ApplicationUserId = ?
+DEBUG [2016-08-24 14:25:44,569] - Static SQL for entity: massive_moose.services.models.ApplicationUser
+DEBUG [2016-08-24 14:25:44,569] -  Version select: SELECT Id FROM [ApplicationUser] WHERE Id = ?
+DEBUG [2016-08-24 14:25:44,570] -  Snapshot select: SELECT applicatio_.Id, applicatio_.UserName as UserName0_, applicatio_.PasswordHash as Password3_0_, applicatio_.Email as Email0_, applicatio_.EmailConfirmed as EmailCon5_0_ FROM [ApplicationUser] applicatio_ WHERE applicatio_.Id=?
+DEBUG [2016-08-24 14:25:44,572] -  Insert 0: INSERT INTO [ApplicationUser] (UserName, PasswordHash, Email, EmailConfirmed, Id) VALUES (?, ?, ?, ?, ?)
+DEBUG [2016-08-24 14:25:44,573] -  Update 0: UPDATE [ApplicationUser] SET UserName = ?, PasswordHash = ?, Email = ?, EmailConfirmed = ? WHERE Id = ?
+DEBUG [2016-08-24 14:25:44,574] -  Delete 0: DELETE FROM [ApplicationUser] WHERE Id = ?
+DEBUG [2016-08-24 14:25:44,575] -  Identity insert: INSERT INTO [ApplicationUser] (UserName, PasswordHash, Email, EmailConfirmed) VALUES (?, ?, ?, ?); select SCOPE_IDENTITY()
+DEBUG [2016-08-24 14:25:44,701] - Static select for entity massive_moose.services.models.ApplicationUser: SELECT applicatio0_.Id as Id0_0_, applicatio0_.UserName as UserName0_0_, applicatio0_.PasswordHash as Password3_0_0_, applicatio0_.Email as Email0_0_, applicatio0_.EmailConfirmed as EmailCon5_0_0_ FROM [ApplicationUser] applicatio0_ WHERE applicatio0_.Id=?
+DEBUG [2016-08-24 14:25:44,703] - Static select for entity massive_moose.services.models.ApplicationUser: SELECT applicatio0_.Id as Id0_0_, applicatio0_.UserName as UserName0_0_, applicatio0_.PasswordHash as Password3_0_0_, applicatio0_.Email as Email0_0_, applicatio0_.EmailConfirmed as EmailCon5_0_0_ FROM [ApplicationUser] applicatio0_ WHERE applicatio0_.Id=?
+DEBUG [2016-08-24 14:25:44,705] - Static select for entity massive_moose.services.models.ApplicationUser: SELECT applicatio0_.Id as Id0_0_, applicatio0_.UserName as UserName0_0_, applicatio0_.PasswordHash as Password3_0_0_, applicatio0_.Email as Email0_0_, applicatio0_.EmailConfirmed as EmailCon5_0_0_ FROM [ApplicationUser] applicatio0_ with (updlock, rowlock) WHERE applicatio0_.Id=?
+DEBUG [2016-08-24 14:25:44,706] - Static select for entity massive_moose.services.models.ApplicationUser: SELECT applicatio0_.Id as Id0_0_, applicatio0_.UserName as UserName0_0_, applicatio0_.PasswordHash as Password3_0_0_, applicatio0_.Email as Email0_0_, applicatio0_.EmailConfirmed as EmailCon5_0_0_ FROM [ApplicationUser] applicatio0_ with (updlock, rowlock, nowait) WHERE applicatio0_.Id=?
+DEBUG [2016-08-24 14:25:44,707] - Static select for entity massive_moose.services.models.ApplicationUser: SELECT applicatio0_.Id as Id0_0_, applicatio0_.UserName as UserName0_0_, applicatio0_.PasswordHash as Password3_0_0_, applicatio0_.Email as Email0_0_, applicatio0_.EmailConfirmed as EmailCon5_0_0_ FROM [ApplicationUser] applicatio0_ with (updlock, rowlock) WHERE applicatio0_.Id=?
+DEBUG [2016-08-24 14:25:44,714] - Static select for action NHibernate.Engine.CascadingAction+MergeCascadingAction on entity massive_moose.services.models.ApplicationUser: SELECT applicatio0_.Id as Id0_0_, applicatio0_.UserName as UserName0_0_, applicatio0_.PasswordHash as Password3_0_0_, applicatio0_.Email as Email0_0_, applicatio0_.EmailConfirmed as EmailCon5_0_0_ FROM [ApplicationUser] applicatio0_ WHERE applicatio0_.Id=?
+DEBUG [2016-08-24 14:25:44,715] - Static select for action NHibernate.Engine.CascadingAction+RefreshCascadingAction on entity massive_moose.services.models.ApplicationUser: SELECT applicatio0_.Id as Id0_0_, applicatio0_.UserName as UserName0_0_, applicatio0_.PasswordHash as Password3_0_0_, applicatio0_.Email as Email0_0_, applicatio0_.EmailConfirmed as EmailCon5_0_0_ FROM [ApplicationUser] applicatio0_ WHERE applicatio0_.Id=?
+DEBUG [2016-08-24 14:25:44,717] - Static SQL for entity: massive_moose.services.models.Brick
+DEBUG [2016-08-24 14:25:44,718] -  Version select: SELECT Id FROM [Brick] WHERE Id = ?
+DEBUG [2016-08-24 14:25:44,719] -  Snapshot select: SELECT brick_.Id, brick_.AddressX as AddressX1_, brick_.AddressY as AddressY1_, brick_.Guid as Guid1_, brick_.SnapshotJson as Snapshot5_1_ FROM [Brick] brick_ WHERE brick_.Id=?
+DEBUG [2016-08-24 14:25:44,720] -  Insert 0: INSERT INTO [Brick] (AddressX, AddressY, Guid, SnapshotJson, Id) VALUES (?, ?, ?, ?, ?)
+DEBUG [2016-08-24 14:25:44,721] -  Update 0: UPDATE [Brick] SET AddressX = ?, AddressY = ?, Guid = ?, SnapshotJson = ? WHERE Id = ?
+DEBUG [2016-08-24 14:25:44,722] -  Delete 0: DELETE FROM [Brick] WHERE Id = ?
+DEBUG [2016-08-24 14:25:44,722] -  Identity insert: INSERT INTO [Brick] (AddressX, AddressY, Guid, SnapshotJson) VALUES (?, ?, ?, ?); select SCOPE_IDENTITY()
+DEBUG [2016-08-24 14:25:44,723] - Static select for entity massive_moose.services.models.Brick: SELECT brick0_.Id as Id1_0_, brick0_.AddressX as AddressX1_0_, brick0_.AddressY as AddressY1_0_, brick0_.Guid as Guid1_0_, brick0_.SnapshotJson as Snapshot5_1_0_ FROM [Brick] brick0_ WHERE brick0_.Id=?
+DEBUG [2016-08-24 14:25:44,724] - Static select for entity massive_moose.services.models.Brick: SELECT brick0_.Id as Id1_0_, brick0_.AddressX as AddressX1_0_, brick0_.AddressY as AddressY1_0_, brick0_.Guid as Guid1_0_, brick0_.SnapshotJson as Snapshot5_1_0_ FROM [Brick] brick0_ WHERE brick0_.Id=?
+DEBUG [2016-08-24 14:25:44,725] - Static select for entity massive_moose.services.models.Brick: SELECT brick0_.Id as Id1_0_, brick0_.AddressX as AddressX1_0_, brick0_.AddressY as AddressY1_0_, brick0_.Guid as Guid1_0_, brick0_.SnapshotJson as Snapshot5_1_0_ FROM [Brick] brick0_ with (updlock, rowlock) WHERE brick0_.Id=?
+DEBUG [2016-08-24 14:25:44,726] - Static select for entity massive_moose.services.models.Brick: SELECT brick0_.Id as Id1_0_, brick0_.AddressX as AddressX1_0_, brick0_.AddressY as AddressY1_0_, brick0_.Guid as Guid1_0_, brick0_.SnapshotJson as Snapshot5_1_0_ FROM [Brick] brick0_ with (updlock, rowlock, nowait) WHERE brick0_.Id=?
+DEBUG [2016-08-24 14:25:44,727] - Static select for entity massive_moose.services.models.Brick: SELECT brick0_.Id as Id1_0_, brick0_.AddressX as AddressX1_0_, brick0_.AddressY as AddressY1_0_, brick0_.Guid as Guid1_0_, brick0_.SnapshotJson as Snapshot5_1_0_ FROM [Brick] brick0_ with (updlock, rowlock) WHERE brick0_.Id=?
+DEBUG [2016-08-24 14:25:44,728] - Static select for action NHibernate.Engine.CascadingAction+MergeCascadingAction on entity massive_moose.services.models.Brick: SELECT brick0_.Id as Id1_0_, brick0_.AddressX as AddressX1_0_, brick0_.AddressY as AddressY1_0_, brick0_.Guid as Guid1_0_, brick0_.SnapshotJson as Snapshot5_1_0_ FROM [Brick] brick0_ WHERE brick0_.Id=?
+DEBUG [2016-08-24 14:25:44,729] - Static select for action NHibernate.Engine.CascadingAction+RefreshCascadingAction on entity massive_moose.services.models.Brick: SELECT brick0_.Id as Id1_0_, brick0_.AddressX as AddressX1_0_, brick0_.AddressY as AddressY1_0_, brick0_.Guid as Guid1_0_, brick0_.SnapshotJson as Snapshot5_1_0_ FROM [Brick] brick0_ WHERE brick0_.Id=?
+DEBUG [2016-08-24 14:25:44,730] - Static SQL for entity: massive_moose.services.models.DrawingSession
+DEBUG [2016-08-24 14:25:44,731] -  Version select: SELECT Id FROM [DrawingSession] WHERE Id = ?
+DEBUG [2016-08-24 14:25:44,732] -  Snapshot select: SELECT drawingses_.Id, drawingses_.AddressX as AddressX2_, drawingses_.AddressY as AddressY2_, drawingses_.Closed as Closed2_, drawingses_.Opened as Opened2_, drawingses_.SessionToken as SessionT6_2_ FROM [DrawingSession] drawingses_ WHERE drawingses_.Id=?
+DEBUG [2016-08-24 14:25:44,733] -  Insert 0: INSERT INTO [DrawingSession] (AddressX, AddressY, Closed, Opened, SessionToken, Id) VALUES (?, ?, ?, ?, ?, ?)
+DEBUG [2016-08-24 14:25:44,733] -  Update 0: UPDATE [DrawingSession] SET AddressX = ?, AddressY = ?, Closed = ?, Opened = ?, SessionToken = ? WHERE Id = ?
+DEBUG [2016-08-24 14:25:44,734] -  Delete 0: DELETE FROM [DrawingSession] WHERE Id = ?
+DEBUG [2016-08-24 14:25:44,734] -  Identity insert: INSERT INTO [DrawingSession] (AddressX, AddressY, Closed, Opened, SessionToken) VALUES (?, ?, ?, ?, ?); select SCOPE_IDENTITY()
+DEBUG [2016-08-24 14:25:44,735] - Static select for entity massive_moose.services.models.DrawingSession: SELECT drawingses0_.Id as Id2_0_, drawingses0_.AddressX as AddressX2_0_, drawingses0_.AddressY as AddressY2_0_, drawingses0_.Closed as Closed2_0_, drawingses0_.Opened as Opened2_0_, drawingses0_.SessionToken as SessionT6_2_0_ FROM [DrawingSession] drawingses0_ WHERE drawingses0_.Id=?
+DEBUG [2016-08-24 14:25:44,736] - Static select for entity massive_moose.services.models.DrawingSession: SELECT drawingses0_.Id as Id2_0_, drawingses0_.AddressX as AddressX2_0_, drawingses0_.AddressY as AddressY2_0_, drawingses0_.Closed as Closed2_0_, drawingses0_.Opened as Opened2_0_, drawingses0_.SessionToken as SessionT6_2_0_ FROM [DrawingSession] drawingses0_ WHERE drawingses0_.Id=?
+DEBUG [2016-08-24 14:25:44,737] - Static select for entity massive_moose.services.models.DrawingSession: SELECT drawingses0_.Id as Id2_0_, drawingses0_.AddressX as AddressX2_0_, drawingses0_.AddressY as AddressY2_0_, drawingses0_.Closed as Closed2_0_, drawingses0_.Opened as Opened2_0_, drawingses0_.SessionToken as SessionT6_2_0_ FROM [DrawingSession] drawingses0_ with (updlock, rowlock) WHERE drawingses0_.Id=?
+DEBUG [2016-08-24 14:25:44,738] - Static select for entity massive_moose.services.models.DrawingSession: SELECT drawingses0_.Id as Id2_0_, drawingses0_.AddressX as AddressX2_0_, drawingses0_.AddressY as AddressY2_0_, drawingses0_.Closed as Closed2_0_, drawingses0_.Opened as Opened2_0_, drawingses0_.SessionToken as SessionT6_2_0_ FROM [DrawingSession] drawingses0_ with (updlock, rowlock, nowait) WHERE drawingses0_.Id=?
+DEBUG [2016-08-24 14:25:44,738] - Static select for entity massive_moose.services.models.DrawingSession: SELECT drawingses0_.Id as Id2_0_, drawingses0_.AddressX as AddressX2_0_, drawingses0_.AddressY as AddressY2_0_, drawingses0_.Closed as Closed2_0_, drawingses0_.Opened as Opened2_0_, drawingses0_.SessionToken as SessionT6_2_0_ FROM [DrawingSession] drawingses0_ with (updlock, rowlock) WHERE drawingses0_.Id=?
+DEBUG [2016-08-24 14:25:44,739] - Static select for action NHibernate.Engine.CascadingAction+MergeCascadingAction on entity massive_moose.services.models.DrawingSession: SELECT drawingses0_.Id as Id2_0_, drawingses0_.AddressX as AddressX2_0_, drawingses0_.AddressY as AddressY2_0_, drawingses0_.Closed as Closed2_0_, drawingses0_.Opened as Opened2_0_, drawingses0_.SessionToken as SessionT6_2_0_ FROM [DrawingSession] drawingses0_ WHERE drawingses0_.Id=?
+DEBUG [2016-08-24 14:25:44,740] - Static select for action NHibernate.Engine.CascadingAction+RefreshCascadingAction on entity massive_moose.services.models.DrawingSession: SELECT drawingses0_.Id as Id2_0_, drawingses0_.AddressX as AddressX2_0_, drawingses0_.AddressY as AddressY2_0_, drawingses0_.Closed as Closed2_0_, drawingses0_.Opened as Opened2_0_, drawingses0_.SessionToken as SessionT6_2_0_ FROM [DrawingSession] drawingses0_ WHERE drawingses0_.Id=?
+DEBUG [2016-08-24 14:25:44,741] - Static SQL for entity: massive_moose.services.models.IdentityUserLogin
+DEBUG [2016-08-24 14:25:44,742] -  Version select: SELECT Id FROM [IdentityUserLogin] WHERE Id = ?
+DEBUG [2016-08-24 14:25:44,742] -  Snapshot select: SELECT identityus_.Id, identityus_.LoginProvider as LoginPro2_3_, identityus_.ProviderKey as Provider3_3_, identityus_.ApplicationUserId as Applicat4_3_ FROM [IdentityUserLogin] identityus_ WHERE identityus_.Id=?
+DEBUG [2016-08-24 14:25:44,743] -  Insert 0: INSERT INTO [IdentityUserLogin] (LoginProvider, ProviderKey, ApplicationUserId, Id) VALUES (?, ?, ?, ?)
+DEBUG [2016-08-24 14:25:44,744] -  Update 0: UPDATE [IdentityUserLogin] SET LoginProvider = ?, ProviderKey = ?, ApplicationUserId = ? WHERE Id = ?
+DEBUG [2016-08-24 14:25:44,744] -  Delete 0: DELETE FROM [IdentityUserLogin] WHERE Id = ?
+DEBUG [2016-08-24 14:25:44,745] -  Identity insert: INSERT INTO [IdentityUserLogin] (LoginProvider, ProviderKey, ApplicationUserId) VALUES (?, ?, ?); select SCOPE_IDENTITY()
+DEBUG [2016-08-24 14:25:44,750] - Static select for entity massive_moose.services.models.IdentityUserLogin: SELECT identityus0_.Id as Id3_0_, identityus0_.LoginProvider as LoginPro2_3_0_, identityus0_.ProviderKey as Provider3_3_0_, identityus0_.ApplicationUserId as Applicat4_3_0_ FROM [IdentityUserLogin] identityus0_ WHERE identityus0_.Id=?
+DEBUG [2016-08-24 14:25:44,752] - Static select for entity massive_moose.services.models.IdentityUserLogin: SELECT identityus0_.Id as Id3_0_, identityus0_.LoginProvider as LoginPro2_3_0_, identityus0_.ProviderKey as Provider3_3_0_, identityus0_.ApplicationUserId as Applicat4_3_0_ FROM [IdentityUserLogin] identityus0_ WHERE identityus0_.Id=?
+DEBUG [2016-08-24 14:25:44,758] - Static select for entity massive_moose.services.models.IdentityUserLogin: SELECT identityus0_.Id as Id3_0_, identityus0_.LoginProvider as LoginPro2_3_0_, identityus0_.ProviderKey as Provider3_3_0_, identityus0_.ApplicationUserId as Applicat4_3_0_ FROM [IdentityUserLogin] identityus0_ with (updlock, rowlock) WHERE identityus0_.Id=?
+DEBUG [2016-08-24 14:25:44,761] - Static select for entity massive_moose.services.models.IdentityUserLogin: SELECT identityus0_.Id as Id3_0_, identityus0_.LoginProvider as LoginPro2_3_0_, identityus0_.ProviderKey as Provider3_3_0_, identityus0_.ApplicationUserId as Applicat4_3_0_ FROM [IdentityUserLogin] identityus0_ with (updlock, rowlock, nowait) WHERE identityus0_.Id=?
+DEBUG [2016-08-24 14:25:44,763] - Static select for entity massive_moose.services.models.IdentityUserLogin: SELECT identityus0_.Id as Id3_0_, identityus0_.LoginProvider as LoginPro2_3_0_, identityus0_.ProviderKey as Provider3_3_0_, identityus0_.ApplicationUserId as Applicat4_3_0_ FROM [IdentityUserLogin] identityus0_ with (updlock, rowlock) WHERE identityus0_.Id=?
+DEBUG [2016-08-24 14:25:44,765] - Static select for action NHibernate.Engine.CascadingAction+MergeCascadingAction on entity massive_moose.services.models.IdentityUserLogin: SELECT identityus0_.Id as Id3_0_, identityus0_.LoginProvider as LoginPro2_3_0_, identityus0_.ProviderKey as Provider3_3_0_, identityus0_.ApplicationUserId as Applicat4_3_0_ FROM [IdentityUserLogin] identityus0_ WHERE identityus0_.Id=?
+DEBUG [2016-08-24 14:25:44,766] - Static select for action NHibernate.Engine.CascadingAction+RefreshCascadingAction on entity massive_moose.services.models.IdentityUserLogin: SELECT identityus0_.Id as Id3_0_, identityus0_.LoginProvider as LoginPro2_3_0_, identityus0_.ProviderKey as Provider3_3_0_, identityus0_.ApplicationUserId as Applicat4_3_0_ FROM [IdentityUserLogin] identityus0_ WHERE identityus0_.Id=?
+DEBUG [2016-08-24 14:25:44,816] - Static select for one-to-many massive_moose.services.models.ApplicationUser.Logins: SELECT logins0_.ApplicationUserId as Applicat4_1_, logins0_.Id as Id1_, logins0_.Id as Id3_0_, logins0_.LoginProvider as LoginPro2_3_0_, logins0_.ProviderKey as Provider3_3_0_, logins0_.ApplicationUserId as Applicat4_3_0_ FROM [IdentityUserLogin] logins0_ WHERE logins0_.ApplicationUserId=?
+DEBUG [2016-08-24 14:25:44,820] - initializing class SessionFactoryObjectFactory
+DEBUG [2016-08-24 14:25:44,823] - registered: 7541be2172b34b16a3a1be61edcaf656(unnamed)
+ INFO [2016-08-24 14:25:44,824] - no name configured
+DEBUG [2016-08-24 14:25:44,825] - Instantiated session factory
+DEBUG [2016-08-24 14:25:44,837] - Checking 0 named HQL queries
+DEBUG [2016-08-24 14:25:44,837] - Checking 0 named SQL queries
+DEBUG [2016-08-24 14:25:44,877] - [session-id=63ff3223-b251-48a5-ab5a-30fdd7839ec2] opened session at timestamp: 636076455448, for session factory: [/7541be2172b34b16a3a1be61edcaf656]
+DEBUG [2016-08-24 14:25:44,886] - [session-id=92f83c40-1c10-4c98-bed6-ccaf647afc36] opened session at timestamp: 636076455448, for session factory: [/7541be2172b34b16a3a1be61edcaf656]
+ WARN [2016-08-24 14:25:45,534] - hello world
+DEBUG [2016-08-24 14:25:51,408] - [session-id=63ff3223-b251-48a5-ab5a-30fdd7839ec2] running ISession.Dispose()
+DEBUG [2016-08-24 14:25:51,410] - [session-id=63ff3223-b251-48a5-ab5a-30fdd7839ec2] executing real Dispose(True)
+DEBUG [2016-08-24 14:25:51,411] - closing session
+DEBUG [2016-08-24 14:25:51,412] - running BatcherImpl.Dispose(true)
+ WARN [2016-08-24 14:34:15,523] - hello world
+ WARN [2016-08-24 14:34:32,074] - hello world
+ WARN [2016-08-24 14:34:35,977] - hello world

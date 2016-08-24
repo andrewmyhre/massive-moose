@@ -4,10 +4,13 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using log4net;
-using massive_moose.drawing;
 using massive_moose.storage.azure;
 using Newtonsoft.Json;
 using NHibernate.Criterion;
+using massive_moose.services.models.drawing;
+using massive_moose.services.models;
+using massive_moose.services;
+using massive_moose.services.models.literally;
 
 namespace massive_moose.api.Controllers
 {
@@ -35,7 +38,7 @@ namespace massive_moose.api.Controllers
                 var inputString = await Request.Content.ReadAsStringAsync();
                 try
                 {
-                    var drawing = JsonConvert.DeserializeObject<massive_moose.contracts.literally.Drawing>(inputString);
+                    var drawing = JsonConvert.DeserializeObject<Drawing>(inputString);
                     var canvas = new LiterallyMapper().ToCanvas(drawing);
                     ExportCanvasToImage(canvas, drawingSession);
                 }

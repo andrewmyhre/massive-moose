@@ -12,6 +12,8 @@ using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
 using massive_moose.services;
 using massive_moose.services.models;
+//using massive_moose.web.owin.App_Start;
+using Ninject.Web.Common.OwinHost;
 
 namespace massive_moose.web.owin
 {
@@ -21,6 +23,7 @@ namespace massive_moose.web.owin
         public void ConfigureAuth(IAppBuilder app)
         {
             // Configure the db context, user manager and signin manager to use a single instance per request
+            //app.UseNinjectMiddleware(()=>NinjectWebCommon.CreateKernel());
             app.CreatePerOwinContext<ISession>(() => SessionFactory.Instance.OpenSession());
             app.CreatePerOwinContext(() => new UserManager(new ApplicationUserStore(SessionFactory.Instance.OpenSession())));
             app.CreatePerOwinContext<ApplicationUserManager>(ApplicationUserManager.Create);

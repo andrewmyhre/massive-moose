@@ -40,25 +40,61 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="FluentNHibernate, Version=2.0.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\FluentNHibernate.2.0.3.0\lib\net40\FluentNHibernate.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Iesi.Collections, Version=4.0.0.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Iesi.Collections.4.0.0.4000\lib\net40\Iesi.Collections.dll</HintPath>
+      <HintPath>..\..\packages\Iesi.Collections.4.0.1.4000\lib\net40\Iesi.Collections.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AspNet.Identity.Core.2.2.0\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Owin, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="NHibernate, Version=4.0.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NHibernate.4.0.3.4000\lib\net40\NHibernate.dll</HintPath>
+      <HintPath>..\..\packages\NHibernate.4.0.4.4000\lib\net40\NHibernate.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NHibernate.AspNet.Identity, Version=2.2.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\NHibernate.AspNet.Identity.2.2.1.0\lib\net45\NHibernate.AspNet.Identity.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ninject, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ninject.Web.Common, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Ninject.Web.Common.3.2.3.0\lib\net45-full\Ninject.Web.Common.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ninject.Web.Common.OwinHost, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Ninject.Web.Common.OwinHost.3.2.3.0\lib\net45-full\Ninject.Web.Common.OwinHost.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ninject.Web.Mvc, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Ninject.MVC5.3.2.1.0\lib\net45-full\Ninject.Web.Mvc.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -114,27 +150,18 @@
       <Private>True</Private>
       <HintPath>..\..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
     </Reference>
-    <Reference Include="WebGrease">
+    <Reference Include="WebActivatorEx, Version=2.0.0.0, Culture=neutral, PublicKeyToken=7b26dc2a43f6a0d4, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\WebActivatorEx.2.1.0\lib\net40\WebActivatorEx.dll</HintPath>
       <Private>True</Private>
-      <HintPath>..\..\packages\WebGrease.1.5.2\lib\WebGrease.dll</HintPath>
     </Reference>
-    <Reference Include="Antlr3.Runtime">
+    <Reference Include="WebGrease, Version=1.6.5135.21930, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
       <Private>True</Private>
-      <HintPath>..\..\packages\Antlr.3.4.1.9004\lib\Antlr3.Runtime.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.AspNet.Identity.Owin">
       <HintPath>..\..\packages\Microsoft.AspNet.Identity.Owin.2.2.1\lib\net45\Microsoft.AspNet.Identity.Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="Owin">
-      <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Owin">
-      <HintPath>..\..\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Host.SystemWeb">
       <HintPath>..\..\packages\Microsoft.Owin.Host.SystemWeb.3.0.1\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
@@ -175,30 +202,132 @@
     </Compile>
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\ApplicationUserStore.cs" />
+    <Compile Include="Models\BrickViewModel.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\066da1cdd70fafc6c8c1ad2eae48b95d.jpg" />
+    <Content Include="Content\2858936-red-brick-wall-texture.jpg" />
+    <Content Include="Content\blank.css" />
+    <Content Include="Content\bootstrap-theme.css" />
+    <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\img\alpha.png" />
+    <Content Include="Content\img\checkerboard-8x8.png" />
+    <Content Include="Content\img\dashed-line.png" />
+    <Content Include="Content\img\ellipse.png" />
+    <Content Include="Content\img\eraser.png" />
+    <Content Include="Content\img\eyedropper.png" />
+    <Content Include="Content\img\hue.png" />
+    <Content Include="Content\img\line-with-arrow.png" />
+    <Content Include="Content\img\line.png" />
+    <Content Include="Content\img\pan.png" />
+    <Content Include="Content\img\pencil.png" />
+    <Content Include="Content\img\polygon-cancel.png" />
+    <Content Include="Content\img\polygon-closed.png" />
+    <Content Include="Content\img\polygon-open.png" />
+    <Content Include="Content\img\polygon.png" />
+    <Content Include="Content\img\rectangle.png" />
+    <Content Include="Content\img\redo.png" />
+    <Content Include="Content\img\saturation.png" />
+    <Content Include="Content\img\screenshot.png" />
+    <Content Include="Content\img\text.png" />
+    <Content Include="Content\img\undo.png" />
+    <Content Include="Content\img\zoom-in.png" />
+    <Content Include="Content\img\zoom-out.png" />
+    <Content Include="Content\industrial-wall-decals.jpg" />
+    <Content Include="Content\literallycanvas.css" />
+    <Content Include="Content\Seamless_Brick_Wall_Texture.jpg" />
+    <Content Include="Content\Tiled_bricks.jpg" />
+    <Content Include="Content\Wall.css" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="fonts\glyphicons-halflings-regular.woff2" />
+    <Content Include="fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="Content\bootstrap.min.css.map" />
+    <Content Include="Content\bootstrap.css.map" />
+    <Content Include="Content\bootstrap-theme.min.css.map" />
+    <Content Include="Content\bootstrap-theme.css.map" />
+    <None Include="Scripts\jquery-3.1.0.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
-    <None Include="Scripts\jquery-1.10.2.intellisense.js" />
-    <Content Include="Scripts\jquery-1.10.2.js" />
-    <Content Include="Scripts\jquery-1.10.2.min.js" />
+    <Content Include="Scripts\html.js" />
+    <Content Include="Scripts\jquery-3.1.0.js" />
+    <Content Include="Scripts\jquery-3.1.0.min.js" />
+    <Content Include="Scripts\jquery-3.1.0.slim.js" />
+    <Content Include="Scripts\jquery-3.1.0.slim.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
     <Content Include="Scripts\jquery.validate.js" />
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
-    <Content Include="Scripts\modernizr-2.6.2.js" />
+    <Content Include="Scripts\literallycanvas\.gitignore" />
+    <Content Include="Scripts\literallycanvas\core\actions.js" />
+    <Content Include="Scripts\literallycanvas\core\bindEvents.js" />
+    <Content Include="Scripts\literallycanvas\core\canvasRenderer.js" />
+    <Content Include="Scripts\literallycanvas\core\defaultOptions.js" />
+    <Content Include="Scripts\literallycanvas\core\fontmetrics.js" />
+    <Content Include="Scripts\literallycanvas\core\lineEndCapShapes.js" />
+    <Content Include="Scripts\literallycanvas\core\LiterallyCanvas.js" />
+    <Content Include="Scripts\literallycanvas\core\localization.js" />
+    <Content Include="Scripts\literallycanvas\core\math.js" />
+    <Content Include="Scripts\literallycanvas\core\renderSnapshotToImage.js" />
+    <Content Include="Scripts\literallycanvas\core\renderSnapshotToSVG.js" />
+    <Content Include="Scripts\literallycanvas\core\shapes.js" />
+    <Content Include="Scripts\literallycanvas\core\svgRenderer.js" />
+    <Content Include="Scripts\literallycanvas\core\TextRenderer.js" />
+    <Content Include="Scripts\literallycanvas\core\util.js" />
+    <Content Include="Scripts\literallycanvas\ie_customevent.js" />
+    <Content Include="Scripts\literallycanvas\ie_setLineDash.js" />
+    <Content Include="Scripts\literallycanvas\index.js" />
+    <Content Include="Scripts\literallycanvas\literallycanvas-core.js" />
+    <Content Include="Scripts\literallycanvas\literallycanvas-core.min.js" />
+    <Content Include="Scripts\literallycanvas\literallycanvas.js" />
+    <Content Include="Scripts\literallycanvas\literallycanvas.min.js" />
+    <Content Include="Scripts\literallycanvas\optionsStyles\font.js" />
+    <Content Include="Scripts\literallycanvas\optionsStyles\line-options-and-stroke-width.js" />
+    <Content Include="Scripts\literallycanvas\optionsStyles\null.js" />
+    <Content Include="Scripts\literallycanvas\optionsStyles\optionsStyles.js" />
+    <Content Include="Scripts\literallycanvas\optionsStyles\polygon-and-stroke-width.js" />
+    <Content Include="Scripts\literallycanvas\optionsStyles\stroke-or-fill.js" />
+    <Content Include="Scripts\literallycanvas\optionsStyles\stroke-width.js" />
+    <Content Include="Scripts\literallycanvas\reactGUI\ClearButton.js" />
+    <Content Include="Scripts\literallycanvas\reactGUI\ColorWell.js" />
+    <Content Include="Scripts\literallycanvas\reactGUI\createSetStateOnEventMixin.js" />
+    <Content Include="Scripts\literallycanvas\reactGUI\createToolButton.js" />
+    <Content Include="Scripts\literallycanvas\reactGUI\init.js" />
+    <Content Include="Scripts\literallycanvas\reactGUI\initDOM.js" />
+    <Content Include="Scripts\literallycanvas\reactGUI\LiterallyCanvas.js" />
+    <Content Include="Scripts\literallycanvas\reactGUI\Options.js" />
+    <Content Include="Scripts\literallycanvas\reactGUI\Picker.js" />
+    <Content Include="Scripts\literallycanvas\reactGUI\React-shim.js" />
+    <Content Include="Scripts\literallycanvas\reactGUI\ReactDOM-shim.js" />
+    <Content Include="Scripts\literallycanvas\reactGUI\StrokeWidthPicker.js" />
+    <Content Include="Scripts\literallycanvas\reactGUI\UndoRedoButtons.js" />
+    <Content Include="Scripts\literallycanvas\reactGUI\ZoomButtons.js" />
+    <Content Include="Scripts\literallycanvas\tools\base.js" />
+    <Content Include="Scripts\literallycanvas\tools\Ellipse.js" />
+    <Content Include="Scripts\literallycanvas\tools\Eraser.js" />
+    <Content Include="Scripts\literallycanvas\tools\Eyedropper.js" />
+    <Content Include="Scripts\literallycanvas\tools\Line.js" />
+    <Content Include="Scripts\literallycanvas\tools\Pan.js" />
+    <Content Include="Scripts\literallycanvas\tools\Pencil.js" />
+    <Content Include="Scripts\literallycanvas\tools\Polygon.js" />
+    <Content Include="Scripts\literallycanvas\tools\Rectangle.js" />
+    <Content Include="Scripts\literallycanvas\tools\SelectShape.js" />
+    <Content Include="Scripts\literallycanvas\tools\Text.js" />
+    <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\respond.js" />
+    <Content Include="Scripts\respond.matchmedia.addListener.js" />
+    <Content Include="Scripts\respond.matchmedia.addListener.min.js" />
     <Content Include="Scripts\respond.min.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="Web.config" />
@@ -235,23 +364,20 @@
     <Content Include="Views\Manage\VerifyPhoneNumber.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
+    <Content Include="Views\Shared\_Wall.cshtml" />
+    <Content Include="Views\Home\Wall.cshtml" />
+    <Content Include="Scripts\literallycanvas\.npmignore" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="fonts\glyphicons-halflings-regular.woff" />
-    <Content Include="fonts\glyphicons-halflings-regular.ttf" />
-    <Content Include="fonts\glyphicons-halflings-regular.eot" />
     <Content Include="packages.config" />
     <None Include="Project_Readme.html" />
-    <Content Include="Scripts\jquery-1.10.2.min.map" />
+    <Content Include="Scripts\jquery-3.1.0.slim.min.map" />
+    <Content Include="Scripts\jquery-3.1.0.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\c-sharp\massive-moose.data\massive-moose.data.csproj">
-      <Project>{be7578da-464b-46eb-b4b5-425f12027790}</Project>
-      <Name>massive-moose.data</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\c-sharp\massive-moose.services\massive-moose.services.csproj">
       <Project>{b4409dbf-7663-4045-946b-7ae1d06b2c7e}</Project>
       <Name>massive-moose.services</Name>
