@@ -42,6 +42,12 @@
             toolbarPosition: 'top'
         });
 
+        var fullscreenButton = $('<button id="fullscreen-button">Fullscreen</button>');
+        fullscreenButton.click(function() {
+            if (screenfull.enabled) {
+                screenfull.request();
+            }
+        })
         var uploadButton = $('<button id="save-button">Finish</button>');
         uploadButton.click(ClickUpload);
         var cancelButton = $('<button id="cancel-button">Cancel</button>');
