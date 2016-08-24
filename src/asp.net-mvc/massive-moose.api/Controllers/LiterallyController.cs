@@ -68,6 +68,7 @@ namespace massive_moose.api.Controllers
                             AddressY = drawingSession.AddressY
                         };
                     }
+                    brick.LastUpdated = DateTime.Now;
                     brick.SnapshotJson = inputString;
                     session.Save(brick);
 

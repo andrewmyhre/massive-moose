@@ -11,6 +11,7 @@ namespace massive_moose.services.models.mapping
             Map(x=>x.AddressY);
             Map(x=>x.Guid);
             Map(x => x.SnapshotJson).Length(9999999);
+            Map(x => x.LastUpdated).Nullable();
         }
     }
 }

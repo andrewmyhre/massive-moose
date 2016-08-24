@@ -124,6 +124,7 @@
     <Compile Include="models\IdentityUserLogin.cs" />
     <Compile Include="models\literally\Shape.cs" />
     <Compile Include="models\mapping\ApplicationUserMap.cs" />
+    <Compile Include="models\mapping\BrickInterceptor.cs" />
     <Compile Include="models\mapping\BrickMap.cs" />
     <Compile Include="models\mapping\DrawingSessionMap.cs" />
     <Compile Include="models\mapping\IdentityUserLoginMap.cs" />

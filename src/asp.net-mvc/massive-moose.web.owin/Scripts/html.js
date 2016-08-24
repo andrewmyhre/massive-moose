@@ -108,14 +108,14 @@
             $.getJSON(_baseApiUrl + '/v2/wall/0/0',
                 null,
                 function(data) {
-                    _wall = data;
                     for (var y = 0; y < data.length; y++) {
 
                         for (var x = 0; x < data[y].length; x++) {
                             var brickView = $('#c' + (y * 12 + x));
                             var brick = data[x][y];
                             brick.element = brickView;
-                            if (brick && brick.G != '') {
+                            if (brick && brick.G != ''
+                                && (_wall && _wall[x][y] && (_wall[x][y].D != data.D))) {
                                 brickView.css({
                                     'backgroundImage': 'url("' +
                                         _baseApiUrl +
@@ -123,8 +123,8 @@
                                         brick.X +
                                         '/' +
                                         brick.Y +
-                                        '?r=' +
-                                        Math.floor((Math.random() * 10000) + 1) +
+                                        '?d=' +
+                                        brick.D +
                                         '")'
                                 });
                             }
@@ -134,6 +134,7 @@
                             $(brickView).attr('data-viewY', y);
                         }
                     }
+                    _wall = data;
                     $('body').css({ 'min-width': '1600px', 'min-height': '900px' });
                     viewport = document.querySelector("meta[name=viewport]");
                     viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);

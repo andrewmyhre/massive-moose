@@ -25,7 +25,7 @@ namespace massive_moose.api.Controllers
                     .Select(
                         b => b.AddressX,
                         b => b.AddressY,
-                        b => b.Id,
+                        b => b.LastUpdated,
                         b => b.Guid).List<object[]>();
 
                 var wall = new BrickViewModel[12, 12];
@@ -42,6 +42,7 @@ namespace massive_moose.api.Controllers
                             {
                                 X = (int) o[0],
                                 Y = (int) o[1],
+                                D = ((DateTime?)o[2]).HasValue?((DateTime?)o[2]).Value.Ticks.ToString():"",
                                 G = o[3].ToString()
                             };
                         }

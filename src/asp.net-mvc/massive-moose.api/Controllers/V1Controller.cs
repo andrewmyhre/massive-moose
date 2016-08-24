@@ -176,8 +176,10 @@ namespace massive_moose.api.Controllers
                         AddressX = drawingSession.AddressX,
                         AddressY = drawingSession.AddressY
                     };
-                    session.Save(brick);
+                    
                 }
+                brick.LastUpdated = DateTime.Now;
+                session.SaveOrUpdate(brick);
 
                 tx.Commit();
 

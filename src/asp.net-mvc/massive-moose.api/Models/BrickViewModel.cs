@@ -10,5 +10,6 @@ namespace massive_moose.api.Models
         public int X { get; set; }
         public int Y { get; set; }
         public string G { get; set; }
+        public string D { get; set; }
     }
 }
