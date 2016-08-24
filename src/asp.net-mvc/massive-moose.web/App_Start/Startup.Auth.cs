@@ -6,6 +6,7 @@ using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.Google;
 using Owin;
 using massive_moose.web.Models;
+using Ninject.Web.Common.OwinHost;
 
 namespace massive_moose.web
 {
@@ -15,7 +16,7 @@ namespace massive_moose.web
         public void ConfigureAuth(IAppBuilder app)
         {
             // Configure the db context, user manager and signin manager to use a single instance per request
-            app.CreatePerOwinContext(ApplicationDbContext.Create);
+            app.CreatePerOwinContext(massive_moose.web.App_Start.NinjectWebCommon.CreateKernel);
             app.CreatePerOwinContext<ApplicationUserManager>(ApplicationUserManager.Create);
             app.CreatePerOwinContext<ApplicationSignInManager>(ApplicationSignInManager.Create);
 
@@ -58,11 +59,11 @@ namespace massive_moose.web
             //   appId: "",
             //   appSecret: "");
 
-            //app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
-            //{
-            //    ClientId = "",
-            //    ClientSecret = ""
-            //});
+            app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
+            {
+                ClientId = System.Configuration.ConfigurationManager.AppSettings["GoogleOAuthClientId"],
+                ClientSecret = System.Configuration.ConfigurationManager.AppSettings["GoogleOAuthClientSecret"]
+            });
         }
     }
 }

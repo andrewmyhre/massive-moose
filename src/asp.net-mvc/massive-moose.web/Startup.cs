@@ -8,6 +8,7 @@ namespace massive_moose.web
     {
         public void Configuration(IAppBuilder app)
         {
+            ConfigureNinject(app);
             ConfigureAuth(app);
         }
     }

@@ -13,7 +13,6 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using massive_moose.contracts;
 using Newtonsoft.Json;
 using Brush = System.Windows.Media.Brush;
 using Canvas = System.Windows.Controls.Canvas;

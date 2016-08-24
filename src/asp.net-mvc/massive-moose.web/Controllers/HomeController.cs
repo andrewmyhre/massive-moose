@@ -1,13 +1,10 @@
-﻿using massive_moose.contracts;
-using massive_moose.data;
-using massive_moose.web.Models;
+﻿using massive_moose.web.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
-using massive_moose.contracts.drawing;
 
 namespace massive_moose.web.Controllers
 {

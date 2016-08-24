@@ -55,10 +55,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\c-sharp\massive-moose.contracts\massive-moose.contracts.csproj">
-      <Project>{30cc7bd9-31ef-440d-9c93-9ec7b7b888f6}</Project>
-      <Name>massive-moose.contracts</Name>
-    </ProjectReference>
     <ProjectReference Include="..\c-sharp\massive-moose.drawing\massive-moose.drawing.csproj">
       <Project>{eb30c369-ddfa-48d7-9373-4fe2f0936b4d}</Project>
       <Name>massive-moose.drawing</Name>
