@@ -53,7 +53,7 @@
         var cancelButton = $('<button id="cancel-button">Cancel</button>');
         cancelButton.click(ClickCancel);
 
-        $('.lc-options').append($('<div class="session-options"></div>').append(uploadButton).append(cancelButton));
+        $('.lc-options').append($('<div class="session-options"></div>').append(fullscreenButton).append(uploadButton).append(cancelButton));
 
         var unsubscribeOnDrawStart = _lc.on('drawStart', function (arguments) {
             if ($('.lc-picker').is(":visible")) {
