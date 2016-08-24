@@ -4,6 +4,7 @@
     var _brickInUse = null;
     var _lc = null;
     var _wall = null;
+    var _toolsWaitHandle = 0;
 
     $('#tblWall tr td').click(function (bv) {
         openSession($(this).attr('data-viewx'),
@@ -11,51 +12,6 @@
             $(this).attr('data-addressx'),
             $(this).attr('data-addressy'));
     });
-
-    $('[data-action=upload]').click(function (e) {
-        e.preventDefault();
-
-        $('.finish-and-upload').hide();
-        $('.cancel').hide();
-        $('#messages').html('Uploading...');
-
-        $.post(_baseApiUrl+'/literally/receive/' + _brickInUse.sessionToken,
-                JSON.stringify(_lc.getSnapshot()))
-            .done(function() {
-                $('.finish-and-upload').show();
-                $('.cancel').show();
-                $('#messages').html('');
-
-                var brickView = $(_brickInUse.element);
-                if (brickView) {
-                    brickView.css({ 'backgroundImage': 'url("' + _baseApiUrl + '/v1/image/t/' + _brickInUse.AddressX + '/' + _brickInUse.AddressY + '?r=' + Math.floor((Math.random() * 10000) + 1) + '")' });
-                }
-
-                _brickInUse = null;
-                _lc = null;
-                $('#drawingSpace').hide();
-                $('#wall').show();
-                $('#messages').html('');
-                updateWall(brickView[0].id);
-        });
-        return false;
-    });
-
-    $('[data-action=cancel]')
-        .click(function (e) {
-            e.preventDefault();
-
-            $.post(_baseApiUrl + '/v1/image/release/' + _brickInUse.AddressX + '/' + _brickInUse.AddressY + '/' + _brickInUse.sessionToken, null)
-            .done(function() {
-                    _brickInUse = null;
-                    _lc = null;
-                    $('#drawingSpace').hide();
-                    $('#wall').show();
-                    updateWall();
-                });
-
-            return false;
-        });
 
     $('#vp_increase')
         .click(function () {
@@ -85,6 +41,36 @@
             backgroundColor:"transparent",
             toolbarPosition: 'top'
         });
+
+        var uploadButton = $('<button id="save-button">Finish</button>');
+        uploadButton.click(ClickUpload);
+        var cancelButton = $('<button id="cancel-button">Cancel</button>');
+        cancelButton.click(ClickCancel);
+
+        $('.lc-options').append($('<div class="session-options"></div>').append(uploadButton).append(cancelButton));
+
+        var unsubscribeOnDrawStart = _lc.on('drawStart', function (arguments) {
+            if ($('.lc-picker').is(":visible")) {
+                $('.lc-picker').toggle("slide", null, 100);
+                $('.horz-toolbar').toggle("slide", { direction: 'up' }, 100);
+            }
+            // do stuff
+        });
+        var unsubscribeOnDrawStart = _lc.on('drawEnd', function (arguments) {
+            if (_toolsWaitHandle != 0) {
+                clearTimeout(_toolsWaitHandle);
+            }
+            _toolsWaitHandle = setTimeout(toggleTools, 2000);
+            // do stuff
+        });
+        //unsubscribe();
+        function toggleTools() {
+            $('.lc-picker').toggle("slide");
+            $('.horz-toolbar').toggle("slide", { direction: 'up' });
+            if (_toolsWaitHandle != 0) {
+                clearTimeout(_toolsWaitHandle);
+            }
+        }
         
         if (brick.snapshotJson) {
             _lc.loadSnapshot(JSON.parse(brick.snapshotJson));
@@ -124,7 +110,7 @@
                             var brick = data[x][y];
                             brick.element = brickView;
                             if (brick && brick.Id != 0) {
-                                brickView.css({ 'backgroundImage': 'url("' + _baseApiUrl + '/v1/image/t/' + brick.AddressX + '/' + brick.AddressY+'")' });
+                                brickView.css({ 'backgroundImage': 'url("' + _baseApiUrl + '/v1/image/t/' + brick.AddressX + '/' + brick.AddressY + '?r=' + Math.floor((Math.random() * 10000) + 1) + '")' });
                                 //brickView.append('<img src="'+_baseApiUrl+'/v1/image/t/' + brick.AddressX + '/' + brick.AddressY + '" />');
                             }
                             $(brickView).attr('data-addressX', brick.AddressX);
@@ -158,5 +144,58 @@
             alert('someone is currently drawing on that space')
             updateWall();
         });
+    }
+
+    function ClickUpload(e) {
+        e.preventDefault();
+
+        $('.finish-and-upload').hide();
+        $('.cancel').hide();
+        $('#messages').html('Uploading...');
+
+        $.post(_baseApiUrl + '/literally/receive/' + _brickInUse.sessionToken,
+                JSON.stringify(_lc.getSnapshot()))
+            .done(function() {
+                $('.finish-and-upload').show();
+                $('.cancel').show();
+                $('#messages').html('');
+
+                var brickView = $(_brickInUse.element);
+                if (brickView) {
+                    brickView.css({
+                        'backgroundImage': 'url("' +
+                            _baseApiUrl +
+                            '/v1/image/t/' +
+                            _brickInUse.AddressX +
+                            '/' +
+                            _brickInUse.AddressY +
+                            '?r=' +
+                            Math.floor((Math.random() * 10000) + 1) +
+                            '")'
+                    });
+                }
+
+                _brickInUse = null;
+                _lc = null;
+                $('#drawingSpace').hide();
+                $('#wall').show();
+                $('#messages').html('');
+                updateWall(brickView[0].id);
+            })
+    }
+
+    function ClickCancel(e) {
+        e.preventDefault();
+
+        $.post(_baseApiUrl + '/v1/image/release/' + _brickInUse.AddressX + '/' + _brickInUse.AddressY + '/' + _brickInUse.sessionToken, null)
+        .done(function() {
+            _brickInUse = null;
+            _lc = null;
+            $('#drawingSpace').hide();
+            $('#wall').show();
+            updateWall();
+        });
+
+        return false;
     }
 });
