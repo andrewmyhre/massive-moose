@@ -8,6 +8,7 @@ using massive_moose.web.owin.Models;
 using log4net;
 using massive_moose.services.models;
 using System.Configuration;
+using NHibernate.Criterion;
 
 namespace massive_moose.web.owin.Controllers
 {
@@ -20,11 +21,28 @@ namespace massive_moose.web.owin.Controllers
             _log = log;
         }
 
-        public ActionResult Index()
+        [Route("/{inviteCode}")]
+        public ActionResult Index(string inviteCode=null)
         {
             using (var session = SessionFactory.Instance.OpenStatelessSession())
             {
+                Wall wall = null;
+                if (string.IsNullOrWhiteSpace(inviteCode))
+                {
+                    wall = session.CreateCriteria<Wall>()
+                        .CreateCriteria("Owner")
+                        .Add(Restrictions.Eq("UserName", "system"))
+                        .UniqueResult<Wall>();
+                }
+                else
+                {
+                    wall = session.CreateCriteria<Wall>()
+                        .Add(Restrictions.Eq("InviteCode", inviteCode))
+                        .UniqueResult<Wall>();
+                }
+
                 var bricks = session.CreateCriteria<Brick>()
+                    .Add(Restrictions.Eq("Wall.Id", wall.Id))
                     .List<Brick>();
 
                 var wallVm = new WallViewModel();

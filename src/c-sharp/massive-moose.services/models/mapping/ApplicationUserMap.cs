@@ -13,6 +13,7 @@ namespace massive_moose.services.models.mapping
             Map(x => x.Email);
             Map(x => x.EmailConfirmed);
             HasMany<IdentityUserLogin>(x => x.Logins).KeyColumn("ApplicationUserId");
+            HasMany<Wall>(x => x.Walls).KeyColumn("ApplicationUserId");
         }
     }
 }

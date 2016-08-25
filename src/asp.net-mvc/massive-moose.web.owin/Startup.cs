@@ -9,6 +9,7 @@ namespace massive_moose.web.owin
         public void Configuration(IAppBuilder app)
         {
             ConfigureAuth(app);
+            CreateDefaultWall(app);
         }
     }
 }

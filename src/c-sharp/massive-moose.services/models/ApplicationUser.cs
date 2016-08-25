@@ -18,7 +18,7 @@ namespace massive_moose.services.models
         public virtual IList<IdentityUserLogin> Logins { get; set; }
         public virtual bool EmailConfirmed { get; set; }
 
-        
+        public virtual IList<Wall> Walls { get; set; }
 
         public virtual async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser, int> manager)
         {
