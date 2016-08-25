@@ -1,0 +1,28 @@
+﻿@model massive_moose.web.owin.Models.WallsViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Your Walls</h2>
+@using (Html.BeginForm("Create", "Walls"))
+{
+    <button type="submit">+ Create a new wall</button>
+}
+
+<table class="table table-condensed table-hover">
+    <thead>
+    <tr>
+        <th>Invite Code</th>
+    </tr>
+    </thead>
+    <tbody>
+        @foreach (var wall in Model.Walls)
+        {
+            <tr>
+                <td>@wall.InviteCode</td>
+                <td>@Html.ActionLink("Manage", "Manage", new { inviteCode = wall.InviteCode})</td>
+            </tr>
+        }
+    </tbody>
+</table>
+    

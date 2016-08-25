@@ -10,12 +10,15 @@ using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using massive_moose.web.owin.Models;
 using massive_moose.services.models;
+using NHibernate;
+using NHibernate.Criterion;
 
 namespace massive_moose.web.owin.Controllers
 {
     [Authorize]
     public class AccountController : Controller
     {
+        private readonly ISession _session;
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
 
@@ -23,8 +26,9 @@ namespace massive_moose.web.owin.Controllers
         {
         }
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager )
+        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, ISession session)
         {
+            _session = session;
             UserManager = userManager;
             SignInManager = signInManager;
         }

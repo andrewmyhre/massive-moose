@@ -1,17 +1,23 @@
-﻿using Microsoft.WindowsAzure.Storage;
+﻿using massive_moose.services;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System.IO;
 
 namespace massive_moose.storage.azure
 {
+    public class AzureFileStorageConfiguration
+    {
+        public string ConnectionString { get; set; }
+    }
+
     public class AzureFileStorage : IFileStorage
     {
         private CloudStorageAccount _storageAccount;
         private CloudBlobClient _blobClient;
 
-        public AzureFileStorage(string connectionString)
+        public AzureFileStorage(AzureFileStorageConfiguration configuration)
         {
-            _storageAccount = CloudStorageAccount.Parse(connectionString);
+            _storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             _blobClient = _storageAccount.CreateCloudBlobClient();
         }
         public void Delete(string filePath)

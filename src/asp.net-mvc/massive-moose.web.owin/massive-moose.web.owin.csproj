@@ -198,14 +198,18 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Controllers\ProfileController.cs" />
+    <Compile Include="Controllers\WallsController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="MassiveMooseNinjectModule.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\ApplicationUserStore.cs" />
     <Compile Include="Models\BrickViewModel.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
+    <Compile Include="Models\WallsViewModel.cs" />
+    <Compile Include="Models\WallViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
@@ -213,6 +217,7 @@
     <Content Include="Content\066da1cdd70fafc6c8c1ad2eae48b95d.jpg" />
     <Content Include="Content\2858936-red-brick-wall-texture.jpg" />
     <Content Include="Content\blank.css" />
+    <Content Include="Content\blank.png" />
     <Content Include="Content\bootstrap-theme.css" />
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
@@ -372,6 +377,9 @@
     <Content Include="Views\Shared\_Wall.cshtml" />
     <Content Include="Views\Home\Wall.cshtml" />
     <Content Include="Scripts\literallycanvas\.npmignore" />
+    <Content Include="Views\Walls\Index.cshtml" />
+    <Content Include="Views\Walls\Manage.cshtml" />
+    <Content Include="Views\Walls\Share.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -387,6 +395,10 @@
     <ProjectReference Include="..\..\c-sharp\massive-moose.services\massive-moose.services.csproj">
       <Project>{b4409dbf-7663-4045-946b-7ae1d06b2c7e}</Project>
       <Name>massive-moose.services</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\c-sharp\massive-moose.storage.azure\massive-moose.storage.azure.csproj">
+      <Project>{9d3c3e96-37d2-4e5f-81d1-1e2230e1db51}</Project>
+      <Name>massive-moose.storage.azure</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

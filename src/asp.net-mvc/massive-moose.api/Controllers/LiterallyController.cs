@@ -11,14 +11,22 @@ using massive_moose.services.models.drawing;
 using massive_moose.services.models;
 using massive_moose.services;
 using massive_moose.services.models.literally;
+using System.Net.Http;
 
 namespace massive_moose.api.Controllers
 {
     
     public class LiterallyController : ApiController
     {
+        private readonly WallOperations _wallOperations;
+        private readonly IFileStorage _fileStorage;
         private static ILog Log = LogManager.GetLogger(typeof(LiterallyController));
-        private static AzureFileStorage _fileStorage = new AzureFileStorage(ConfigurationManager.ConnectionStrings["azure-storage"].ConnectionString);
+
+        public LiterallyController()
+        {
+            _fileStorage = new AzureFileStorage(new AzureFileStorageConfiguration() { ConnectionString = ConfigurationManager.ConnectionStrings["azure-storage"].ConnectionString });
+            _wallOperations = new WallOperations(_fileStorage);
+        }
 
         [HttpPost]
         [Route("literally/draw/{token}")]
@@ -40,7 +48,7 @@ namespace massive_moose.api.Controllers
                 {
                     var drawing = JsonConvert.DeserializeObject<Drawing>(inputString);
                     var canvas = new LiterallyMapper().ToCanvas(drawing);
-                    ExportCanvasToImage(canvas, drawingSession);
+                    _wallOperations.Contribute(inputString, canvas, drawingSession, session, Request.GetOwinContext().Request.RemoteIpAddress);
                 }
                 catch (Exception ex)
                 {
@@ -86,7 +94,7 @@ namespace massive_moose.api.Controllers
             return Ok();
         }
 
-        private static void ExportCanvasToImage(Canvas canvas, DrawingSession drawingSession)
+        private void ExportCanvasToImage(Canvas canvas, DrawingSession drawingSession)
         {
             var imageData = new BrickRenderer().Render(canvas);
 
@@ -96,16 +104,7 @@ namespace massive_moose.api.Controllers
 
             _fileStorage.Store(outputPath, imageData, true);
 
-            System.IO.MemoryStream myMemStream = new System.IO.MemoryStream(imageData);
-            System.Drawing.Image fullsizeImage = System.Drawing.Image.FromStream(myMemStream);
-            System.Drawing.Image newImage = fullsizeImage.GetThumbnailImage(200, 100, null, IntPtr.Zero);
-            System.IO.MemoryStream myResult = new System.IO.MemoryStream();
-            newImage.Save(myResult, System.Drawing.Imaging.ImageFormat.Png);
-
-            outputPath = string.Format("{0}/b_{1}-{2}-{3}_1.png",
-                ConfigurationManager.AppSettings["storageContainer"],
-                drawingSession.Wall.InviteCode, drawingSession.AddressX, drawingSession.AddressY);
-            _fileStorage.Store(outputPath, myResult.ToArray(), true);
+            
         }
     }
 }

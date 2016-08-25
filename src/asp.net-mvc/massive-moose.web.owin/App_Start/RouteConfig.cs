@@ -14,15 +14,22 @@ namespace massive_moose.web.owin
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
             routes.MapRoute(
+                name: "ManageWall",
+                url: "walls/manage/{inviteCode}",
+                defaults: new {controller = "Walls", action = "Manage"});
+
+            routes.MapRoute(
                 name: "Wall",
-                url: "{inviteCode}",
-                defaults: new {controller = "Home", Action = "Index", inviteCode = UrlParameter.Optional});
+                url: "w/{inviteCode}",
+                defaults: new { controller = "Home", Action = "Index", inviteCode = UrlParameter.Optional });
 
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
+
             );
+
         }
     }
 }

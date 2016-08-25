@@ -6,15 +6,4 @@
         public int AddressY { get; set; }
         public string ImageUrl { get; set; }
     }
-
-    public class WallViewModel
-    {
-        public BrickViewModel[,] Bricks { get; set; }
-        public string InviteCode { get; set; }
-
-        public WallViewModel()
-        {
-            Bricks = new BrickViewModel[12,12];
-        }
-    }
 }

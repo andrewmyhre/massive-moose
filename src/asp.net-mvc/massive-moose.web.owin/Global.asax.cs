@@ -26,7 +26,7 @@ namespace massive_moose.web.owin
                 _kernel.Bind<Func<IKernel>>().ToMethod(ctx => () => new Bootstrapper().Kernel);
                 _kernel.Bind<IHttpModule>().To<HttpApplicationInitializationHttpModule>();
 
-                RegisterServices(_kernel);
+                _kernel.Load(new MassiveMooseNinjectModule());
                 return _kernel;
             }
             catch
@@ -36,17 +36,6 @@ namespace massive_moose.web.owin
             }
         }
 
-        private static void RegisterServices(IKernel kernel)
-        {
-            kernel.Bind<ILog>().ToMethod(x =>
-            {
-                if (x.Request.Target != null)
-                    return LogManager.GetLogger(x.Request.Target.Type);
-                return LogManager.GetLogger(typeof(MvcApplication));
-            }).InRequestScope();
-            kernel.Bind<ISessionFactory>().ToMethod(x => SessionFactory.Instance).InSingletonScope();
-            kernel.Bind<ISession>().ToMethod(x => x.Kernel.Get<ISessionFactory>().OpenSession()).InRequestScope();
-        }
 
         protected override void OnApplicationStarted()
         {

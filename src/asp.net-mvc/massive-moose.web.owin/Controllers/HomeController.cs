@@ -15,10 +15,12 @@ namespace massive_moose.web.owin.Controllers
     public class HomeController : Controller
     {
         private readonly ILog _log;
+        private readonly WallOperations _wallOperations;
 
-        public HomeController(ILog log)
+        public HomeController(ILog log, WallOperations wallOperations)
         {
             _log = log;
+            _wallOperations = wallOperations;
         }
 
         [Route("{inviteCode}")]
@@ -26,7 +28,7 @@ namespace massive_moose.web.owin.Controllers
         {
             using (var session = SessionFactory.Instance.OpenStatelessSession())
             {
-                var wall = new WallOperations().GetWallByKeyOrDefault(inviteCode, session);
+                var wall = _wallOperations.GetWallByKeyOrDefault(inviteCode, session);
                 return View(new WallViewModel {InviteCode = wall.InviteCode});
             }
         }

@@ -23,9 +23,16 @@ namespace massive_moose.api.Controllers
     [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class V1Controller : ApiController
     {
+        private readonly WallOperations _wallOperations;
         private static ILog Log = LogManager.GetLogger(typeof(V1Controller));
-        private static AzureFileStorage _fileStorage = new AzureFileStorage(ConfigurationManager.ConnectionStrings["azure-storage"].ConnectionString);
+        private IFileStorage _fileStorage;
 
+        public V1Controller()
+        {
+
+            _fileStorage = new AzureFileStorage(new AzureFileStorageConfiguration() { ConnectionString = ConfigurationManager.ConnectionStrings["azure-storage"].ConnectionString });
+            _wallOperations = new WallOperations(_fileStorage);
+        }
         [HttpGet]
         [Route("v1/image/sessions")]
         public IEnumerable<DrawingSession> ActiveSessions()
@@ -81,7 +88,7 @@ namespace massive_moose.api.Controllers
         {
             using (var session = SessionFactory.Instance.OpenSession())
             {
-                var wall = new WallOperations().GetWallByKeyOrDefault(wallKey, session);
+                var wall = _wallOperations.GetWallByKeyOrDefault(wallKey, session);
 
                 if (wall == null)
                     return NotFound();
@@ -196,7 +203,7 @@ namespace massive_moose.api.Controllers
             }
         }
 
-        private static void ExportImageToFile(DrawingSession drawingSession, Canvas canvas)
+        private void ExportImageToFile(DrawingSession drawingSession, Canvas canvas)
         {
             string outputPath = string.Format("{0}/b_{1}-{2}-{3}.png",
                 ConfigurationManager.AppSettings["storageContainer"],
@@ -231,7 +238,7 @@ namespace massive_moose.api.Controllers
             Wall wall = null;
             using (var session = SessionFactory.Instance.OpenStatelessSession())
             {
-                wall = new WallOperations().GetWallByKeyOrDefault(wallKey, session);
+                wall = _wallOperations.GetWallByKeyOrDefault(wallKey, session);
             }
 
             string filename = string.Format("b_{0}-{1}-{2}", wall.InviteCode, addressX, addressY);
@@ -261,7 +268,7 @@ namespace massive_moose.api.Controllers
             Wall wall = null;
             using (var session = SessionFactory.Instance.OpenStatelessSession())
             {
-                wall = new WallOperations().GetWallByKeyOrDefault(wallKey, session);
+                wall = _wallOperations.GetWallByKeyOrDefault(wallKey, session);
             }
             string filePath = string.Format("{0}/b_{1}-{2}-{3}_1.png",
                     ConfigurationManager.AppSettings["storageContainer"],

@@ -35,14 +35,4 @@ namespace massive_moose.services.models
             return code;
         }
     }
-
-    public class WallHistoryItem
-    {
-        public virtual int Id { get; protected set; }
-        public virtual string SnapshotJson { get; set; }
-        public virtual string ClientIp { get; set; }
-        public virtual byte[] SnapshotImage { get; set; }
-        public virtual byte[] SnapshotImageThumbnail { get; set; }
-        public virtual Wall Wall { get; set; }
-    }
 }

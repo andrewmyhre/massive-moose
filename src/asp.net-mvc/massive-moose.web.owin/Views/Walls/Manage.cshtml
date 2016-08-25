@@ -1,0 +1,69 @@
+﻿@model massive_moose.web.owin.Models.WallViewModel
+    @using System.Linq;
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Link This</h2>
+<div class="panel panel-primary">
+    <div class="panel-heading">Copy this link and share it. Anybody with this link can draw on your wall.</div>
+    <div class="panel-body"><a href="@Url.RouteUrl("Wall", new { inviteCode = Model.InviteCode }, Request.Url.Scheme)">@Url.RouteUrl("Wall", new { inviteCode = Model.InviteCode }, Request.Url.Scheme)</a></div>
+</div>
+
+@if (Model.BrickHistory != null)
+{
+    <h2>History for the brick you selected</h2>
+    <table class="table table-striped">
+        @foreach (var history in Model.BrickHistory)
+        {
+            <tr>
+                <td>@history.Timestamp</td>
+                <td>@history.ClientIp</td>
+                <td>@history.DrawingSession.AddressX,@history.DrawingSession.AddressX</td>
+                <td><img style="height:60px" src="@System.Configuration.ConfigurationManager.AppSettings["MMApi"]/v2/wall/history/image/t/@history.Id" /></td>
+            </tr>
+        }
+    </table>
+}
+
+<h2>This is what your wall looks like</h2>
+<table style="width: 100%; height:600px;">
+    @for (int y = 0; y < 12; y++)
+    {
+        <tr>
+            @for (int x = 0; x < 12; x++)
+            {
+                var brick = Model.Bricks[x,y];
+                <td style="margin: 0; padding: 0; border: 1px solid black; width: 8%; height: 8%; background-size: 100% 100%; background-image:url('@(brick != null ? brick.ImageUrl : "/content/blank.png")')">
+                    @if (brick != null)
+                    {
+                        @Html.ActionLink("History", "Manage", new {inviteCode = Model.Wall.InviteCode, addressX = brick.AddressX, addressY = brick.AddressY})
+                    }
+                </td>
+            }
+        </tr>
+    }
+</table>
+
+<h2>Here are all the contributions to your wall, in order</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Time</th>
+            <th>User IP Address</th>
+            <th>Brick Position</th>
+            <th>Contribution</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var history in Model.History)
+    {
+        <tr>
+            <td>@history.Timestamp</td>
+            <td>@history.ClientIp</td>
+            <td>@history.DrawingSession.AddressX,@history.DrawingSession.AddressX</td>
+            <td><img style="height:60px" src="@System.Configuration.ConfigurationManager.AppSettings["MMApi"]/v2/wall/history/image/t/@history.Id"/></td>
+        </tr>
+    }
+    </tbody>
+</table>

@@ -20,17 +20,4 @@ namespace massive_moose.services.models.mapping
             HasMany<Brick>(x => x.Bricks).KeyColumn("WallId");
         }
     }
-
-    public class WallHistoryItemMap : ClassMap<WallHistoryItem>
-    {
-        public WallHistoryItemMap()
-        {
-            Id(x => x.Id).GeneratedBy.Identity();
-            Map(x => x.ClientIp);
-            Map(x => x.SnapshotImage).Length(9999999);
-            Map(x => x.SnapshotImageThumbnail).Length(9999999);
-            Map(x => x.SnapshotJson).Length(9999999);
-            References(x => x.Wall, "WallId").Cascade.None();
-        }
-    }
 }

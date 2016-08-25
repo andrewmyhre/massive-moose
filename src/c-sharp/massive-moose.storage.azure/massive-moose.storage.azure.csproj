@@ -70,11 +70,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AzureFileStorage.cs" />
-    <Compile Include="IFileStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\massive-moose.services\massive-moose.services.csproj">
+      <Project>{b4409dbf-7663-4045-946b-7ae1d06b2c7e}</Project>
+      <Name>massive-moose.services</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

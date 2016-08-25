@@ -1,4 +1,4 @@
-namespace massive_moose.storage.azure
+namespace massive_moose.services
 {
     public interface IFileStorage
     {
