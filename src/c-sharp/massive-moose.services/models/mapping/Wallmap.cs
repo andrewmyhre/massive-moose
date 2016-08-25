@@ -17,6 +17,7 @@ namespace massive_moose.services.models.mapping
             References(x => x.Owner, "OwnerId").Cascade.None();
             Map(x => x.InviteCode);
             HasMany<WallHistoryItem>(x => x.History).KeyColumn("WallId");
+            HasMany<Brick>(x => x.Bricks).KeyColumn("WallId");
         }
     }
 

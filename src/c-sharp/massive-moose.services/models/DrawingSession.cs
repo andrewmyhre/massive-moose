@@ -8,8 +8,9 @@ namespace massive_moose.services.models
         {
             
         }
-        public DrawingSession(int addressX, int addressY)
+        public DrawingSession(Wall wall, int addressX, int addressY)
         {
+            this.Wall = wall;
             this.AddressX = addressX;
             this.AddressY = addressY;
             this.SessionToken = Guid.NewGuid();
@@ -21,5 +22,6 @@ namespace massive_moose.services.models
         public virtual int AddressY { get; set; }
         public virtual bool Closed { get; set; }
         public virtual int Id { get; set; }
+        public virtual Wall Wall { get; set; }
     }
 }

@@ -327,6 +327,7 @@
     <Content Include="Scripts\literallycanvas\tools\Rectangle.js" />
     <Content Include="Scripts\literallycanvas\tools\SelectShape.js" />
     <Content Include="Scripts\literallycanvas\tools\Text.js" />
+    <Content Include="Scripts\mm.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.matchmedia.addListener.js" />

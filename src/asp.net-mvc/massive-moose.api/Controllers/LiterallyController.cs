@@ -21,8 +21,8 @@ namespace massive_moose.api.Controllers
         private static AzureFileStorage _fileStorage = new AzureFileStorage(ConfigurationManager.ConnectionStrings["azure-storage"].ConnectionString);
 
         [HttpPost]
-        [Route("literally/receive/{token}")]
-        [EnableCors(origins: "http://local.massivemoose.com", headers: "*", methods: "*")]
+        [Route("literally/draw/{token}")]
+        [EnableCors(origins: "*", headers: "*", methods: "*")]
         public async Task<IHttpActionResult> Receive(Guid token)
         {
             using (var session = SessionFactory.Instance.OpenSession())
@@ -58,6 +58,7 @@ namespace massive_moose.api.Controllers
                     var brick = session.CreateCriteria<Brick>()
                         .Add(Restrictions.Eq("AddressX", drawingSession.AddressX))
                         .Add(Restrictions.Eq("AddressY", drawingSession.AddressY))
+                        .Add(Restrictions.Eq("Wall.Id", drawingSession.Wall.Id))
                         .UniqueResult<Brick>();
 
                     if (brick == null)
@@ -65,7 +66,8 @@ namespace massive_moose.api.Controllers
                         brick = new Brick()
                         {
                             AddressX = drawingSession.AddressX,
-                            AddressY = drawingSession.AddressY
+                            AddressY = drawingSession.AddressY,
+                            Wall = drawingSession.Wall
                         };
                     }
                     brick.LastUpdated = DateTime.Now;
@@ -88,9 +90,9 @@ namespace massive_moose.api.Controllers
         {
             var imageData = new BrickRenderer().Render(canvas);
 
-            string outputPath = string.Format("{0}/brick_{1}-{2}.png",
+            string outputPath = string.Format("{0}/b_{1}-{2}-{3}.png",
                 ConfigurationManager.AppSettings["storageContainer"],
-                drawingSession.AddressX, drawingSession.AddressY);
+                drawingSession.Wall.InviteCode, drawingSession.AddressX, drawingSession.AddressY);
 
             _fileStorage.Store(outputPath, imageData, true);
 
@@ -100,9 +102,9 @@ namespace massive_moose.api.Controllers
             System.IO.MemoryStream myResult = new System.IO.MemoryStream();
             newImage.Save(myResult, System.Drawing.Imaging.ImageFormat.Png);
 
-            outputPath = string.Format("{0}/brick_{1}-{2}_1.png",
+            outputPath = string.Format("{0}/b_{1}-{2}-{3}_1.png",
                 ConfigurationManager.AppSettings["storageContainer"],
-                drawingSession.AddressX, drawingSession.AddressY);
+                drawingSession.Wall.InviteCode, drawingSession.AddressX, drawingSession.AddressY);
             _fileStorage.Store(outputPath, myResult.ToArray(), true);
         }
     }

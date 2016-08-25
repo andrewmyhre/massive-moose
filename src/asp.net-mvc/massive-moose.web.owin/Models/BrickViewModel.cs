@@ -10,6 +10,7 @@
     public class WallViewModel
     {
         public BrickViewModel[,] Bricks { get; set; }
+        public string InviteCode { get; set; }
 
         public WallViewModel()
         {

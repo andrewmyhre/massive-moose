@@ -16,6 +16,7 @@ using NHibernate.Criterion;
 using massive_moose.services.models;
 using massive_moose.services;
 using massive_moose.services.models.drawing;
+using NHibernate;
 
 namespace massive_moose.api.Controllers
 {
@@ -52,17 +53,15 @@ namespace massive_moose.api.Controllers
         }
 
         [HttpPost]
-        [Route("v1/image/release/{addressX}/{addressY}/{token}")]
+        [Route("v1/release/{token}")]
         [EnableCors(origins: "*", headers: "*", methods: "*")]
-        public IHttpActionResult Release(int addressX, int addressY, Guid token)
+        public IHttpActionResult Release(Guid token)
         {
             using (var session = SessionFactory.Instance.OpenSession())
             {
                 Log.DebugFormat("Receiving data for session {0}", token);
                 var drawingSession = session.CreateCriteria<DrawingSession>()
                     .Add(Restrictions.Eq("SessionToken", token))
-                    .Add(Restrictions.Eq("AddressX", addressX))
-                    .Add(Restrictions.Eq("AddressY", addressY))
                     .UniqueResult<DrawingSession>();
 
                 if (drawingSession == null)
@@ -76,22 +75,28 @@ namespace massive_moose.api.Controllers
         }
 
         [HttpPost]
-        [Route("v1/image/begin/{addressX}/{addressY}")]
+        [Route("v1/{wallKey}/draw/{addressX}/{addressY}")]
         [EnableCors(origins: "*", headers: "*", methods: "*")]
-        public IHttpActionResult Begin(int addressX, int addressY)
+        public IHttpActionResult Begin(int addressX, int addressY, string wallKey=null)
         {
             using (var session = SessionFactory.Instance.OpenSession())
             {
+                var wall = new WallOperations().GetWallByKeyOrDefault(wallKey, session);
+
+                if (wall == null)
+                    return NotFound();
+
                 if (session.CreateCriteria<DrawingSession>()
                     .Add(Restrictions.Eq("Closed", false))
                     .Add(Restrictions.Gt("Opened", DateTime.Now.Subtract(TimeSpan.FromMinutes(5))))
                     .Add(Restrictions.Eq("AddressX", addressX))
                     .Add(Restrictions.Eq("AddressY",addressY))
+                    .Add(Restrictions.Eq("Wall.Id", wall.Id))
                     .SetProjection(Projections.Count("Id"))
                     .UniqueResult<int>() > 0)
                     return Conflict();
 
-                var drawingSession = new DrawingSession(addressX, addressY);
+                var drawingSession = new DrawingSession(wall, addressX, addressY);
                 session.Save(drawingSession);
                 session.Flush();
 
@@ -99,6 +104,7 @@ namespace massive_moose.api.Controllers
                 var brick = session.CreateCriteria<Brick>()
                     .Add(Restrictions.Eq("AddressX", addressX))
                     .Add(Restrictions.Eq("AddressY", addressY))
+                    .Add(Restrictions.Eq("Wall.Id", wall.Id))
                     .UniqueResult<Brick>();
 
                 return Ok(new
@@ -110,13 +116,14 @@ namespace massive_moose.api.Controllers
         }
 
         [HttpPost]
-        [Route("v1/image/receive/{token}")]
+        [Route("v1/draw/{token}")]
         [EnableCors(origins: "*", headers: "*", methods: "*")]
         public async Task<IHttpActionResult> Receive(Guid token)
         {
             using (var session = SessionFactory.Instance.OpenSession())
                 using (var tx = session.BeginTransaction())
             {
+
                 Log.DebugFormat("Receiving data for session {0}", token);
                 var drawingSession = session.CreateCriteria<DrawingSession>()
                     .Add(Restrictions.Eq("SessionToken", token))
@@ -167,6 +174,7 @@ namespace massive_moose.api.Controllers
                 var brick = session.CreateCriteria<Brick>()
                     .Add(Restrictions.Eq("AddressX", drawingSession.AddressX))
                     .Add(Restrictions.Eq("AddressY", drawingSession.AddressY))
+                    .Add(Restrictions.Eq("Wall.Id", drawingSession.Wall.Id))
                     .UniqueResult<Brick>();
 
                 if (brick == null)
@@ -174,7 +182,8 @@ namespace massive_moose.api.Controllers
                     brick = new Brick()
                     {
                         AddressX = drawingSession.AddressX,
-                        AddressY = drawingSession.AddressY
+                        AddressY = drawingSession.AddressY,
+                        Wall = drawingSession.Wall
                     };
                     
                 }
@@ -189,9 +198,9 @@ namespace massive_moose.api.Controllers
 
         private static void ExportImageToFile(DrawingSession drawingSession, Canvas canvas)
         {
-            string outputPath = string.Format("{0}/brick_{1}-{2}.png",
+            string outputPath = string.Format("{0}/b_{1}-{2}-{3}.png",
                 ConfigurationManager.AppSettings["storageContainer"],
-                        drawingSession.AddressX, drawingSession.AddressY);
+                        drawingSession.Wall.InviteCode, drawingSession.AddressX, drawingSession.AddressY);
 
             System.IO.Stream inputStream = null;
             if (_fileStorage.Exists(outputPath))
@@ -208,20 +217,27 @@ namespace massive_moose.api.Controllers
             System.IO.MemoryStream myResult = new System.IO.MemoryStream();
             newImage.Save(myResult, System.Drawing.Imaging.ImageFormat.Gif);
 
-            outputPath = string.Format("{0}/brick_{1}-{2}_1.png",
+            outputPath = string.Format("{0}/b_{1}-{2}-{3}_1.png",
                 ConfigurationManager.AppSettings["storageContainer"],
-                        drawingSession.AddressX, drawingSession.AddressY);
+                drawingSession.Wall.InviteCode, drawingSession.AddressX, drawingSession.AddressY);
             _fileStorage.Store(outputPath, myResult.ToArray(), true);
         }
 
         [HttpGet]
-        [Route("v1/image/{addressX}/{addressY}")]
-        public HttpResponseMessage ViewImage(int addressX, int addressY)
+        [Route("v1/image/{wallKey}/{addressX}/{addressY}")]
+        public HttpResponseMessage ViewImage(string wallKey, int addressX, int addressY)
         {
             HttpResponseMessage result = new HttpResponseMessage();
-            string filePath = string.Format("{0}/brick_{1}-{2}.png",
+            Wall wall = null;
+            using (var session = SessionFactory.Instance.OpenStatelessSession())
+            {
+                wall = new WallOperations().GetWallByKeyOrDefault(wallKey, session);
+            }
+
+            string filename = string.Format("b_{0}-{1}-{2}", wall.InviteCode, addressX, addressY);
+            string filePath = string.Format("{0}/{1}.png",
                     ConfigurationManager.AppSettings["storageContainer"],
-                    addressX, addressY);
+                    filename);
 
             if (!_fileStorage.Exists(filePath))
             {
@@ -235,14 +251,21 @@ namespace massive_moose.api.Controllers
             return result;
         }
 
+        
+
         [HttpGet]
-        [Route("v1/image/t/{addressX}/{addressY}")]
-        public HttpResponseMessage ViewThumbnail(int addressX, int addressY)
+        [Route("v1/image/t/{wallKey}/{addressX}/{addressY}")]
+        public HttpResponseMessage ViewThumbnail(int addressX, int addressY, string wallKey=null)
         {
             HttpResponseMessage result = new HttpResponseMessage();
-            string filePath = string.Format("{0}/brick_{1}-{2}_1.png",
+            Wall wall = null;
+            using (var session = SessionFactory.Instance.OpenStatelessSession())
+            {
+                wall = new WallOperations().GetWallByKeyOrDefault(wallKey, session);
+            }
+            string filePath = string.Format("{0}/b_{1}-{2}-{3}_1.png",
                     ConfigurationManager.AppSettings["storageContainer"],
-                    addressX, addressY);
+                    wall.InviteCode, addressX, addressY);
 
             if (!_fileStorage.Exists(filePath))
             {

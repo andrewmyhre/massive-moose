@@ -14,6 +14,7 @@ namespace massive_moose.services.models
         public virtual int Id { get; set; }
         public virtual string SnapshotJson { get; set; }
         public virtual Wall Wall { get; set; }
+        public virtual DrawingSession DrawingSession { get; set; }
         public virtual DateTime? LastUpdated { get; set; }
     }
 }

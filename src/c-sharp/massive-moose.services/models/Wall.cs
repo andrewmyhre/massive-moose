@@ -20,6 +20,7 @@ namespace massive_moose.services.models
         public virtual ApplicationUser Owner { get; set; }
         public virtual DateTime DateCreated { get; set; }
         public virtual IList<WallHistoryItem> History { get; set; }
+        public virtual IList<Brick> Bricks { get; set; }
         public virtual string InviteCode { get; set; }
 
         private static Random random = new Random();

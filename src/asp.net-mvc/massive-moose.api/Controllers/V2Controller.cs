@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -15,13 +16,16 @@ namespace massive_moose.api.Controllers
     {
         private static ILog Log = LogManager.GetLogger(typeof(V2Controller));
         [HttpGet]
-        [Route("v2/wall/{originX}/{originY}")]
+        [Route("v2/wall/{wallKey}/{originX}/{originY}")]
         [EnableCors(origins: "*", headers: "*", methods: "*")]
-        public BrickViewModel[,] Wall(int originX, int originY)
+        public BrickViewModel[,] Wall(int originX, int originY, string wallKey = null)
         {
             using (var session = SessionFactory.Instance.OpenSession())
             {
-                var bricks = session.QueryOver<Brick>()
+                Wall wallRecord = new WallOperations().GetWallByKeyOrDefault(wallKey, session);
+
+                IList<object[]> bricks = session.QueryOver<Brick>()
+                    .And(b => b.Wall.Id == wallRecord.Id)
                     .Select(
                         b => b.AddressX,
                         b => b.AddressY,

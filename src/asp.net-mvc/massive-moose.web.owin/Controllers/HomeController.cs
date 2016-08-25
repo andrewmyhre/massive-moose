@@ -21,49 +21,13 @@ namespace massive_moose.web.owin.Controllers
             _log = log;
         }
 
-        [Route("/{inviteCode}")]
+        [Route("{inviteCode}")]
         public ActionResult Index(string inviteCode=null)
         {
             using (var session = SessionFactory.Instance.OpenStatelessSession())
             {
-                Wall wall = null;
-                if (string.IsNullOrWhiteSpace(inviteCode))
-                {
-                    wall = session.CreateCriteria<Wall>()
-                        .CreateCriteria("Owner")
-                        .Add(Restrictions.Eq("UserName", "system"))
-                        .UniqueResult<Wall>();
-                }
-                else
-                {
-                    wall = session.CreateCriteria<Wall>()
-                        .Add(Restrictions.Eq("InviteCode", inviteCode))
-                        .UniqueResult<Wall>();
-                }
-
-                var bricks = session.CreateCriteria<Brick>()
-                    .Add(Restrictions.Eq("Wall.Id", wall.Id))
-                    .List<Brick>();
-
-                var wallVm = new WallViewModel();
-
-                for (int i = 0; i < 12; i++)
-                {
-                    for (int j = 0; j < 12; j++)
-                    {
-                        var b = bricks.SingleOrDefault(br => br.AddressX == j && br.AddressY == i);
-                        wallVm.Bricks[i, j] = new BrickViewModel()
-                        {
-                            AddressX = j,
-                            AddressY = i,
-                            ImageUrl = (b != null
-                                ? string.Format("{0}/v1/image/{1}/{2}",
-                                    ConfigurationManager.AppSettings["MMApi"], j, i)
-                                : null)
-                        };
-                    }
-                }
-                return View(wallVm);
+                var wall = new WallOperations().GetWallByKeyOrDefault(inviteCode, session);
+                return View(new WallViewModel {InviteCode = wall.InviteCode});
             }
         }
 

@@ -11,6 +11,7 @@ namespace massive_moose.services.models.mapping
             Map(x => x.Closed);
             Map(x => x.Opened);
             Map(x => x.SessionToken);
+            References(x => x.Wall, "WallId").Cascade.None();
         }
     }
 }
