@@ -3,11 +3,9 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+@Html.Partial("_CreateANewWallPartial")
+
 <h2>Your Walls</h2>
-@using (Html.BeginForm("Create", "Walls"))
-{
-    <button type="submit">+ Create a new wall</button>
-}
 
 <table class="table table-condensed table-hover">
     <thead>
@@ -19,11 +17,14 @@
         @foreach (var wall in Model.Walls)
         {
             <tr>
-                <td>@wall.InviteCode</td>
-                <td>@Html.RouteLink("View", "Wall", new { inviteCode = wall.InviteCode})</td>
+                <td>@wall.Label</td>
+                <td>@Html.RouteLink("Open In Browser", "Wall", new { inviteCode = wall.InviteCode})</td>
                 <td>@Html.ActionLink("Manage", "Manage", new { inviteCode = wall.InviteCode})</td>
             </tr>
         }
     </tbody>
 </table>
     
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

@@ -110,20 +110,34 @@ namespace massive_moose.web.owin.Controllers
         }
 
         [HttpPost]
-        public ActionResult Create()
+        public ActionResult Index(WallsViewModel viewModel)
         {
             var owner = _session.CreateCriteria<ApplicationUser>()
-                .Add(Restrictions.Eq("Email", User.Identity.Name))
-                .UniqueResult<ApplicationUser>();
+                    .Add(Restrictions.Eq("Email", User.Identity.Name))
+                    .UniqueResult<ApplicationUser>();
 
             if (owner == null)
-                return HttpNotFound();
+            {
+                AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+                return RedirectToAction("Index");
+            }
 
-            var wall = new Wall();
-            wall.Owner = owner;
-            _session.Save(wall);
-            _session.Flush();
-            return RedirectToAction("Manage", new {id = wall.InviteCode});
+            if (ModelState.IsValid)
+            {
+                var wall = new Wall();
+                wall.Label = viewModel.NewWallLabel;
+                wall.Owner = owner;
+                _session.Save(wall);
+                _session.Flush();
+                return RedirectToAction("Manage", new {id = wall.InviteCode});
+            }
+
+
+            viewModel.Walls = _session.CreateCriteria<Wall>()
+                .Add(Restrictions.Eq("Owner.Id", owner.Id))
+                .List<Wall>();
+
+            return View("Index",viewModel);
         }
 
         public ActionResult Share(string id)

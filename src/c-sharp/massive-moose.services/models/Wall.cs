@@ -16,6 +16,7 @@ namespace massive_moose.services.models
             DateCreated = DateTime.Now;
         }
         public virtual int Id { get; protected set; }
+        public virtual string Label { get; set; }
         public virtual Guid Guid { get; protected set; }
         public virtual ApplicationUser Owner { get; set; }
         public virtual DateTime DateCreated { get; set; }

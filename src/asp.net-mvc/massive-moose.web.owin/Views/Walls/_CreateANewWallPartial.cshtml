@@ -1,1 +1,15 @@
-﻿
+﻿@model massive_moose.web.owin.Models.WallsViewModel
+<button class="btn btn-default" onclick="javascript:$('#new-wall-form').show()">+ Create a new wall</button>
+    @using (Html.BeginForm("Index", "Walls", FormMethod.Post, new {id = "new-wall-form"}))
+    {
+        @Html.AntiForgeryToken()
+        <div class="form-group">
+            <div class="col-md-12">
+                @Html.LabelFor(x => x.NewWallLabel, "Give the wall a name to remember it by:")
+                @Html.TextBoxFor(x => x.NewWallLabel)
+                
+                <input type="submit" value="Create!" class="btn btn-primary" />
+                @Html.ValidationMessageFor(x => x.NewWallLabel)
+            </div>
+        </div>
+    }

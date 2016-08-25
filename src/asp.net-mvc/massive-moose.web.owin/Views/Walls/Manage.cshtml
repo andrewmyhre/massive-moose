@@ -4,11 +4,13 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Link This</h2>
-<div class="panel panel-primary">
-    <div class="panel-heading">Copy this link and share it. Anybody with this link can draw on your wall.</div>
-    <div class="panel-body"><a href="@Url.RouteUrl("Wall", new { inviteCode = Model.InviteCode }, Request.Url.Scheme)">@Url.RouteUrl("Wall", new { inviteCode = Model.InviteCode }, Request.Url.Scheme)</a></div>
+<div class="container">
+    <div class="col-md-12">
+        <a href="/walls">&lt; Walls</a>
+    </div>
 </div>
+
+<h1>@Model.Wall.Label</h1>
 
 @if (Model.FocusBrickHistory != null)
 {
@@ -26,6 +28,12 @@
         }
     </table>
 }
+
+<h2>Share This Wall</h2>
+<div class="panel panel-primary">
+    <div class="panel-heading">Copy this link and share it. Anybody with this link can draw on your wall.</div>
+    <div class="panel-body"><a href="@Url.RouteUrl("Wall", new { inviteCode = Model.InviteCode }, Request.Url.Scheme)">@Url.RouteUrl("Wall", new { inviteCode = Model.InviteCode }, Request.Url.Scheme)</a></div>
+</div>
 
 <h2>This is what your wall looks like</h2>
 <div class="container mg-wall">

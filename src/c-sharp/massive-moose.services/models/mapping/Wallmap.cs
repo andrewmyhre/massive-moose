@@ -12,6 +12,7 @@ namespace massive_moose.services.models.mapping
         public WallMap()
         {
             Id(x => x.Id).GeneratedBy.Identity();
+            Map(x => x.Label);
             Map(x => x.DateCreated).Not.Nullable();
             Map(x => x.Guid);
             References(x => x.Owner, "OwnerId").Cascade.None();
