@@ -22,3 +22,20 @@ select,
 textarea {
     max-width: 280px;
 }
+
+.mg-wall .container {
+    width: 100%;
+}
+.mg-wall .row {
+    width: 100%;
+}
+
+.mg-wall .row .brick {
+    width: 8%;
+    min-height: 60px;
+    max-height: 100px;
+    border: 1px solid black;
+}
+.mg-wall .row .bg-primary {
+    border: 3px solid red;
+}

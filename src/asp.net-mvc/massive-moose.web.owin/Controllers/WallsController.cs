@@ -66,7 +66,16 @@ namespace massive_moose.web.owin.Controllers
             wallViewModel.Bricks = new BrickViewModel[12,12];
             int originX = 0, originY = 0;
 
-            foreach (var brick in wall.Bricks)
+            int detailForX = 0;
+            int detailForY = 0;
+            bool detail = false;
+            if (int.TryParse(Request.QueryString["addressX"], out detailForX) &&
+                int.TryParse(Request.QueryString["addressY"], out detailForY))
+            {
+                detail = true;
+            }
+
+                foreach (var brick in wall.Bricks)
             {
                 var relativeX = brick.AddressX + 6;
                 var relativeY = brick.AddressY + 6;
@@ -76,24 +85,27 @@ namespace massive_moose.web.owin.Controllers
                     {
                         AddressX = brick.AddressX,
                         AddressY = brick.AddressY,
-                        ImageUrl = string.Format("{0}/v1/image/t/{1}/{2}/{3}",
+                        ThumbnailImageUrl = string.Format("{0}/v1/image/t/{1}/{2}/{3}",
+                            ConfigurationManager.AppSettings["MMApi"],
+                            inviteCode,
+                            brick.AddressX,
+                            brick.AddressY),
+                        ImageUrl= string.Format("{0}/v1/image/{1}/{2}/{3}",
                             ConfigurationManager.AppSettings["MMApi"],
                             inviteCode,
                             brick.AddressX,
                             brick.AddressY)
                     };
+                    if (detail && brick.AddressX == detailForX && brick.AddressY == detailForY)
+                    {
+                        wallViewModel.DetailForX = relativeX;
+                        wallViewModel.DetailForY = relativeY;
+                        wallViewModel.FocusBrick = wallViewModel.Bricks[relativeX, relativeY];
+                        wallViewModel.FocusBrickHistory = wall.History.Where(x => x.DrawingSession.AddressX == detailForX && x.DrawingSession.AddressY == detailForY).OrderByDescending(x => x.Timestamp).ToArray();
+                    }
                 }
             }
-            if (Request.QueryString["addressX"] != null && Request.QueryString["addressY"] != null)
-            {
-                int addressX = 0;
-                int addressY = 0;
-                if (int.TryParse(Request.QueryString["addressX"], out addressX) &&
-                    int.TryParse(Request.QueryString["addressY"], out addressY))
-                {
-                    wallViewModel.BrickHistory = wall.History.Where(x => x.DrawingSession.AddressX == addressX && x.DrawingSession.AddressY == addressY).OrderByDescending(x=>x.Timestamp).ToArray();
-                }
-            }
+
             return View(wallViewModel);
         }
 

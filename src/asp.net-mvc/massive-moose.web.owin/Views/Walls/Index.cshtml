@@ -20,6 +20,7 @@
         {
             <tr>
                 <td>@wall.InviteCode</td>
+                <td>@Html.RouteLink("View", "Wall", new { inviteCode = wall.InviteCode})</td>
                 <td>@Html.ActionLink("Manage", "Manage", new { inviteCode = wall.InviteCode})</td>
             </tr>
         }

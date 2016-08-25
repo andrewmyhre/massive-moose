@@ -162,6 +162,9 @@
             }
 
             function openSession(x, y, addressX, addressY) {
+                if (!addressX || !addressY)
+                    return;
+
                 $.post(_baseApiUrl + '/v1/' + _inviteCode + '/draw/' + addressX + '/' + addressY)
                     .done(function (data) {
                         _brickInUse = _wall[x][y];
@@ -209,7 +212,12 @@
                         $('#drawingSpace').hide();
                         $('#wall').show();
                         $('#messages').html('');
-                        updateWall(brickView[0].id);
+
+                        // wait a second before updating to give Azure a chance to propagate the thumbnail image
+                        setTimeout(function () {
+                                updateWall(brickView[0].id);
+                            },
+                            5000);
                     })
             }
 

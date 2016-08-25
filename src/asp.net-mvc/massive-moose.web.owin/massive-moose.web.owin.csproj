@@ -380,6 +380,7 @@
     <Content Include="Views\Walls\Index.cshtml" />
     <Content Include="Views\Walls\Manage.cshtml" />
     <Content Include="Views\Walls\Share.cshtml" />
+    <Content Include="Views\Walls\_CreateANewWallPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

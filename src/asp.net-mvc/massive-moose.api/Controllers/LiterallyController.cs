@@ -93,18 +93,5 @@ namespace massive_moose.api.Controllers
 
             return Ok();
         }
-
-        private void ExportCanvasToImage(Canvas canvas, DrawingSession drawingSession)
-        {
-            var imageData = new BrickRenderer().Render(canvas);
-
-            string outputPath = string.Format("{0}/b_{1}-{2}-{3}.png",
-                ConfigurationManager.AppSettings["storageContainer"],
-                drawingSession.Wall.InviteCode, drawingSession.AddressX, drawingSession.AddressY);
-
-            _fileStorage.Store(outputPath, imageData, true);
-
-            
-        }
     }
 }

@@ -4,6 +4,7 @@
     {
         public int AddressX { get; set; }
         public int AddressY { get; set; }
-        public string ImageUrl { get; set; }
+        public string ImageUrl { get; internal set; }
+        public string ThumbnailImageUrl { get; set; }
     }
 }

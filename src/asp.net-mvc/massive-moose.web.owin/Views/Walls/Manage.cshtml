@@ -1,5 +1,5 @@
 ﻿@model massive_moose.web.owin.Models.WallViewModel
-    @using System.Linq;
+@using System.Linq;
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -10,11 +10,12 @@
     <div class="panel-body"><a href="@Url.RouteUrl("Wall", new { inviteCode = Model.InviteCode }, Request.Url.Scheme)">@Url.RouteUrl("Wall", new { inviteCode = Model.InviteCode }, Request.Url.Scheme)</a></div>
 </div>
 
-@if (Model.BrickHistory != null)
+@if (Model.FocusBrickHistory != null)
 {
+    <img src="@Model.FocusBrick.ImageUrl" style="width:100%" />
     <h2>History for the brick you selected</h2>
     <table class="table table-striped">
-        @foreach (var history in Model.BrickHistory)
+        @foreach (var history in Model.FocusBrickHistory)
         {
             <tr>
                 <td>@history.Timestamp</td>
@@ -27,23 +28,32 @@
 }
 
 <h2>This is what your wall looks like</h2>
-<table style="width: 100%; height:600px;">
+<div class="container mg-wall">
     @for (int y = 0; y < 12; y++)
     {
-        <tr>
-            @for (int x = 0; x < 12; x++)
-            {
-                var brick = Model.Bricks[x,y];
-                <td style="margin: 0; padding: 0; border: 1px solid black; width: 8%; height: 8%; background-size: 100% 100%; background-image:url('@(brick != null ? brick.ImageUrl : "/content/blank.png")')">
-                    @if (brick != null)
-                    {
-                        @Html.ActionLink("History", "Manage", new {inviteCode = Model.Wall.InviteCode, addressX = brick.AddressX, addressY = brick.AddressY})
-                    }
-                </td>
-            }
-        </tr>
+        <div class="row">
+@for (int x = 0; x < 12; x++)
+{
+    var brick = Model.Bricks[x, y];
+    bool selected = false;
+    if (Model.FocusBrickHistory != null)
+    {
+        if (x == Model.DetailForX && y == Model.DetailForY)
+        {
+            selected = true;
+        }
     }
-</table>
+    <div class="brick col-md-1 @if (selected){<text>bg-primary</text>}" style="background-size: 100% 100%; background-image: url('@(brick != null ? brick.ThumbnailImageUrl : "/content/blank.png")')">
+        @if (brick != null)
+        {
+            @Html.ActionLink("History", "Manage", new { inviteCode = Model.Wall.InviteCode, addressX = brick.AddressX, addressY = brick.AddressY })
+        }
+    </div>
+}
+        </div>
+    }
+</div>
+
 
 <h2>Here are all the contributions to your wall, in order</h2>
 <table class="table table-striped">
