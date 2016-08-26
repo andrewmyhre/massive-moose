@@ -70,7 +70,7 @@ namespace massive_moose.web.owin.Controllers
                             AddressY = (int)o[1],
                             DateUpdated = ((DateTime?)o[2]).HasValue ? ((DateTime?)o[2]).Value.Ticks.ToString() : "",
                             HasContent=true,
-                            ThumbnailImageUrl = _wallOperations.GetThumbnailImageUrl(wallKey, (int)o[0],(int)o[1])
+                            ThumbnailImageUrl = _wallOperations.GetThumbnailImageUrl(wallRecord.InviteCode, (int)o[0],(int)o[1])
                         };
                     }
                     else
