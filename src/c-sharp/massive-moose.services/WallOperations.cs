@@ -55,13 +55,16 @@ namespace massive_moose.services
                 drawingSession.Wall.InviteCode, drawingSession.AddressX, drawingSession.AddressY);
             _fileStorage.Store(fullSizeImagePath, imageData, true);
 
+            int thumbnailWidth = 400, thumbnailHeight=200;
+            int.TryParse(ConfigurationManager.AppSettings["thumbnailWidth"], out thumbnailWidth);
+            int.TryParse(ConfigurationManager.AppSettings["thumbnailHeight"], out thumbnailHeight);
 
             string thumbnailImagePath = string.Format("{0}/b_{1}-{2}-{3}_1.png",
                 ConfigurationManager.AppSettings["storageContainer"],
                 drawingSession.Wall.InviteCode, drawingSession.AddressX, drawingSession.AddressY);
             System.IO.MemoryStream myMemStream = new System.IO.MemoryStream(imageData);
             System.Drawing.Image fullsizeImage = System.Drawing.Image.FromStream(myMemStream);
-            System.Drawing.Image newImage = fullsizeImage.GetThumbnailImage(200, 100, null, IntPtr.Zero);
+            System.Drawing.Image newImage = fullsizeImage.GetThumbnailImage(thumbnailWidth, thumbnailHeight, null, IntPtr.Zero);
             System.IO.MemoryStream myResult = new System.IO.MemoryStream();
             newImage.Save(myResult, System.Drawing.Imaging.ImageFormat.Png);
 
