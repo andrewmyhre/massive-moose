@@ -144,10 +144,11 @@ body {
     top: -12px
 }
 #help {
+    font-size: 3em;
     display: inline-block;
     position: fixed;
-    width: 600px;
-    max-height: 150px;
+    width: 60%;
+    height: 60%;
     top: 0;
     left: 0;
     bottom: 0;
@@ -156,6 +157,7 @@ body {
     z-index: 3;
     padding: 15px;
 }
+#help .container {width:100%}
 #help-scroller {
     border-radius: 10px;
     overflow-x: hidden;
