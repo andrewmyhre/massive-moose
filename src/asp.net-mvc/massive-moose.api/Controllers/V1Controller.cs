@@ -301,6 +301,7 @@ namespace massive_moose.api.Controllers
                 result.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("image/jpg");
                 return result;
             }
+            Log.WarnFormat("can't find background image {0}", filePath);
             result.StatusCode = HttpStatusCode.NotFound;
             return result;
         }
