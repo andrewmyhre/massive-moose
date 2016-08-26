@@ -21,8 +21,6 @@
             for (var ei = 0; ei < bricks.length; ei++) {
                 var b = document.getElementById(bricks[ei].id);
                 b.onclick = function(e) {
-                    //console.log(e);
-                    //console.log(b.getAttribute('data-addressx') + ',' + b.getAttribute('data-addressy'));
                     openSession(e.currentTarget.attributes.getNamedItem('data-viewx').value,
                         e.currentTarget.attributes.getNamedItem('data-viewy').value,
                         e.currentTarget.attributes.getNamedItem('data-addressx').value,
@@ -30,12 +28,6 @@
                 };
                 
             }
-//            $('#tblWall tr td').click(function (bv) {
-//                openSession($(this).attr('data-viewx'),
-//                    $(this).attr('data-viewy'),
-//                    $(this).attr('data-addressx'),
-//                    $(this).attr('data-addressy'));
-//            });
 
             function openCanvas(brick) {
                 document.getElementById('wall').style.display = 'none';
@@ -49,7 +41,6 @@
                 {
                     imageURLPrefix: "/content/img",
                     imageSize: { width: 1600, height: 800 },
-                    //backgroundColor: "#ED7428",
                     backgroundColor: "transparent",
                     toolbarPosition: 'top'
                 });
@@ -188,10 +179,10 @@
                     if (_toolsWaitHandle != 0) {
                         clearTimeout(_toolsWaitHandle);
                     }
-                    _toolsWaitHandle = setTimeout(showTools, 2000);
+                    _toolsWaitHandle = setTimeout(showTools, cfg.toolbarShowDelay);
                     // do stuff
                 });
-                //unsubscribe();
+
                 function showTools() {
                     if (document.getElementById('tools-wrapper').style.display == 'none') {
                         document.getElementById('tools-wrapper').style.display = 'block';
@@ -256,7 +247,6 @@
                             _wall = data;
                             document.body.style.minWidth = '1600px';
                             document.body.style.minHeight = '900px';
-                            //$('body').css({ 'min-width': '1600px', 'min-height': '900px' });
                             viewport = document.querySelector("meta[name=viewport]");
                             viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
 
