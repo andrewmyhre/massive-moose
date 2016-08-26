@@ -421,8 +421,10 @@
                 console.log('<p>Your viewport width is ' + viewportwidth + 'x' + viewportheight + '</p>');
 
                 if (document.getElementById('help')) {
-                    document.getElementById('help').style.left = (viewportwidth / 6) + 'px';
-                    document.getElementById('help').style.top = (viewportheight / 6) + 'px';
+                    document.getElementById('help').style.left = (viewportwidth * 0.1) + 'px';
+                    document.getElementById('help').style.top = (viewportheight * 0.1) + 'px';
+                    document.getElementById('help').style.width = (viewportwidth * 0.8) + 'px';
+                    document.getElementById('help').style.height = (viewportheight * 0.8) + 'px';
                 }
             }
 
