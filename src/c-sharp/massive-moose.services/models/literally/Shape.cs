@@ -181,8 +181,7 @@ try {
 
             return new Hsla() {Hue=h,Saturation=s/100,Lightness=l/100,Alpha=a};
 } catch(Exception ex) {
-Log.Error("Couldn't parse HSLA: "+input, ex);
-return new Hsla();
+return new Hsla(){Hue=0, Saturation=0, Lightness=0, Alpha=1};
 }
         }
     }
