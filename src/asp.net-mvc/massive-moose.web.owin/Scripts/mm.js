@@ -321,7 +321,10 @@
                             updateWall(brickElement);
                         }, 5000);
                     } else {
-                        
+                        document.getElementById('save-button').disabled = '';
+                        document.getElementById('cancel-button').disabled = '';
+                        document.getElementById('alert-message').innerHtml = 'Sorry! There was a problem saving the image... try again? :/';
+                        document.getElementById('alert').style.display = 'block';
                     }
                 };
                 xhr.send(JSON.stringify(_lc.getSnapshot()));
