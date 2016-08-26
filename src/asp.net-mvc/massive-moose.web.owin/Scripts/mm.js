@@ -200,7 +200,9 @@
 
                 var adjustedWidth = 1600 * zoomAmount;
                 if (window.innerWidth < adjustedWidth) {
-                    //$('body').css({ 'min-width': 0, 'min-height': 0 });
+                    document.body.style.minWidth = '0px';
+                    document.body.style.minHeight = '0px';
+
                     _lc.setZoom((window.innerWidth - 100) / adjustedWidth);
                 }
             }
@@ -241,6 +243,8 @@
                                 }
                             }
                             _wall = data;
+                            document.body.style.minWidth = '1600px';
+                            document.body.style.minHeight = '900px';
                             //$('body').css({ 'min-width': '1600px', 'min-height': '900px' });
                             viewport = document.querySelector("meta[name=viewport]");
                             viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
