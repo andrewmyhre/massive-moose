@@ -143,3 +143,23 @@ body {
     position: relative; 
     top: -12px
 }
+#help {
+    position: fixed;
+    width: 600px;
+    max-height: 250px;
+    top: 30%;
+    left: 50%;
+    margin-top: -100px; /* Negative half of height. */
+    margin-left: -300px;
+    z-index: 3;
+    border-radius: 10px;
+    padding: 15px;
+}
+#help-scroller {
+    overflow-x: hidden;
+    overflow-y: hidden;
+    max-height: 200px;
+}
+#help .row {
+    margin-top: 1em;
+}

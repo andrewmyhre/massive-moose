@@ -15,7 +15,36 @@
             _wall = null;
             _toolsWaitHandle = 0;
 
-            setTimeout(updateWall,10);
+            setTimeout(updateWall, 10);
+
+            if (document.getElementById('help')) {
+                document.getElementById('moreHelp')
+                    .onclick = function() {
+                        var xhr = new XMLHttpRequest();
+                        xhr.open('GET', '/Home/Help');
+                        xhr.setRequestHeader('Content-Type', 'text/html');
+                        xhr.onload = function() {
+                            document.getElementById('help-scroller').style.overflowY = 'scroll';
+                            document.getElementById('help-full').innerHTML = xhr.responseText;
+                            document.getElementById('help-full').style.display = 'block';
+                        }
+                        xhr.send();
+                    };
+                document.getElementById('help-close').onclick = function() {
+                    SetDontHelpMe();
+                    document.getElementById('help').style.display = 'none';
+                };
+                document.getElementById('noHelpThanks').onclick = function() {
+                    SetDontHelpMe();
+                    document.getElementById('help').style.display = 'none';
+                };
+
+                function SetDontHelpMe() {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/Home/DontHelpMe');
+                    xhr.send();
+                }
+            }
 
             var bricks = document.getElementsByClassName('brick');
             for (var ei = 0; ei < bricks.length; ei++) {

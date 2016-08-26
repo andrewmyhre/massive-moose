@@ -10,6 +10,7 @@ using massive_moose.services.models;
 using System.Configuration;
 using NHibernate;
 using NHibernate.Criterion;
+using Newtonsoft.Json;
 
 namespace massive_moose.web.owin.Controllers
 {
@@ -27,6 +28,12 @@ namespace massive_moose.web.owin.Controllers
         [Route("{inviteCode}")]
         public ActionResult Index(string inviteCode=null)
         {
+            MassiveMooseCookie cookie = null;
+            if (Request.Cookies.AllKeys.Contains("massivemoose"))
+            {
+                cookie = JsonConvert.DeserializeObject<MassiveMooseCookie>(Request.Cookies.Get("massivemoose").Value);
+            }
+
             using (var session = SessionFactory.Instance.OpenStatelessSession())
             {
                 var wall = _wallOperations.GetWallByKeyOrDefault(inviteCode, session);
@@ -37,7 +44,8 @@ namespace massive_moose.web.owin.Controllers
                     BackgroundImageUrl=
                     string.Format("{0}/v1/background/{1}",
                     ConfigurationManager.AppSettings["MMApi"],
-                    string.IsNullOrWhiteSpace(wall.BackgroundImageFilename) ? "white-brick.jpg" : wall.BackgroundImageFilename)
+                    string.IsNullOrWhiteSpace(wall.BackgroundImageFilename) ? "white-brick.jpg" : wall.BackgroundImageFilename),
+                    DontHelpMe=(cookie != null ? cookie.DontHelpMe : false)
                 });
             }
         }
@@ -115,6 +123,29 @@ namespace massive_moose.web.owin.Controllers
         public ActionResult ColorPicker()
         {
             return View();
+        }
+
+        [HttpGet]
+        public ActionResult Help()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult DontHelpMe()
+        {
+            MassiveMooseCookie cookie = null;
+            if (Request.Cookies.AllKeys.Contains("massivemoose"))
+            {
+                cookie = JsonConvert.DeserializeObject<MassiveMooseCookie>(Request.Cookies.Get("massivemoose").Value);
+            }
+            else
+            {
+                cookie= new MassiveMooseCookie();
+            }
+            cookie.DontHelpMe = true;
+            Response.Cookies.Set(new HttpCookie("massivemoose", JsonConvert.SerializeObject(cookie)));
+            return new EmptyResult();
         }
     }
 }
