@@ -162,10 +162,12 @@ namespace massive_moose.services.models.literally
 
         [DataMember(Name="isClosed")]
         public bool IsClosed { get; set; }
+static ILog Log = log4net.LogManager.GetLogger(typeof(ShapeData)); 
 
         public static Hsla ToHsla(string input)
         {
             if (input == "transparent") return new Hsla() {Alpha=0,Saturation=0,Lightness=0,Hue=0};
+try {
             var parts = input.Replace("hsla","").Trim('(',')').Split(',');
             var hsla = new Hsla();
             double h, s, l;
@@ -177,6 +179,10 @@ namespace massive_moose.services.models.literally
             float.TryParse(parts[3], out a);
 
             return new Hsla() {Hue=h,Saturation=s/100,Lightness=l/100,Alpha=a};
+} catch(Exception ex) {
+Log.Error("Couldn't parse HSLA: "+input, ex);
+return new Hsla();
+}
         }
     }
 
