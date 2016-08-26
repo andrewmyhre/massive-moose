@@ -324,6 +324,7 @@
 
             function ClickUpload(e) {
                 e.preventDefault();
+                hideColorPickers();
                 document.getElementById('save-button').disabled = 'disabled';
                 document.getElementById('cancel-button').disabled = 'disabled';
                 var xhr = new XMLHttpRequest();
@@ -364,8 +365,17 @@
                 xhr.send(JSON.stringify(_lc.getSnapshot()));
             }
 
+            function hideColorPickers() {
+                var colorPickers = document.getElementsByClassName('cp-app');
+                var eli;
+                for (eli = 0; eli < colorPickers.length; eli++) {
+                    colorPickers[eli].style.display = 'none';
+                }
+            }
+
             function ClickCancel(e) {
                 e.preventDefault();
+                hideColorPickers();
                 document.getElementById('save-button').disabled = 'disabled';
                 document.getElementById('cancel-button').disabled = 'disabled';
 
