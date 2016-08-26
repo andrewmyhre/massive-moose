@@ -110,5 +110,11 @@ namespace massive_moose.web.owin.Controllers
                     Content = "Done"
                 };
         }
+
+        [HttpGet]
+        public ActionResult ColorPicker()
+        {
+            return View();
+        }
     }
 }
