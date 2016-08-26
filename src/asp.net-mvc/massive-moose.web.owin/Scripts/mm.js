@@ -429,10 +429,10 @@
                 alert('body: ' + width + 'x' + height);
 
                 if (document.getElementById('help')) {
-                    document.getElementById('help').style.left = (viewportwidth * 0.1) + 'px';
-                    document.getElementById('help').style.top = (viewportheight * 0.1) + 'px';
-                    document.getElementById('help').style.width = (viewportwidth * 0.8) + 'px';
-                    document.getElementById('help').style.height = (viewportheight * 0.8) + 'px';
+                    document.getElementById('help').style.left = (window.screen.availWidth * 0.1) + 'px';
+                    document.getElementById('help').style.top = (window.screen.availHeight * 0.1) + 'px';
+                    document.getElementById('help').style.width = (window.screen.availWidth * 0.8) + 'px';
+                    document.getElementById('help').style.height = (window.screen.availHeight * 0.8) + 'px';
                 }
             }
 
