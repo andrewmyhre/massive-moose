@@ -80,5 +80,35 @@ namespace massive_moose.services
             dbSession.Save(wallHistoryItem);
             dbSession.Flush();
         }
+
+        public string GetImageUrl(Brick brick)
+        {
+            return GetImageUrl(
+                brick.Wall.InviteCode,
+                brick.AddressX,
+                brick.AddressY);
+        }
+        public string GetThumbnailImageUrl(Brick brick)
+        {
+            return GetThumbnailImageUrl(brick.Wall.InviteCode,
+                brick.AddressX,
+                brick.AddressY);
+        }
+        public string GetImageUrl(string inviteCode, int addressX, int addressY)
+        {
+            return string.Format("{0}/v1/image/{1}/{2}/{3}",
+                ConfigurationManager.AppSettings["MMApi"],
+                inviteCode,
+                addressX,
+                addressY);
+        }
+        public string GetThumbnailImageUrl(string inviteCode, int addressX, int addressY)
+        {
+            return string.Format("{0}/v1/image/t/{1}/{2}/{3}",
+                ConfigurationManager.AppSettings["MMApi"],
+                inviteCode,
+                addressX,
+                addressY);
+        }
     }
 }

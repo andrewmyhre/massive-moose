@@ -1,6 +1,6 @@
 ﻿html,body{margin:0;padding:0;}
 body {
-     min-width: 1600px;
+    width: 100%;
      min-height: 900px;
      margin:0px !important;
 }
@@ -85,19 +85,6 @@ body {
     display: inline;
 }
 
-#vpdebug {
-    display: none;
-        position: fixed;
-    top: 30px;
-    left: 100px;
-    background-color: white;
-    z-index: 100000;
-    padding: 3px;
-}
-#vpdebug button {
-    width: 40px;
-    height: 40px;
-}
 .session-options {
     display:inline-block;
     right:0px;
@@ -106,4 +93,48 @@ body {
 .session-options button {
     height: 30px;
     width: 100px;
+}
+#tools-wrapper {
+    text-align: center;
+    z-index: 2;
+    top: 0px;
+    position: fixed;
+    width: 100%;
+}
+#tools {
+    display: inline-block;
+    height: 55px;
+    padding: 0.5em;
+    background-color: white;
+    border: 1px solid black;
+    top: 0px;
+}
+.square-toolbar-button {
+    border: 1px solid #aaa;
+    height: 28px;
+    width: 28px;
+    border-radius: 3px;
+    display: inline-block;
+}
+.tool {
+    background-size: 100% auto;
+    background-repeat: no-repeat;
+    background-position: center center;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    margin: 2px;
+    padding: 0;
+    cursor: pointer;
+    text-align: center;
+    border: 2px solid transparent;
+    border-radius: 3px;
+    display: inline-block;
+}
+.tool:hover {
+    border-color: #a1d9fe;
+}
+#tools button {
+    position: relative;
+    top: -11px;
 }

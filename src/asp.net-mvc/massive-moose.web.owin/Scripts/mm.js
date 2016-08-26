@@ -17,33 +17,34 @@
 
             setTimeout(updateWall,10);
 
-            $('#tblWall tr td').click(function (bv) {
-                openSession($(this).attr('data-viewx'),
-                    $(this).attr('data-viewy'),
-                    $(this).attr('data-addressx'),
-                    $(this).attr('data-addressy'));
-            });
-
-            $('#vp_increase')
-                .click(function () {
-                    _viewportScaleWhenDrawing += 0.1;
-                    viewport = document.querySelector("meta[name=viewport]");
-                    viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScaleWhenDrawing);
-                    $('#vp-info').html('vp: ' + parseFloat(_viewportScaleWhenDrawing).toFixed(2));
-                });
-            $('#vp_decrease')
-                .click(function () {
-                    _viewportScaleWhenDrawing -= 0.1;
-                    viewport = document.querySelector("meta[name=viewport]");
-                    viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScaleWhenDrawing);
-                    $('#vp-info').html('vp: ' + parseFloat(_viewportScaleWhenDrawing).toFixed(2));
-                });
-            $('#vp-info').html('vp: ' + parseFloat(_viewportScaleWhenDrawing).toFixed(2));
+            var bricks = document.getElementsByClassName('brick');
+            for (var ei = 0; ei < bricks.length; ei++) {
+                var b = document.getElementById(bricks[ei].id);
+                b.onclick = function(e) {
+                    //console.log(e);
+                    //console.log(b.getAttribute('data-addressx') + ',' + b.getAttribute('data-addressy'));
+                    openSession(e.currentTarget.attributes.getNamedItem('data-viewx').value,
+                        e.currentTarget.attributes.getNamedItem('data-viewy').value,
+                        e.currentTarget.attributes.getNamedItem('data-addressx').value,
+                        e.currentTarget.attributes.getNamedItem('data-addressy').value);
+                };
+                
+            }
+//            $('#tblWall tr td').click(function (bv) {
+//                openSession($(this).attr('data-viewx'),
+//                    $(this).attr('data-viewy'),
+//                    $(this).attr('data-addressx'),
+//                    $(this).attr('data-addressy'));
+//            });
 
             function openCanvas(brick) {
-                $('#wall').hide();
-                $('#save-etc').show();
-                $('#drawSpace').show();
+                document.getElementById('wall').style.display = 'none';
+                document.getElementById('drawSpace').style.display = 'block';
+                document.getElementById('tools-wrapper').style.display = 'block';
+                document.getElementById('save-button').disabled = '';
+                document.getElementById('cancel-button').disabled = '';
+
+                // configure literally canvas
                 _lc = LC.init(document.getElementById('drawSpace'),
                 {
                     imageURLPrefix: "/content/img",
@@ -52,38 +53,138 @@
                     backgroundColor: "transparent",
                     toolbarPosition: 'top'
                 });
+                var tools = [
+                    {
+                    name: 'pencil',
+                    el: document.getElementById('tool-pencil'),
+                    tool: new LC.tools.Pencil(_lc)
+                  },
+                  {
+                    name: 'eraser',
+                    el: document.getElementById('tool-eraser'),
+                    tool: new LC.tools.Eraser(_lc)
+                  },
+                  {
+                      name: 'line',
+                      el: document.getElementById('tool-line'),
+                      tool: new LC.tools.Line(_lc)
+                  },
+                  {
+                      name: 'rectangle',
+                      el: document.getElementById('tool-rectangle'),
+                      tool: new LC.tools.Rectangle(_lc)
+                  },
+                  {
+                      name: 'ellipse',
+                      el: document.getElementById('tool-eraser'),
+                      tool: new LC.tools.Ellipse(_lc)
+                  },
+                  {
+                      name: 'polygon',
+                      el: document.getElementById('tool-polygon'),
+                      tool: new LC.tools.Polygon(_lc)
+                  },
+                  {
+                      name: 'text',
+                      el: document.getElementById('tool-text'),
+                      tool: new LC.tools.Text(_lc)
+                  },
+                  {
+                      name: 'pan',
+                      el: document.getElementById('tool-pan'),
+                      tool: new LC.tools.Pan(_lc)
+                  }
+                ];
 
-                var fullscreenButton = $('<button id="fullscreen-button">Fullscreen</button>');
-                fullscreenButton.click(function () {
-                    if (screenfull.enabled) {
-                        screenfull.request();
+                var activateTool = function (t) {
+                    _lc.setTool(t.tool);
+
+                    tools.forEach(function(t2) {
+                    if (t == t2) {
+                        t2.el.style.backgroundColor = 'yellow';
+                    } else {
+                        t2.el.style.backgroundColor = 'transparent';
                     }
-                })
-                var uploadButton = $('<button id="save-button">Finish</button>');
-                uploadButton.click(ClickUpload);
-                var cancelButton = $('<button id="cancel-button">Cancel</button>');
-                cancelButton.click(ClickCancel);
+                    });
+                }
 
-                $('.lc-options').append($('<div class="session-options"></div>').append(fullscreenButton).append(uploadButton).append(cancelButton));
+                var strokeWidths = [
+                    {
+                        el: document.getElementById('stroke-1'),
+                        strokeWidth:1
+                    },
+                    {
+                        el: document.getElementById('stroke-2'),
+                        strokeWidth: 2
+                    },
+                    {
+                        el: document.getElementById('stroke-3'),
+                        strokeWidth: 5
+                    },
+                    {
+                        el: document.getElementById('stroke-4'),
+                        strokeWidth: 10
+                    },
+                    {
+                        el: document.getElementById('stroke-5'),
+                        strokeWidth: 20
+                    },
+                    {
+                        el: document.getElementById('stroke-6'),
+                        strokeWidth: 30
+                    }
+                ];
+                strokeWidths.forEach(function(sw) {
+                    sw.el.onclick = function(e) {
+                        _lc.tool.strokeWidth = sw.strokeWidth;
+                    }
+                    sw.el.style.cursor = "pointer";
+                });
+
+                var zoomIn = document.getElementById('zoom-in');
+                zoomIn.style.cursor = 'pointer';
+                zoomIn.onclick =function (e) {
+                        _lc.zoom(_lc.config.zoomStep);
+                };
+
+                var zoomOut = document.getElementById('zoom-out');
+                zoomOut.style.cursor = 'pointer';
+                zoomOut.onclick =function (e) {
+                        _lc.zoom(-_lc.config.zoomStep);
+                    };
+
+
+                tools.forEach(function(t) {
+                  t.el.style.cursor = "pointer";
+                  t.el.onclick = function(e) {
+                      e.preventDefault();
+                    activateTool(t);
+                  };
+                });
+                activateTool(tools[0]);
+                //finish configuring
+
+                var uploadButton = document.getElementById('save-button').onclick = ClickUpload;
+                var cancelButton = document.getElementById('cancel-button').onclick = ClickCancel;
 
                 var unsubscribeOnDrawStart = _lc.on('drawStart', function (arguments) {
-                    if ($('.lc-picker').is(":visible")) {
-                        $('.lc-picker').toggle("slide", null, 100);
-                        $('.horz-toolbar').toggle("slide", { direction: 'up' }, 100);
+                    if (document.getElementById('tools-wrapper').style.display != 'none') {
+                        document.getElementById('tools-wrapper').style.display = 'none';
                     }
                     // do stuff
                 });
-                var unsubscribeOnDrawStart = _lc.on('drawEnd', function (arguments) {
+                var unsubscribeOnDrawEnd = _lc.on('drawEnd', function (arguments) {
                     if (_toolsWaitHandle != 0) {
                         clearTimeout(_toolsWaitHandle);
                     }
-                    _toolsWaitHandle = setTimeout(toggleTools, 2000);
+                    _toolsWaitHandle = setTimeout(showTools, 2000);
                     // do stuff
                 });
                 //unsubscribe();
-                function toggleTools() {
-                    $('.lc-picker').toggle("slide");
-                    $('.horz-toolbar').toggle("slide", { direction: 'up' });
+                function showTools() {
+                    if (document.getElementById('tools-wrapper').style.display == 'none') {
+                        document.getElementById('tools-wrapper').style.display = 'block';
+                    }
                     if (_toolsWaitHandle != 0) {
                         clearTimeout(_toolsWaitHandle);
                     }
@@ -99,26 +200,20 @@
 
                 var adjustedWidth = 1600 * zoomAmount;
                 if (window.innerWidth < adjustedWidth) {
-                    $('body').css({ 'min-width': 0, 'min-height': 0 });
+                    //$('body').css({ 'min-width': 0, 'min-height': 0 });
                     _lc.setZoom((window.innerWidth - 100) / adjustedWidth);
-                    //var dx = (1600 - window.innerWidth) / 2, dy = (800 - window.innerHeight) / 2;
-                    //_lc.setPan(dx, dy);
                 }
-                $('html, body').animate({
-                    scrollTop: 0, scrollLeft: 0
-                }, 500);
-                //_lc.setColor('background', "#ED7428");
             }
 
             function updateWall(scrollToId) {
                 if (!_brickInUse) {
-                    $('#drawSpace').hide();
-                    $('#save-etc').hide();
                     viewport = document.querySelector("meta[name=viewport]");
                     viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
                     $.getJSON(_baseApiUrl + '/v2/wall/' + _inviteCode + '/0/0',
                         null,
                         function (data) {
+                            document.getElementById('wall').style.display = 'block';
+                            document.getElementById('drawSpace').style.display = 'none';
                             for (var y = 0; y < data.length; y++) {
 
                                 for (var x = 0; x < data[y].length; x++) {
@@ -180,17 +275,12 @@
 
             function ClickUpload(e) {
                 e.preventDefault();
-
-                $('.finish-and-upload').hide();
-                $('.cancel').hide();
-                $('#messages').html('Uploading...');
+                document.getElementById('save-button').disabled = 'disabled';
+                document.getElementById('cancel-button').disabled = 'disabled';
 
                 $.post(_baseApiUrl + '/literally/draw/' + _brickInUse.sessionToken,
                         JSON.stringify(_lc.getSnapshot()))
                     .done(function () {
-                        $('.finish-and-upload').show();
-                        $('.cancel').show();
-                        $('#messages').html('');
 
                         var brickView = $(_brickInUse.element);
                         if (brickView) {
@@ -209,9 +299,9 @@
 
                         _brickInUse = null;
                         _lc = null;
-                        $('#drawingSpace').hide();
-                        $('#wall').show();
-                        $('#messages').html('');
+                        document.getElementById('drawSpace').style.display = 'none';
+                        document.getElementById('tools-wrapper').style.display = 'none';
+                        document.getElementById('wall').style.display = 'block';
 
                         // wait a second before updating to give Azure a chance to propagate the thumbnail image
                         setTimeout(function () {
@@ -223,13 +313,16 @@
 
             function ClickCancel(e) {
                 e.preventDefault();
+                document.getElementById('save-button').disabled = 'disabled';
+                document.getElementById('cancel-button').disabled = 'disabled';
 
-                $.post(_baseApiUrl + '/v1/image/release/' + _brickInUse.sessionToken, null)
+                $.post(_baseApiUrl + '/v1/release/' + _brickInUse.sessionToken, null)
                 .done(function () {
                     _brickInUse = null;
                     _lc = null;
-                    $('#drawingSpace').hide();
-                    $('#wall').show();
+                    document.getElementById('drawSpace').style.display = 'none';
+                    document.getElementById('tools-wrapper').style.display = 'none';
+                    document.getElementById('wall').style.display = 'block';
                     updateWall();
                 });
 

@@ -14,38 +14,11 @@
 @section scripts
 {
     <!-- dependency: React.js -->
-    <script src="//cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react-with-addons.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react-dom.js"></script>
     <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js" integrity="sha256-eGE6blurk5sHj+rmkfsGYeKyZx3M4bG+ZlFyA7Kns7E=" crossorigin="anonymous"></script>
     <script src="/scripts/screenfull.js"></script>
-    <script src="/scripts/literallycanvas/literallycanvas.js"></script>
+    <script src="/scripts/literallycanvas/literallycanvas-core.min.js"></script>
     <script src="/scripts/mm.js"></script>
-    
-}
-
-<div id="wall">
-    <table id="tblWall">
-        @for (int y = 0; y < 12; y++)
-        {
-            <tr class="@(y%2==1?"offset_row":"row")">
-                @for (int x = 0; x < 12; x++)
-                {
-                <td id="c@(y*12 + x)"></td>
-                }
-            </tr>
-        }
-    </table>
-</div>
-<div id="drawSpace"></div>
-
-<div id="vpdebug">
-    <span id="vp-info"></span>
-    <button id="vp_increase">+</button>
-    <button id="vp_decrease">-</button>
-</div>
-
-<script type="text/javascript">
+    <script type="text/javascript">
     MassiveMoose.initialize(
         {
             baseApiUrl: '@System.Configuration.ConfigurationManager.AppSettings["MMApi"]',
@@ -56,3 +29,42 @@
         }
     );
 </script>
+}
+
+<div id="wall">
+    <table id="tblWall">
+        @for (int y = 0; y < 12; y++)
+        {
+            <tr class="@(y%2==1?"offset_row":"row")">
+                @for (int x = 0; x < 12; x++)
+                {
+                    var brick = Model.Bricks[x, y];
+                    <td class="brick" id="c@(y*12 + x)" @if (brick.HasContent) {<text>style="background-image:url('@brick.ThumbnailImageUrl')"</text>}></td>
+                }
+            </tr>
+        }
+    </table>
+</div>
+<div id="drawSpace"></div>
+<div id="tools-wrapper" style="display:none">
+    <div id="tools">
+        <a id="tool-pencil" class="tool" style="background-image: url('/content/img/pencil.png')"></a>
+        <a id="tool-eraser" class="tool" style="background-image: url('/content/img/eraser.png')"></a>
+        <a id="tool-line" class="tool" style="background-image: url('/content/img/line.png')"></a>
+        <a id="tool-rectangle" class="tool" style="background-image: url('/content/img/rectangle.png')"></a>
+        <a id="tool-ellipse" class="tool" style="background-image: url('/content/img/ellipse.png')"></a>
+        <a id="tool-polygon" class="tool" style="background-image: url('/content/img/polygon.png')"></a>
+        <a id="tool-text" class="tool" style="background-image: url('/content/img/text.png')"></a>
+        <a id="tool-pan" class="tool" style="background-image: url('/content/img/pan.png')"></a>
+        <a id="stroke-1" class="tool" style="position: relative;top:-7px"><div class="square-toolbar-button"><svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="0.5"></circle></svg></div></a>
+        <a id="stroke-2" class="tool" style="position: relative;top:-7px"><div class="square-toolbar-button"><svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="1"></circle></svg></div></a>
+        <a id="stroke-3" class="tool" style="position: relative;top:-7px"><div class="square-toolbar-button"><svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="2.5"></circle></svg></div></a>
+        <a id="stroke-4" class="tool" style="position: relative;top:-7px"><div class="square-toolbar-button"><svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="5"></circle></svg></div></a>
+        <a id="stroke-5" class="tool" style="position: relative;top:-7px"><div class="square-toolbar-button"><svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="10"></circle></svg></div></a>
+        <a id="stroke-6" class="tool" style="position: relative;top:-7px"><div class="square-toolbar-button"><svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="15"></circle></svg></div></a>
+        <a id="zoom-out" class="tool" style="position: relative;background-image: url('/content/img/zoom-out.png')"></a>
+        <a id="zoom-in" class="tool" style="position: relative;background-image: url('/content/img/zoom-in.png')"></a>
+        <button id="save-button" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
+        <button id="cancel-button" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+    </div>
+</div>
