@@ -103,11 +103,12 @@ body {
 }
 #tools {
     display: inline-block;
-    height: 55px;
     padding: 0.5em;
     background-color: white;
     border: 1px solid black;
     top: 0px;
+    border-radius: 3px;
+
 }
 .square-toolbar-button {
     border: 1px solid #aaa;
