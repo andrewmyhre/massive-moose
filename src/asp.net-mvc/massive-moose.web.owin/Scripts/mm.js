@@ -417,7 +417,16 @@
                     viewportwidth = document.getElementsByTagName('body')[0].clientWidth,
                     viewportheight = document.getElementsByTagName('body')[0].clientHeight
                 }
-                console.log('<p>Your viewport width is ' + viewportwidth + 'x' + viewportheight + '</p>');
+                alert('Viewport: ' + viewportwidth + 'x' + viewportheight);
+                alert('availWidth:'+window.screen.availWidth+'x'+window.screen.availHeight);
+                var width = window.innerWidth
+                    || document.documentElement.clientWidth
+                    || document.body.clientWidth;
+
+                var height = window.innerHeight
+                    || document.documentElement.clientHeight
+                    || document.body.clientHeight;
+                alert('body: ' + width + 'x' + height);
 
                 if (document.getElementById('help')) {
                     document.getElementById('help').style.left = (viewportwidth * 0.1) + 'px';
