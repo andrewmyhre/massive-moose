@@ -165,3 +165,6 @@ body {
 #help .row {
     margin-top: 1em;
 }
+.cp-app {
+    z-index: 5;
+}
