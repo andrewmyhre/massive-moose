@@ -284,6 +284,7 @@
                             document.body.style.minHeight = '900px';
                             viewport = document.querySelector("meta[name=viewport]");
                             viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
+                            dimensions();
 
                             if (updatedBrickElement) {
                                 updatedBrickElement.scrollIntoView();
