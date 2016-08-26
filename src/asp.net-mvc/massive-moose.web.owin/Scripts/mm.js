@@ -151,7 +151,18 @@
                 zoomOut.style.cursor = 'pointer';
                 zoomOut.onclick =function (e) {
                         _lc.zoom(-_lc.config.zoomStep);
-                    };
+                };
+
+                var undo = document.getElementById('undo');
+                undo.style.cursor = 'pointer';
+                undo.onclick = function(e) {
+                    _lc.undo();
+                }
+                var redo = document.getElementById('redo');
+                redo.style.cursor = 'pointer';
+                redo.onclick = function (e) {
+                    _lc.redo();
+                }
 
 
                 tools.forEach(function(t) {
