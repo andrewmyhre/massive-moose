@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+
+    <script src="/scripts/jsColorPicker.min.js"></script>
+</head>
+<body>
+    <input name="foregroundColor" id="foregroundColor" class="foregroundColor" value="#000000" />
+<input name="backgroundColor" id="backgroundColor" class="backgroundColor" value="#FFFFFF00" />
+    
+<script type="text/javascript">
+    var foregroundColor=jsColorPicker('input.foregroundColor', {
+        customBG: '#222',
+        readOnly: true,
+        // patch: false,
+        init: function (elm, colors) { // colors is a different instance (not connected to colorPicker)
+            elm.style.backgroundColor = elm.value;
+            elm.style.color = colors.rgbaMixCustom.luminance > 0.22 ? '#222' : '#ddd';
+        },
+        actionCallback: function (event, type) {
+            console.log(type);
+            if (type === 'changeXYValue') { // overwriting right after repaint...
+                console.log(foregroundColor.current.color.colors.hsl);
+            }
+        }
+    });
+    var backgroundColor = jsColorPicker('input.backgroundColor', {
+        customBG: '#222',
+        readOnly: true,
+        // patch: false,
+        init: function (elm, colors) { // colors is a different instance (not connected to colorPicker)
+            elm.style.backgroundColor = elm.value;
+            elm.style.color = colors.rgbaMixCustom.luminance > 0.22 ? '#222' : '#ddd';
+        }
+    });
+    
+</script>
+</body>
+</html>

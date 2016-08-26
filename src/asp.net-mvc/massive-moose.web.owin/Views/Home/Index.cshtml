@@ -9,6 +9,15 @@
     <link href="/content/literallycanvas.css" rel="stylesheet">
     <link href="/content/Wall.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width,initial-scale=@System.Configuration.ConfigurationManager.AppSettings["ViewportScale"]"/>
+    <style>
+        .color {
+	        padding: .5em;
+	        margin-right: .4em;
+	        border: 1px solid #aaa;
+	        border-radius: 3px;
+	        width: 140px;
+        }
+    </style>
 }
 
 @section scripts
@@ -17,17 +26,34 @@
     <script src="/scripts/screenfull.js"></script>
     <script src="/scripts/literallycanvas/literallycanvas-core.min.js"></script>
     <script src="/scripts/mm.js"></script>
+    <script src="/scripts/jsColorPicker.min.js"></script>
     <script type="text/javascript">
-    MassiveMoose.initialize(
-        {
-            baseApiUrl: '@System.Configuration.ConfigurationManager.AppSettings["MMApi"]',
-            drawZoom:@System.Configuration.ConfigurationManager.AppSettings["DrawZoom"],
-            viewPortScaleWhenDrawing:@System.Configuration.ConfigurationManager.AppSettings["ViewportScaleWhenDrawing"],
-            viewPortScale:@System.Configuration.ConfigurationManager.AppSettings["ViewportScale"],
-            inviteCode:'@Model.InviteCode',
-            toolbarShowDelay:300
-        }
-    );
+        MassiveMoose.initialize(
+            {
+                baseApiUrl: '@System.Configuration.ConfigurationManager.AppSettings["MMApi"]',
+                drawZoom:@System.Configuration.ConfigurationManager.AppSettings["DrawZoom"],
+                viewPortScaleWhenDrawing:@System.Configuration.ConfigurationManager.AppSettings["ViewportScaleWhenDrawing"],
+                viewPortScale:@System.Configuration.ConfigurationManager.AppSettings["ViewportScale"],
+                inviteCode:'@Model.InviteCode',
+                toolbarShowDelay:300
+            }
+        );
+    </script>
+<script type="text/javascript">
+    var foregroundColor = jsColorPicker('input.foregroundColor', {
+            customBG: '#222',
+            readOnly: true,
+            // patch: false,
+            init: function(elm, colors) { // colors is a different instance (not connected to colorPicker)
+                elm.style.backgroundColor = elm.value;
+                elm.style.color = colors.rgbaMixCustom.luminance > 0.22 ? '#222' : '#ddd';
+            },
+            actionCallback: function (event, type) {
+                if (type === 'changeXYValue') { // overwriting right after repaint...
+                    _lc.setColor('primary', '#'+foregroundColor.current.color.colors.HEX)
+                }
+            }
+    });
 </script>
 }
 
@@ -48,6 +74,7 @@
 <div id="drawSpace"></div>
 <div id="tools-wrapper" style="display:none">
     <div id="tools">
+        <input name="foregroundColor" id="foregroundColor" class="foregroundColor tool" value="#000000"/>
         <a id="tool-pencil" class="tool" style="background-image: url('/content/img/pencil.png')"></a>
         <a id="tool-eraser" class="tool" style="background-image: url('/content/img/eraser.png')"></a>
         <a id="tool-line" class="tool" style="background-image: url('/content/img/line.png')"></a>
@@ -56,16 +83,28 @@
         <a id="tool-polygon" class="tool" style="background-image: url('/content/img/polygon.png')"></a>
         <a id="tool-text" class="tool" style="background-image: url('/content/img/text.png')"></a>
         <a id="tool-pan" class="tool" style="background-image: url('/content/img/pan.png')"></a>
-        <a id="stroke-1" class="tool" style="position: relative;top:-7px"><div class="square-toolbar-button"><svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="0.5"></circle></svg></div></a>
-        <a id="stroke-2" class="tool" style="position: relative;top:-7px"><div class="square-toolbar-button"><svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="1"></circle></svg></div></a>
-        <a id="stroke-3" class="tool" style="position: relative;top:-7px"><div class="square-toolbar-button"><svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="2.5"></circle></svg></div></a>
-        <a id="stroke-4" class="tool" style="position: relative;top:-7px"><div class="square-toolbar-button"><svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="5"></circle></svg></div></a>
-        <a id="stroke-5" class="tool" style="position: relative;top:-7px"><div class="square-toolbar-button"><svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="10"></circle></svg></div></a>
-        <a id="stroke-6" class="tool" style="position: relative;top:-7px"><div class="square-toolbar-button"><svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="15"></circle></svg></div></a>
-        <a id="zoom-out" class="tool" style="position: relative;background-image: url('/content/img/zoom-out.png')"></a>
-        <a id="zoom-in" class="tool" style="position: relative;background-image: url('/content/img/zoom-in.png')"></a>
-        <a id="undo" class="tool" style="position: relative;top: -10px;"><span class="glyphicon glyphicon-chevron-left"></span></a>
-        <a id="redo" class="tool" style="position: relative;top: -10px;"><span class="glyphicon glyphicon-chevron-right"></span></a>
+        <a id="stroke-1" class="tool" style="position: relative; top: -7px">
+            <div class="square-toolbar-button"><svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="0.5"></circle></svg>
+            </div></a>
+        <a id="stroke-2" class="tool" style="position: relative; top: -7px">
+            <div class="square-toolbar-button"><svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="1"></circle></svg>
+            </div></a>
+        <a id="stroke-3" class="tool" style="position: relative; top: -7px">
+            <div class="square-toolbar-button"><svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="2.5"></circle></svg>
+            </div></a>
+        <a id="stroke-4" class="tool" style="position: relative; top: -7px">
+            <div class="square-toolbar-button"><svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="5"></circle></svg>
+            </div></a>
+        <a id="stroke-5" class="tool" style="position: relative; top: -7px">
+            <div class="square-toolbar-button"><svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="10"></circle></svg>
+            </div></a>
+        <a id="stroke-6" class="tool" style="position: relative; top: -7px">
+            <div class="square-toolbar-button"><svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="15"></circle></svg>
+            </div></a>
+        <a id="zoom-out" class="tool" style="position: relative; background-image: url('/content/img/zoom-out.png')"></a>
+        <a id="zoom-in" class="tool" style="position: relative; background-image: url('/content/img/zoom-in.png')"></a>
+        <a id="undo" class="tool" style="position: relative; top: -10px;"><span class="glyphicon glyphicon-chevron-left"></span></a>
+        <a id="redo" class="tool" style="position: relative; top: -10px;"><span class="glyphicon glyphicon-chevron-right"></span></a>
         <button id="save-button" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
         <button id="cancel-button" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
     </div>

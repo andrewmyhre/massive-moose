@@ -138,3 +138,7 @@ body {
     position: relative;
     top: -11px;
 }
+#foregroundColor {
+    position: relative; 
+    top: -12px
+}
