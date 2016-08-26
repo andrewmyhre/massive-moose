@@ -167,3 +167,7 @@ body {
 #help .row {
     margin-top: 1em;
 }
+#help img
+{
+    width: 500px;
+}
