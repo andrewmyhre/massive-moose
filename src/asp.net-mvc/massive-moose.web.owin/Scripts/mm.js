@@ -205,50 +205,53 @@
                 }
             }
 
-            function updateWall(scrollToId) {
+            function updateWall(updatedBrickElement) {
                 if (!_brickInUse) {
                     viewport = document.querySelector("meta[name=viewport]");
                     viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
-                    $.getJSON(_baseApiUrl + '/v2/wall/' + _inviteCode + '/0/0',
-                        null,
-                        function (data) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET',_baseApiUrl + '/v2/wall/' + _inviteCode + '/0/0');
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                    xhr.onload = function() {
+                        if (xhr.status === 200) {
+                            var data = JSON.parse(xhr.responseText);
                             document.getElementById('wall').style.display = 'block';
                             document.getElementById('drawSpace').style.display = 'none';
                             for (var y = 0; y < data.length; y++) {
 
                                 for (var x = 0; x < data[y].length; x++) {
-                                    var brickView = $('#c' + (y * 12 + x));
+                                    var brickView = document.getElementById('c' + (y * 12 + x));
                                     var brick = data[x][y];
                                     brick.element = brickView;
                                     if (brick && brick.G != ''
                                         && (_wall && _wall[x][y] && (_wall[x][y].D != data.D))) {
-                                        brickView.css({
-                                            'backgroundImage': 'url("' +
+                                        brickView.style.backgroundImage = 'url("' +
                                                 _baseApiUrl +
                                                 '/v1/image/t'
                                                 + '/' + _inviteCode
                                                 + '/' + brick.X
                                                 + '/' + brick.Y
                                                 + '/?d=' + brick.D
-                                                + '")'
-                                        });
+                                                + '")';
                                     }
-                                    $(brickView).attr('data-addressX', brick.X);
-                                    $(brickView).attr('data-addressY', brick.Y);
-                                    $(brickView).attr('data-viewX', x);
-                                    $(brickView).attr('data-viewY', y);
+                                    brickView.setAttribute('data-addressx', brick.X);
+                                    brickView.setAttribute('data-addressY', brick.Y);
+                                    brickView.setAttribute('data-viewX', x);
+                                    brickView.setAttribute('data-viewY', y);
                                 }
                             }
                             _wall = data;
-                            $('body').css({ 'min-width': '1600px', 'min-height': '900px' });
+                            //$('body').css({ 'min-width': '1600px', 'min-height': '900px' });
                             viewport = document.querySelector("meta[name=viewport]");
                             viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
 
-                            if (scrollToId) {
-                                document.getElementById(scrollToId).scrollIntoView();
+                            if (updatedBrickElement) {
+                                updatedBrickElement.scrollIntoView();
                             }
                             setTimeout(updateWall, 10000);
-                        });
+                        }
+                    };
+                    xhr.send();
                 } else {
 
                 }
@@ -260,41 +263,46 @@
                 if (!addressX || !addressY)
                     return;
 
-                $.post(_baseApiUrl + '/v1/' + _inviteCode + '/draw/' + addressX + '/' + addressY)
-                    .done(function (data) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', _baseApiUrl + '/v1/' + _inviteCode + '/draw/' + addressX + '/' + addressY);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText);
                         _brickInUse = _wall[x][y];
                         _brickInUse.sessionToken = data.sessionToken;
                         _brickInUse.snapshotJson = data.snapshotJson;
                         openCanvas(_brickInUse);
-                    })
-                .fail(function () {
-                    alert('someone is currently drawing on that space')
-                    updateWall();
-                });
+                    } else if (xhr.status == 409) {
+                        alert('someone is currently drawing on that space')
+                        updateWall();
+                    } else {
+                        alert('something went terribly, terribly wrong. call your lawyers.');
+                    }
+                };
+                xhr.send();
             }
 
             function ClickUpload(e) {
                 e.preventDefault();
                 document.getElementById('save-button').disabled = 'disabled';
                 document.getElementById('cancel-button').disabled = 'disabled';
-
-                $.post(_baseApiUrl + '/literally/draw/' + _brickInUse.sessionToken,
-                        JSON.stringify(_lc.getSnapshot()))
-                    .done(function () {
-
-                        var brickView = $(_brickInUse.element);
-                        if (brickView) {
-                            brickView.css({
-                                'backgroundImage': 'url("' +
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', _baseApiUrl + '/literally/draw/' + _brickInUse.sessionToken);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        var brickElement = _brickInUse.element;
+                        if (brickElement) {
+                            brickElement.style.backgroundImage = 'url("' +
                                     _baseApiUrl +
                                     '/v1/image/t' +
-                                    '/'+_inviteCode +
+                                    '/' + _inviteCode +
                                     '/' + _brickInUse.X +
                                     '/' + _brickInUse.Y +
                                     '/t?r=' +
                                     Math.floor((Math.random() * 10000) + 1) +
-                                    '")'
-                            });
+                                    '")';
                         }
 
                         _brickInUse = null;
@@ -305,10 +313,13 @@
 
                         // wait a second before updating to give Azure a chance to propagate the thumbnail image
                         setTimeout(function () {
-                                updateWall(brickView[0].id);
-                            },
-                            5000);
-                    })
+                            updateWall(brickElement);
+                        }, 5000);
+                    } else {
+                        
+                    }
+                };
+                xhr.send(JSON.stringify(_lc.getSnapshot()));
             }
 
             function ClickCancel(e) {
@@ -316,15 +327,24 @@
                 document.getElementById('save-button').disabled = 'disabled';
                 document.getElementById('cancel-button').disabled = 'disabled';
 
-                $.post(_baseApiUrl + '/v1/release/' + _brickInUse.sessionToken, null)
-                .done(function () {
-                    _brickInUse = null;
-                    _lc = null;
-                    document.getElementById('drawSpace').style.display = 'none';
-                    document.getElementById('tools-wrapper').style.display = 'none';
-                    document.getElementById('wall').style.display = 'block';
-                    updateWall();
-                });
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', _baseApiUrl + '/v1/release/' + _brickInUse.sessionToken);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        _brickInUse = null;
+                        _lc = null;
+                        document.getElementById('drawSpace').style.display = 'none';
+                        document.getElementById('tools-wrapper').style.display = 'none';
+                        document.getElementById('wall').style.display = 'block';
+                        updateWall();
+                    } else {
+                        alert('there was a problem saving.. err... sorry... try again? :/');
+                        document.getElementById('save-button').disabled = '';
+                        document.getElementById('cancel-button').disabled = '';
+                    }
+                };
+                xhr.send();
 
                 return false;
             }
