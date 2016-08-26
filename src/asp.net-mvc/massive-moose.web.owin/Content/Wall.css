@@ -144,21 +144,23 @@ body {
     top: -12px
 }
 #help {
+    display: inline-block;
     position: fixed;
     width: 600px;
-    max-height: 250px;
-    top: 30%;
-    left: 50%;
-    margin-top: -100px; /* Negative half of height. */
-    margin-left: -300px;
+    max-height: 150px;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    margin:auto;
     z-index: 3;
-    border-radius: 10px;
     padding: 15px;
 }
 #help-scroller {
+    border-radius: 10px;
     overflow-x: hidden;
     overflow-y: hidden;
-    max-height: 200px;
+    max-height: 240px;
 }
 #help .row {
     margin-top: 1em;

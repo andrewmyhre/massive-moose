@@ -23,7 +23,10 @@
                         var xhr = new XMLHttpRequest();
                         xhr.open('GET', '/Home/Help');
                         xhr.setRequestHeader('Content-Type', 'text/html');
-                        xhr.onload = function() {
+                        xhr.onload = function () {
+                            document.getElementById('help').style.maxHeight = '60%';
+                            document.getElementById('help').style.maxWidth = '80%';
+                            document.getElementById('help-scroller').style.maxHeight = '90%';
                             document.getElementById('help-scroller').style.overflowY = 'scroll';
                             document.getElementById('help-full').innerHTML = xhr.responseText;
                             document.getElementById('help-full').style.display = 'block';
