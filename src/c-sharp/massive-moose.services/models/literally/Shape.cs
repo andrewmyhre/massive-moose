@@ -2,6 +2,7 @@
 using System.Runtime.Serialization;
 using massive_moose.services.models.drawing;
 using System;
+using log4net;
 
 namespace massive_moose.services.models.literally
 {
