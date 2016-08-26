@@ -10,6 +10,8 @@
             _baseApiUrl = cfg.baseApiUrl;
             _inviteCode = cfg.inviteCode;
 
+            dimensions();
+
             _brickInUse = null;
             _lc = null;
             _wall = null;
@@ -388,6 +390,40 @@
                 xhr.send();
 
                 return false;
+            }
+
+            function dimensions() {
+                var viewportwidth;
+                var viewportheight;
+
+                // the more standards compliant browsers (mozilla/netscape/opera/IE7) use window.innerWidth and window.innerHeight
+
+                if (typeof window.innerWidth != 'undefined') {
+                    viewportwidth = window.innerWidth,
+                    viewportheight = window.innerHeight
+                }
+
+                    // IE6 in standards compliant mode (i.e. with a valid doctype as the first line in the document)
+
+                else if (typeof document.documentElement != 'undefined'
+                    && typeof document.documentElement.clientWidth !=
+                    'undefined' && document.documentElement.clientWidth != 0) {
+                    viewportwidth = document.documentElement.clientWidth,
+                    viewportheight = document.documentElement.clientHeight
+                }
+
+                    // older versions of IE
+
+                else {
+                    viewportwidth = document.getElementsByTagName('body')[0].clientWidth,
+                    viewportheight = document.getElementsByTagName('body')[0].clientHeight
+                }
+                console.log('<p>Your viewport width is ' + viewportwidth + 'x' + viewportheight + '</p>');
+
+                if (document.getElementById('help')) {
+                    document.getElementById('help').style.left = (viewportwidth / 6) + 'px';
+                    document.getElementById('help').style.top = (viewportheight / 6) + 'px';
+                }
             }
 
         },
