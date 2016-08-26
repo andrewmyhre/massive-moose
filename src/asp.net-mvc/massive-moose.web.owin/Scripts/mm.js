@@ -76,7 +76,7 @@
                   },
                   {
                       name: 'ellipse',
-                      el: document.getElementById('tool-eraser'),
+                      el: document.getElementById('tool-ellipse'),
                       tool: new LC.tools.Ellipse(_lc)
                   },
                   {
