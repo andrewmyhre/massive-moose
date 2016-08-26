@@ -226,7 +226,11 @@
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\help\done.png" />
+    <Content Include="Content\help\draw.png" />
     <Content Include="Content\help\explore.png" />
+    <Content Include="Content\help\pinch.png" />
+    <Content Include="Content\help\tap.png" />
     <Content Include="Content\img\alpha.png" />
     <Content Include="Content\img\checkerboard-8x8.png" />
     <Content Include="Content\img\dashed-line.png" />
