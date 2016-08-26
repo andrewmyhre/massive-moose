@@ -6,5 +6,6 @@ namespace massive_moose.services
         void Delete(string filePath);
         void Store(string filePath, byte[] data, bool overwrite = false);
         byte[] Get(string filePath);
+        void EnsureDirectoryExists(string containerName);
     }
 }

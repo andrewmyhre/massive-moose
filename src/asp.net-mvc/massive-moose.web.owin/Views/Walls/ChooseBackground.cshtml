@@ -1,0 +1,21 @@
+﻿@model massive_moose.web.owin.Models.ChooseBackgroundViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@using (Html.BeginForm("ChooseBackground", "Walls", FormMethod.Post))
+{
+    @Html.HiddenFor(x=>x.WallKey)
+    <div class="form-group">
+        @Html.RadioButtonFor(x => x.BackgroundImageFilename, "", new { id = "background-0" })
+        <label for="background-0"><img src='/Content/blank.png' />(no background)</label>
+        @Html.RadioButtonFor(x => x.BackgroundImageFilename, "red-brick.jpg", new {id = "background-1"})
+        <label for="background-1"><img src='/Content/red-brick-preview.jpg'/></label>
+        @Html.RadioButtonFor(x => x.BackgroundImageFilename, "white-brick.jpg", new {id = "background-2"})
+        <label for="background-2"><img src='/Content/white-brick-preview.jpg'/></label>
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Update Background Image" class="btn btn-primary btn-large" />
+    </div>
+}

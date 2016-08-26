@@ -30,7 +30,15 @@ namespace massive_moose.web.owin.Controllers
             using (var session = SessionFactory.Instance.OpenStatelessSession())
             {
                 var wall = _wallOperations.GetWallByKeyOrDefault(inviteCode, session);
-                return View(new WallViewModel {InviteCode = wall.InviteCode, Bricks = GetBricksForWall(0,0,inviteCode,session)});
+                return View(new WallViewModel
+                {
+                    InviteCode = wall.InviteCode,
+                    Bricks = GetBricksForWall(0,0,inviteCode,session),
+                    BackgroundImageUrl=
+                    string.Format("{0}/v1/background/{1}",
+                    ConfigurationManager.AppSettings["MMApi"],
+                    string.IsNullOrWhiteSpace(wall.BackgroundImageFilename) ? "white-brick.jpg" : wall.BackgroundImageFilename)
+                });
             }
         }
 

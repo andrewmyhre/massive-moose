@@ -24,7 +24,7 @@ body {
 #tblWall {
     width: 104%;
     height: 100%;
-    background-image: url('/Content/066da1cdd70fafc6c8c1ad2eae48b95d.jpg');
+    background-size: 50% 50%;
     background-repeat: repeat;
 }
 .row {

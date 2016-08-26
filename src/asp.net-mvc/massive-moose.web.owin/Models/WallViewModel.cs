@@ -12,6 +12,7 @@ namespace massive_moose.web.owin.Models
         public int DetailForX { get; internal set; }
         public int DetailForY { get; internal set; }
         public BrickViewModel FocusBrick { get; internal set; }
+        public string BackgroundImageUrl { get; internal set; }
 
         public WallViewModel()
         {

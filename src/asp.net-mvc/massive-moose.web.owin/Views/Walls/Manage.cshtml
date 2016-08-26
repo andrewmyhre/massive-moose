@@ -10,6 +10,8 @@
     </div>
 </div>
 
+@Html.ActionLink("Customize background image", "ChooseBackground", new { id=Model.InviteCode})
+
 <h1>@Model.Wall.Label</h1>
 
 @if (Model.FocusBrickHistory != null)

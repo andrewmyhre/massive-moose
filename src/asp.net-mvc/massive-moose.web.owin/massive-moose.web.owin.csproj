@@ -194,6 +194,7 @@
     <Compile Include="App_Start\IdentityConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
+    <Compile Include="App_Start\Startup.Assets.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
@@ -206,6 +207,7 @@
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\ApplicationUserStore.cs" />
     <Compile Include="Models\BrickViewModel.cs" />
+    <Compile Include="Models\ChooseBackgroundViewModel.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\WallsViewModel.cs" />
@@ -214,7 +216,7 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\066da1cdd70fafc6c8c1ad2eae48b95d.jpg" />
+    <Content Include="Content\backgrounds\red-brick.jpg" />
     <Content Include="Content\2858936-red-brick-wall-texture.jpg" />
     <Content Include="Content\blank.css" />
     <Content Include="Content\blank.png" />
@@ -247,9 +249,12 @@
     <Content Include="Content\img\zoom-out.png" />
     <Content Include="Content\industrial-wall-decals.jpg" />
     <Content Include="Content\literallycanvas.css" />
+    <Content Include="Content\peeling-brick.jpg" />
+    <Content Include="Content\red-brick-preview.jpg" />
     <Content Include="Content\Seamless_Brick_Wall_Texture.jpg" />
     <Content Include="Content\Tiled_bricks.jpg" />
     <Content Include="Content\Wall.css" />
+    <Content Include="Content\backgrounds\white-brick.jpg" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
@@ -381,6 +386,7 @@
     <Content Include="Views\Walls\Manage.cshtml" />
     <Content Include="Views\Walls\Share.cshtml" />
     <Content Include="Views\Walls\_CreateANewWallPartial.cshtml" />
+    <Content Include="Views\Walls\ChooseBackground.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

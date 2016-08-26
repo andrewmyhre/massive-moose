@@ -2,6 +2,7 @@
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System.IO;
+using System;
 
 namespace massive_moose.storage.azure
 {
@@ -20,6 +21,13 @@ namespace massive_moose.storage.azure
             _storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             _blobClient = _storageAccount.CreateCloudBlobClient();
         }
+
+        public void EnsureDirectoryExists(string containerName)
+        {
+            CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
+            container.CreateIfNotExists(BlobContainerPublicAccessType.Container);
+        }
+
         public void Delete(string filePath)
         {
             string[] filePathParts = filePath.Split('/');

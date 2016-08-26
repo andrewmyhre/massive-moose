@@ -149,7 +149,39 @@ namespace massive_moose.web.owin.Controllers
             if (wall == null)
                 return HttpNotFound();
 
-            return View("Share", new WallViewModel {Wall = wall, InviteCode = id});
+            return View(new WallViewModel {Wall = wall, InviteCode = id});
+        }
+
+        public ActionResult ChooseBackground(string id)
+        {
+            var wall = _session.CreateCriteria<Wall>()
+                .Add(Restrictions.Eq("InviteCode", id))
+                .UniqueResult<Wall>();
+
+            if (wall == null)
+                return HttpNotFound();
+
+            return View(new ChooseBackgroundViewModel { WallKey = id});
+        }
+
+        [HttpPost]
+        public ActionResult ChooseBackground(ChooseBackgroundViewModel viewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                var wall = _session.CreateCriteria<Wall>()
+                .Add(Restrictions.Eq("InviteCode", viewModel.WallKey))
+                .UniqueResult<Wall>();
+
+                wall.BackgroundImageFilename = viewModel.BackgroundImageFilename;
+                _session.SaveOrUpdate(wall);
+                _session.Flush();
+                return RedirectToAction("Manage", new { inviteCode = viewModel.WallKey });
+                
+            }
+
+            return View(viewModel);
+
         }
     }
 }

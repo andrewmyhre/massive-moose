@@ -285,5 +285,24 @@ namespace massive_moose.api.Controllers
             result.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("image/png");
             return result;
         }
+
+        [HttpGet]
+        [Route("v1/background/{filename}")]
+        public HttpResponseMessage GetBackgroundImage(string filename)
+        {
+            HttpResponseMessage result = new HttpResponseMessage();
+            var filePath = string.Concat(ConfigurationManager.AppSettings["backgroundsContainer"],
+                "/",
+                filename);
+            if (_fileStorage.Exists(filePath))
+            {
+                var data = _fileStorage.Get(filePath);
+                result.Content = new ByteArrayContent(data);
+                result.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("image/jpg");
+                return result;
+            }
+            result.StatusCode = HttpStatusCode.NotFound;
+            return result;
+        }
     }
 }

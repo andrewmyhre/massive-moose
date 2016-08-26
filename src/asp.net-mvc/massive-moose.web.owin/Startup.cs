@@ -10,6 +10,7 @@ namespace massive_moose.web.owin
         {
             ConfigureAuth(app);
             CreateDefaultWall(app);
+            ConfigureAssets();
         }
     }
 }

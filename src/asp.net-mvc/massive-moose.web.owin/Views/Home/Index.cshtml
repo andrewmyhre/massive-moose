@@ -32,7 +32,7 @@
 }
 
 <div id="wall">
-    <table id="tblWall">
+    <table id="tblWall" style="background-image:url('@Model.BackgroundImageUrl')">
         @for (int y = 0; y < 12; y++)
         {
             <tr class="@(y%2==1?"offset_row":"row")">
