@@ -40,7 +40,11 @@
         );
     </script>
 <script type="text/javascript">
-    var foregroundColor = jsColorPicker('input.foregroundColor', {
+initColorPicker('primaryColor', 'primary');
+initColorPicker('secondaryColor', 'secondary');
+function initColorPicker(elementName, target) {
+
+    var picker = jsColorPicker(elementName, {
             customBG: '#222',
             readOnly: true,
             // patch: false,
@@ -51,17 +55,18 @@
             actionCallback: function (event, type) {
                 if (type === 'changeXYValue') { // overwriting right after repaint...
                     var hslaString = 'hsla(' +
-                        foregroundColor.current.color.colors.RND.hsl.h +
+                        picker.current.color.colors.RND.hsl.h +
                         ',' +
-                        foregroundColor.current.color.colors.RND.hsl.s +
+                        picker.current.color.colors.RND.hsl.s +
                         '%,' +
-                        foregroundColor.current.color.colors.RND.hsl.l +
+                        picker.current.color.colors.RND.hsl.l +
                         '%,' +
-                        foregroundColor.current.color.colors.alpha +
+                        picker.current.color.colors.alpha +
                         ')';
-                    _lc.setColor('primary',hslaString);
+                    _lc.setColor(target,hslaString);
                 }
             }
+}
     });
 </script>
 }
@@ -83,7 +88,8 @@
 <div id="drawSpace"></div>
 <div id="tools-wrapper" style="display:none">
     <div id="tools">
-        <input name="foregroundColor" id="foregroundColor" class="foregroundColor tool" readonly data-colormode="HEX" value="#000000"/>
+        <input name="primaryColor" id="primaryColor" class="primaryColor tool" readonly data-colormode="HEX" value="#000000"/>
+<input name="secondaryColor" id="secondaryColor" class="secondaryColor tool" readonly data-colormode="HEX" value="#FFFFFF"/>
         <a id="tool-pencil" class="tool" style="background-image: url('/content/img/pencil.png')"></a>
         <a id="tool-eraser" class="tool" style="background-image: url('/content/img/eraser.png')"></a>
         <a id="tool-line" class="tool" style="background-image: url('/content/img/line.png')"></a>
