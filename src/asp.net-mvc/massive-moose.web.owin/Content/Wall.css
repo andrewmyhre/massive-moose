@@ -168,8 +168,8 @@ button.tool svg circle {
     background-image: url('/Content/progress.gif');
     background-repeat: no-repeat;
     background-size: contain contain;
-    width: 220px;
     height: 20px;
+    background-position: center;
 }
 .color {
 	padding: .5em;
