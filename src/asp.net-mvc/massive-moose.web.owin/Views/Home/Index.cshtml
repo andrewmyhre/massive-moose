@@ -163,11 +163,16 @@
                         <span class="sr-only">Error:</span>
                         <span id="alert-message">Sorry! There was a problem saving the image... try again? :/</span>
                     </div>
+                    <div id="progress" class="alert alert-default" style="display: none" role="alert">
+                        <div id="progress-indicator"></div>
+                        <div>I'm working on uploading this... just a sec...</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 
 @if (!Model.DontHelpMe)
 {

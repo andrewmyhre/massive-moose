@@ -3,6 +3,36 @@
         cfg: { baseApiUrl: '', drawZoom: 0.8 , viewportScale:1.0, viewportScaleWhenDrawing:0.7, inviteCode:''},
         initialize: function(configuration) {
             cfg = configuration;
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function(evt) {
+                console.log('onReadyStateChanged: state=' + xhr.readyState);
+            }
+//            xhr.addEventListener("progress", updateProgress);
+//            xhr.addEventListener("load", transferComplete);
+//            xhr.addEventListener("error", transferFailed);
+//            xhr.addEventListener("abort", transferCanceled);
+//            xhr.addEventListener("loadstart", transferStarted);
+
+            function updateProgress(evt) {
+                console.log('ajax ' + evt.loaded + '/' + evt.total);
+                document.getElementById('progress-indicator').style.display = 'block';
+            }
+            function transferComplete(evt) {
+                console.log('transferComplete');
+                document.getElementById('progress-indicator').style.display = 'none';
+            }
+            function transferFailed(evt) {
+                console.log('transferFailed');
+                document.getElementById('progress-indicator').style.display = 'none';
+            }
+            function transferCanceled(evt) {
+                console.log('transferCanceled');
+                document.getElementById('progress-indicator').style.display = 'none';
+            }
+            function transferStarted(evt) {
+                console.log('transferStarted');
+                document.getElementById('progress-indicator').style.display = 'block';
+            }
 
             _viewportScaleWhenDrawing = cfg.viewPortScaleWhenDrawing;
             _viewportScale = cfg.viewPortScale;
@@ -51,7 +81,6 @@
             if (document.getElementById('help')) {
                 document.getElementById('moreHelp')
                     .onclick = function() {
-                        var xhr = new XMLHttpRequest();
                         xhr.open('GET', '/Home/Help');
                         xhr.setRequestHeader('Content-Type', 'text/html');
                         xhr.onload = function () {
@@ -73,7 +102,6 @@
                 };
 
                 function SetDontHelpMe() {
-                    var xhr = new XMLHttpRequest();
                     xhr.open('POST', '/Home/DontHelpMe');
                     xhr.send();
                 }
@@ -274,9 +302,9 @@
 
             function updateWall(updatedBrickElement) {
                 if (!_brickInUse) {
+                    document.getElementById('progress').style.display = 'none';
                     viewport = document.querySelector("meta[name=viewport]");
                     viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
-                    var xhr = new XMLHttpRequest();
                     xhr.open('GET',_baseApiUrl + '/v2/wall/' + _inviteCode + '/0/0');
                     xhr.setRequestHeader('Content-Type', 'application/json');
                     xhr.onload = function() {
@@ -331,7 +359,6 @@
                 if (!addressX || !addressY)
                     return;
 
-                var xhr = new XMLHttpRequest();
                 xhr.open('POST', _baseApiUrl + '/v1/' + _inviteCode + '/draw/' + addressX + '/' + addressY);
                 xhr.setRequestHeader('Content-Type', 'application/json');
                 xhr.onload = function() {
@@ -356,8 +383,7 @@
                 hideColorPickers();
                 document.getElementById('save-button').disabled = 'disabled';
                 document.getElementById('cancel-button').disabled = 'disabled';
-                var xhr = new XMLHttpRequest();
-                //xhr.open('POST', _baseApiUrl + '/literally/draw/' + _brickInUse.sessionToken);
+                document.getElementById('progress').style.display = 'inline-block';
                 xhr.open('POST', _baseApiUrl + '/v1/save/'+_brickInUse.sessionToken, true);
                 xhr.setRequestHeader('Content-Type', 'application/json');
                 xhr.onload = function () {
@@ -397,10 +423,6 @@
                 var imageBounds = {
                     x: 0, y: 0, width: imageSize.width, height: imageSize.height
                 };
-                //xhr.send(JSON.stringify(_lc.getSnapshot()));
-                //formData.append('SnapshotJson', escape(JSON.stringify(_lc.getSnapshot())));
-                //formData.append('ImageData', _lc.getImage({ rect: imageBounds }).toDataURL());
-                //xhr.send("snapshotJson="+escape(JSON.stringify(_lc.getSnapshot()))+"&imageData="+_lc.getImage({ rect: imageBounds }).toDataURL());
                 xhr.send('{"snapshotJson":"' + escape(JSON.stringify(_lc.getSnapshot())) + '","imageData":"' + _lc.getImage({ rect: imageBounds }).toDataURL() + '"}');
             }
 
@@ -417,8 +439,8 @@
                 hideColorPickers();
                 document.getElementById('save-button').disabled = 'disabled';
                 document.getElementById('cancel-button').disabled = 'disabled';
+                document.getElementById('progress').style.display = 'inline-block';
 
-                var xhr = new XMLHttpRequest();
                 xhr.open('POST', _baseApiUrl + '/v1/release/' + _brickInUse.sessionToken);
                 xhr.setRequestHeader('Content-Type', 'application/json');
                 xhr.onload = function() {

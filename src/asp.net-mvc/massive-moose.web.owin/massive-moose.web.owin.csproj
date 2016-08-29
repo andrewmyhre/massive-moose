@@ -257,7 +257,9 @@
     <Content Include="Content\industrial-wall-decals.jpg" />
     <Content Include="Content\literallycanvas.css" />
     <Content Include="Content\peeling-brick.jpg" />
+    <Content Include="Content\progress.gif" />
     <Content Include="Content\red-brick-preview.jpg" />
+    <Content Include="Content\rolling.css" />
     <Content Include="Content\Seamless_Brick_Wall_Texture.jpg" />
     <Content Include="Content\Tiled_bricks.jpg" />
     <Content Include="Content\Wall.css" />
