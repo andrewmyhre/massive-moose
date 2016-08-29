@@ -17,6 +17,7 @@ using massive_moose.services.models;
 using massive_moose.services;
 using massive_moose.services.models.drawing;
 using NHibernate;
+using massive_moose.api.Models;
 
 namespace massive_moose.api.Controllers
 {
@@ -122,6 +123,88 @@ namespace massive_moose.api.Controllers
             }
         }
 
+
+        [HttpPost]
+        [Route("v1/save/{token}")]
+        public async Task<IHttpActionResult> SaveImage(Guid token, [FromBody] BrickUpdate update)
+        {
+            if (!ModelState.IsValid || update == null)
+            {
+                return BadRequest("ModelState.IsValid:" + ModelState.IsValid + ", update:" + update);
+            }
+            using (var session = SessionFactory.Instance.OpenSession())
+            using (var tx = session.BeginTransaction())
+            {
+                try
+                {
+                    Log.DebugFormat("Receiving data for session {0}", token);
+                    var drawingSession = session.CreateCriteria<DrawingSession>()
+                        .Add(Restrictions.Eq("SessionToken", token))
+                        .UniqueResult<DrawingSession>();
+
+                    if (drawingSession == null)
+                        return NotFound();
+
+
+                        string outputPath = string.Format("{0}/b_{1}-{2}-{3}.png",
+                            ConfigurationManager.AppSettings["storageContainer"],
+                            drawingSession.Wall.InviteCode, drawingSession.AddressX, drawingSession.AddressY);
+
+                    string imageDataBase64 = update.ImageData.Replace("data:image/png;base64,", "");
+                    byte[] imageDataBytes = Convert.FromBase64String(imageDataBase64);
+                    _fileStorage.Store(outputPath, imageDataBytes, true);
+
+                    System.IO.MemoryStream myMemStream = new System.IO.MemoryStream(imageDataBytes);
+                    System.Drawing.Image fullsizeImage = System.Drawing.Image.FromStream(myMemStream);
+                    System.Drawing.Image newImage = fullsizeImage.GetThumbnailImage(200, 100, null, IntPtr.Zero);
+                    System.IO.MemoryStream myResult = new System.IO.MemoryStream();
+                    newImage.Save(myResult, System.Drawing.Imaging.ImageFormat.Png);
+
+                    outputPath = string.Format("{0}/b_{1}-{2}-{3}_1.png",
+                        ConfigurationManager.AppSettings["storageContainer"],
+                        drawingSession.Wall.InviteCode, drawingSession.AddressX, drawingSession.AddressY);
+                    _fileStorage.Store(outputPath, myResult.ToArray(), true);
+
+                    drawingSession.Closed = true;
+
+                    Log.DebugFormat("Updated brick ({0},{1}) for session {2}", drawingSession.AddressX,
+                        drawingSession.AddressY, drawingSession.SessionToken);
+
+                    var brick = session.CreateCriteria<Brick>()
+                        .Add(Restrictions.Eq("AddressX", drawingSession.AddressX))
+                        .Add(Restrictions.Eq("AddressY", drawingSession.AddressY))
+                        .Add(Restrictions.Eq("Wall.Id", drawingSession.Wall.Id))
+                        .UniqueResult<Brick>();
+
+                    if (brick == null)
+                    {
+                        brick = new Brick()
+                        {
+                            AddressX = drawingSession.AddressX,
+                            AddressY = drawingSession.AddressY,
+                            Wall = drawingSession.Wall
+                        };
+
+                    }
+
+                    var unencodedSnapshotJson = System.Web.HttpUtility.UrlDecode(update.SnapshotJson);
+
+                    brick.LastUpdated = DateTime.Now;
+                    brick.SnapshotJson = unencodedSnapshotJson;
+                    session.SaveOrUpdate(brick);
+
+                    tx.Commit();
+
+                    return Ok();
+                }
+                catch (Exception ex)
+                {
+                    tx.Rollback();
+                    Log.Error("Failed to save image", ex);
+                    return InternalServerError();
+                }
+            }
+        }
         [HttpPost]
         [Route("v1/draw/{token}")]
         [EnableCors(origins: "*", headers: "*", methods: "*")]

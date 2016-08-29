@@ -31,65 +31,69 @@
         MassiveMoose.initialize(
             {
                 baseApiUrl: '@System.Configuration.ConfigurationManager.AppSettings["MMApi"]',
-                drawZoom:@System.Configuration.ConfigurationManager.AppSettings["DrawZoom"],
-                viewPortScaleWhenDrawing:@System.Configuration.ConfigurationManager.AppSettings["ViewportScaleWhenDrawing"],
-                viewPortScale:@System.Configuration.ConfigurationManager.AppSettings["ViewportScale"],
-                inviteCode:'@Model.InviteCode',
-                toolbarShowDelay:300
+                drawZoom: @System.Configuration.ConfigurationManager.AppSettings["DrawZoom"],
+                viewPortScaleWhenDrawing:
+                    @System.Configuration.ConfigurationManager.AppSettings["ViewportScaleWhenDrawing"],
+                viewPortScale: @System.Configuration.ConfigurationManager.AppSettings["ViewportScale"],
+                inviteCode: '@Model.InviteCode',
+                toolbarShowDelay: 300
             }
         );
     </script>
-<script type="text/javascript">
-initColorPicker('primaryColor', 'primary');
-initColorPicker('secondaryColor', 'secondary');
-function initColorPicker(elementName, target) {
+    <script type="text/javascript">
+        initColorPicker('input.primaryColor', 'primary');
+        initColorPicker('input.secondaryColor', 'secondary');
 
-    var picker = jsColorPicker(elementName, {
-            customBG: '#222',
-            readOnly: true,
-            // patch: false,
-            init: function(elm, colors) { // colors is a different instance (not connected to colorPicker)
-                elm.style.backgroundColor = elm.value;
-                elm.style.color = colors.rgbaMixCustom.luminance > 0.22 ? '#222' : '#ddd';
-            },
-            actionCallback: function (event, type) {
-                if (type === 'changeXYValue') { // overwriting right after repaint...
-                    var hslaString = 'hsla(' +
-                        picker.current.color.colors.RND.hsl.h +
-                        ',' +
-                        picker.current.color.colors.RND.hsl.s +
-                        '%,' +
-                        picker.current.color.colors.RND.hsl.l +
-                        '%,' +
-                        picker.current.color.colors.alpha +
-                        ')';
-                    _lc.setColor(target,hslaString);
+        function initColorPicker(elementName, target) {
+
+            var picker = jsColorPicker(elementName,
+            {
+                customBG: '#222',
+                readOnly: true,
+                // patch: false,
+                init: function(elm, colors) { // colors is a different instance (not connected to colorPicker)
+                    elm.style.backgroundColor = elm.value;
+                    elm.style.color = colors.rgbaMixCustom.luminance > 0.22 ? '#222' : '#ddd';
+                },
+                actionCallback: function(event, type) {
+                    if (type === 'changeXYValue') { // overwriting right after repaint...
+                        var hslaString = 'hsla(' +
+                            picker.current.color.colors.RND.hsl.h +
+                            ',' +
+                            picker.current.color.colors.RND.hsl.s +
+                            '%,' +
+                            picker.current.color.colors.RND.hsl.l +
+                            '%,' +
+                            picker.current.color.colors.alpha +
+                            ')';
+                        _lc.setColor(target, hslaString);
+                    }
                 }
-            }
-}
-    });
-</script>
+            });
+        }
+    </script>
 }
 
 <div id="wall">
-    <table id="tblWall" style="background-image:url('@Model.BackgroundImageUrl')">
+    <table id="tblWall" style="background-image: url('@Model.BackgroundImageUrl')">
         @for (int y = 0; y < 12; y++)
         {
-            <tr class="@(y%2==1?"offset_row":"row")">
+            <tr class="@(y%2 == 1 ? "offset_row" : "row")">
                 @for (int x = 0; x < 12; x++)
                 {
                     var brick = Model.Bricks[x, y];
-                    <td class="brick" id="c@(y*12 + x)" @if (brick.HasContent) {<text>style="background-image:url('@brick.ThumbnailImageUrl')"</text>}></td>
+                    <td class="brick" id="c@(y*12 + x)" @if (brick.HasContent)
+                                                        {<text>style="background-image: url('@brick.ThumbnailImageUrl')"</text>}></td>
                 }
             </tr>
         }
     </table>
 </div>
 <div id="drawSpace"></div>
-<div id="tools-wrapper" style="display:none">
+<div id="tools-wrapper" style="display: none">
     <div id="tools">
         <input name="primaryColor" id="primaryColor" class="primaryColor tool" readonly data-colormode="HEX" value="#000000"/>
-<input name="secondaryColor" id="secondaryColor" class="secondaryColor tool" readonly data-colormode="HEX" value="#FFFFFF"/>
+        <input name="secondaryColor" id="secondaryColor" class="secondaryColor tool" readonly data-colormode="HEX" value="#FFFFFF"/>
         <a id="tool-pencil" class="tool" style="background-image: url('/content/img/pencil.png')"></a>
         <a id="tool-eraser" class="tool" style="background-image: url('/content/img/eraser.png')"></a>
         <a id="tool-line" class="tool" style="background-image: url('/content/img/line.png')"></a>
@@ -122,7 +126,7 @@ function initColorPicker(elementName, target) {
         <a id="redo" class="tool" style="position: relative; top: -10px;"><span class="glyphicon glyphicon-chevron-right"></span></a>
         <button id="save-button" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
         <button id="cancel-button" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
-        <div id="alert" class="alert alert-danger" style="display:none" role="alert">
+        <div id="alert" class="alert alert-danger" style="display: none" role="alert">
             <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
             <span class="sr-only">Error:</span>
             <span id="alert-message">Sorry! There was a problem saving the image... try again? :/</span>

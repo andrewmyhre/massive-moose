@@ -14,12 +14,14 @@ namespace massive_moose.services
             canvas.Height = drawing.ImageSize.Height;
             canvas.BackgroundColor = new Color(drawing.Colors.Background.A, drawing.Colors.Background.R, drawing.Colors.Background.G, drawing.Colors.Background.B);
 
+            Console.WriteLine("Canvas background color: {0},{1},{2},{3}", canvas.BackgroundColor.R, canvas.BackgroundColor.G, canvas.BackgroundColor.B, canvas.BackgroundColor.A);
             var drawingShapes = drawing.Shapes.OrderBy(s => s.Data.Order);
 
             InkPresenter inkPresenter = new InkPresenter();
             canvas.Children.Add(inkPresenter);
             foreach (var shape in drawing.Shapes)
             {
+                Console.WriteLine("Mapping a: {0}", shape.ClassName);
                 switch (shape.ClassName)
                 {
                     case "LinePath":
@@ -44,6 +46,9 @@ namespace massive_moose.services
                     case "Polygon":
                         inkPresenter = null;
                         MapPolygon(ref canvas, shape);
+                        break;
+                    case "ErasedLinePath":
+                        MapEraserPath(ref canvas, shape);
                         break;
                     default:
                         inkPresenter = null;
@@ -164,6 +169,28 @@ namespace massive_moose.services
                 inkPresenter.Strokes.Add(stroke);
             }
             
+        }
+        private void MapEraserPath(ref Canvas canvas, Shape shape)
+        {
+            var eraser = new Eraser();
+
+            if (shape.Data.SmoothedPointCoordinatePairs != null)
+            {
+                var stroke = new Stroke();
+                stroke.DrawingAttributes.Width = stroke.DrawingAttributes.Height = shape.Data.PointSize;
+                stroke.StylusPoints.AddRange(shape.Data.SmoothedPointCoordinatePairs.Select(p => new StylusPoint() { X = p[0], Y = p[1], PressureFactor = 1.0f }));
+                eraser.Strokes.Add(stroke);
+            }
+            else if (shape.Data.PointCoordinatePairs != null)
+            {
+                var stroke = new Stroke();
+                stroke.DrawingAttributes.Width = stroke.DrawingAttributes.Height = shape.Data.PointSize;
+                stroke.StylusPoints.AddRange(shape.Data.PointCoordinatePairs.Select(p => new StylusPoint() { X = p[0], Y = p[1], PressureFactor = 1.0f }));
+                eraser.Strokes.Add(stroke);
+            }
+            eraser.PointSize = shape.Data.PointSize;
+            canvas.Children.Add(eraser);
+
         }
 
         byte[] HslToRgb(double h, double s, double l)

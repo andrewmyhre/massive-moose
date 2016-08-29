@@ -61,14 +61,14 @@ namespace massive_moose.services.models.literally
         public Guid Id { get; set; }
     }
 
-    [DataContract(Name="data")]
+    [DataContract(Name = "data")]
     public class ShapeData
     {
-        [DataMember(Name="order")]
+        [DataMember(Name = "order")]
         public int Order { get; set; }
 
         [DataMember(Name = "tailSize")]
-        public int TailSize { get;set; }
+        public int TailSize { get; set; }
 
         [DataMember(Name = "smooth")]
         public bool Smooth { get; set; }
@@ -76,114 +76,154 @@ namespace massive_moose.services.models.literally
         [DataMember(Name = "pointCoordinatePairs")]
         public List<double[]> PointCoordinatePairs { get; set; }
 
-        [DataMember(Name= "smoothedPointCoordinatePairs")]
+        [DataMember(Name = "smoothedPointCoordinatePairs")]
         public List<double[]> SmoothedPointCoordinatePairs { get; set; }
 
-        [DataMember(Name="pointSize")]
+        [DataMember(Name = "pointSize")]
         public double PointSize { get; set; }
 
         [DataMember(Name = "color")]
         public string ColorHSLAString { get; set; }
-        public Hsla ColorHsla { get { return ToHsla(ColorHSLAString); } }
-        public ColorRGB Color { get {  return ColorRGB.FromHSLA(ColorHsla.Hue,ColorHsla.Saturation, ColorHsla.Lightness, ColorHsla.Alpha);} }
 
-        [DataMember(Name="pointColor")]
+        public Hsla ColorHsla
+        {
+            get { return ToHsla(ColorHSLAString); }
+        }
+
+        public ColorRGB Color
+        {
+            get { return ColorRGB.FromHSLA(ColorHsla.Hue, ColorHsla.Saturation, ColorHsla.Lightness, ColorHsla.Alpha); }
+        }
+
+        [DataMember(Name = "pointColor")]
         public string PointColorHSLAString { get; set; }
-        public Hsla PointColorHsla { get { return ToHsla(PointColorHSLAString); } }
-        public ColorRGB PointColor { get {  return ColorRGB.FromHSLA(PointColorHsla.Hue, PointColorHsla.Saturation, PointColorHsla.Lightness, PointColorHsla.Alpha);} }
 
-        [DataMember(Name="x1")]
+        public Hsla PointColorHsla
+        {
+            get { return ToHsla(PointColorHSLAString); }
+        }
+
+        public ColorRGB PointColor
+        {
+            get
+            {
+                return ColorRGB.FromHSLA(PointColorHsla.Hue, PointColorHsla.Saturation, PointColorHsla.Lightness,
+                    PointColorHsla.Alpha);
+            }
+        }
+
+        [DataMember(Name = "x1")]
         public double X1 { get; set; }
 
-        [DataMember(Name="y1")]
+        [DataMember(Name = "y1")]
         public double Y1 { get; set; }
 
-        [DataMember(Name="x2")]
+        [DataMember(Name = "x2")]
         public double X2 { get; set; }
 
-        [DataMember(Name="y2")]
+        [DataMember(Name = "y2")]
         public double Y2 { get; set; }
 
-        [DataMember(Name="strokeWidth")]
+        [DataMember(Name = "strokeWidth")]
         public double StrokeWidth { get; set; }
 
-        [DataMember(Name="capStyle")]
+        [DataMember(Name = "capStyle")]
         public string CapStyle { get; set; }
 
-        [DataMember(Name="dash")]
+        [DataMember(Name = "dash")]
         public double[] Dash { get; set; }
-        
-        [DataMember(Name= "endCapShapes")]
+
+        [DataMember(Name = "endCapShapes")]
         public string[] EndCapShapes { get; set; }
 
-        [DataMember(Name="text")]
+        [DataMember(Name = "text")]
         public string Text { get; set; }
-        
-        [DataMember(Name="font")]
+
+        [DataMember(Name = "font")]
         public string Font { get; set; }
 
-        [DataMember(Name="forcedWidth")]
+        [DataMember(Name = "forcedWidth")]
         public double ForcedWidth { get; set; }
 
         [DataMember(Name = "forcedHeight")]
         public double ForcedHeight { get; set; }
 
-        [DataMember(Name="x")]
+        [DataMember(Name = "x")]
         public double X { get; set; }
 
-        [DataMember(Name="y")]
+        [DataMember(Name = "y")]
         public double Y { get; set; }
 
-        [DataMember(Name="v")]
+        [DataMember(Name = "v")]
         public double V { get; set; }
 
-        [DataMember(Name="width")]
+        [DataMember(Name = "width")]
         public double Width { get; set; }
-        
-        [DataMember(Name="height")]
+
+        [DataMember(Name = "height")]
         public double Height { get; set; }
 
-        [DataMember(Name= "strokeColor")]
+        [DataMember(Name = "strokeColor")]
         public string StrokeColorHSLAString { get; set; }
-        public Hsla StrokeColorHsla { get { return ToHsla(StrokeColorHSLAString); } }
-        public ColorRGB StrokeColor {  get
+
+        public Hsla StrokeColorHsla
         {
-            return ColorRGB.FromHSLA(StrokeColorHsla.Hue, StrokeColorHsla.Saturation, StrokeColorHsla.Lightness,
-                StrokeColorHsla.Alpha);
-        } }
+            get { return ToHsla(StrokeColorHSLAString); }
+        }
+
+        public ColorRGB StrokeColor
+        {
+            get
+            {
+                return ColorRGB.FromHSLA(StrokeColorHsla.Hue, StrokeColorHsla.Saturation, StrokeColorHsla.Lightness,
+                    StrokeColorHsla.Alpha);
+            }
+        }
 
         [DataMember(Name = "fillColor")]
         public string FillColorHSLAString { get; set; }
-        public Hsla FillColorHsla { get { return ToHsla(FillColorHSLAString); } }
-        public ColorRGB FillColor { get
-        {
-            return ColorRGB.FromHSLA(FillColorHsla.Hue, FillColorHsla.Saturation, FillColorHsla.Lightness,
-                FillColorHsla.Alpha);
-        } }
 
-        [DataMember(Name="isClosed")]
+        public Hsla FillColorHsla
+        {
+            get { return ToHsla(FillColorHSLAString); }
+        }
+
+        public ColorRGB FillColor
+        {
+            get
+            {
+                return ColorRGB.FromHSLA(FillColorHsla.Hue, FillColorHsla.Saturation, FillColorHsla.Lightness,
+                    FillColorHsla.Alpha);
+            }
+        }
+
+        [DataMember(Name = "isClosed")]
         public bool IsClosed { get; set; }
-static ILog Log = log4net.LogManager.GetLogger(typeof(ShapeData)); 
+
+        static ILog Log = log4net.LogManager.GetLogger(typeof(ShapeData));
 
         public static Hsla ToHsla(string input)
         {
-            if (input == "transparent") return new Hsla() {Alpha=0,Saturation=0,Lightness=0,Hue=0};
-try {
-            var parts = input.Replace("hsla","").Trim('(',')').Split(',');
-            var hsla = new Hsla();
-            double h, s, l;
-            float a;
+            if (input == "transparent") return new Hsla() {Alpha = 0, Saturation = 0, Lightness = 0, Hue = 0};
+            try
+            {
+                var parts = input.Replace("hsla", "").Trim('(', ')').Split(',');
+                var hsla = new Hsla();
+                double h, s, l;
+                float a;
 
-            double.TryParse(parts[0], out h);
-            double.TryParse(parts[1].Trim('%'), out s);
-            double.TryParse(parts[2].Trim('%'), out l);
-            float.TryParse(parts[3], out a);
+                double.TryParse(parts[0], out h);
+                double.TryParse(parts[1].Trim('%'), out s);
+                double.TryParse(parts[2].Trim('%'), out l);
+                float.TryParse(parts[3], out a);
 
-            return new Hsla() {Hue=h,Saturation=s/100,Lightness=l/100,Alpha=a};
-} catch(Exception ex) {
-Log.WarnFormat("Hsla value could not be parsed: {0}", input);
-return new Hsla(){Hue=0, Saturation=0, Lightness=0, Alpha=1};
-}
+                return new Hsla() {Hue = h, Saturation = s/100, Lightness = l/100, Alpha = a};
+            }
+            catch (Exception ex)
+            {
+                Log.WarnFormat("Hsla value could not be parsed: {0}", input);
+                return new Hsla() {Hue = 0, Saturation = 0, Lightness = 0, Alpha = 1};
+            }
         }
     }
 

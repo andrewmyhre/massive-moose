@@ -329,7 +329,8 @@
                 document.getElementById('save-button').disabled = 'disabled';
                 document.getElementById('cancel-button').disabled = 'disabled';
                 var xhr = new XMLHttpRequest();
-                xhr.open('POST', _baseApiUrl + '/literally/draw/' + _brickInUse.sessionToken);
+                //xhr.open('POST', _baseApiUrl + '/literally/draw/' + _brickInUse.sessionToken);
+                xhr.open('POST', _baseApiUrl + '/v1/save/'+_brickInUse.sessionToken, true);
                 xhr.setRequestHeader('Content-Type', 'application/json');
                 xhr.onload = function () {
                     if (xhr.status === 200) {
@@ -363,7 +364,15 @@
                         document.getElementById('alert').style.display = 'block';
                     }
                 };
-                xhr.send(JSON.stringify(_lc.getSnapshot()));
+                var imageSize = { width: 1600, height: 900 };
+                var imageBounds = {
+                    x: 0, y: 0, width: imageSize.width, height: imageSize.height
+                };
+                //xhr.send(JSON.stringify(_lc.getSnapshot()));
+                //formData.append('SnapshotJson', escape(JSON.stringify(_lc.getSnapshot())));
+                //formData.append('ImageData', _lc.getImage({ rect: imageBounds }).toDataURL());
+                //xhr.send("snapshotJson="+escape(JSON.stringify(_lc.getSnapshot()))+"&imageData="+_lc.getImage({ rect: imageBounds }).toDataURL());
+                xhr.send('{"snapshotJson":"' + escape(JSON.stringify(_lc.getSnapshot())) + '","imageData":"' + _lc.getImage({ rect: imageBounds }).toDataURL() + '"}');
             }
 
             function hideColorPickers() {

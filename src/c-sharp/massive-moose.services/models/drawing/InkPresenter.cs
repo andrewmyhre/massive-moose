@@ -13,4 +13,17 @@ namespace massive_moose.services.models.drawing
             Strokes = new StrokeCollection();
         }
     }
+
+    [DataContract(Namespace = "http://www.massivemoose.com/2016/xmlschema/contracts", Name = "eraser")]
+    public class Eraser : UIElement
+    {
+        [DataMember(Name = "strokes")]
+        public StrokeCollection Strokes { get; private set; }
+        [DataMember(Name ="pointSize")]
+        public double PointSize { get; set; }
+        public Eraser()
+        {
+            Strokes = new StrokeCollection();
+        }
+    }
 }

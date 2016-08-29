@@ -44,25 +44,6 @@ namespace massive_moose.drawing.console
                 Console.WriteLine("shape type: {0}:", shape.ClassName);
                 Console.WriteLine("pointsize: {0}", shape.Data.PointSize);
                 Console.WriteLine("color: {0}", shape.Data.PointColorHSLAString);
-                if (shape.Data != null)
-                {
-                    if (shape.Data.PointCoordinatePairs != null)
-                    {
-                        Console.WriteLine("points:");
-                        foreach (var point in shape.Data.PointCoordinatePairs)
-                        {
-                            Console.WriteLine("{0},{1}", point[0], point[1]);
-                        }
-                    }
-                    Console.WriteLine("smoothed points:");
-                    if (shape.Data.SmoothedPointCoordinatePairs != null)
-                    {
-                        foreach (var point in shape.Data.SmoothedPointCoordinatePairs)
-                        {
-                            Console.WriteLine("{0},{1}", point[0], point[1]);
-                        }
-                    }
-                }
             }
 
             var canvas = new LiterallyMapper().ToCanvas(drawing);

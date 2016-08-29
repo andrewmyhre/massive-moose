@@ -3,6 +3,11 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Windows.Controls;
+using System.Windows.Ink;
+using Canvas = massive_moose.services.models.drawing.Canvas;
+using InkPresenter = massive_moose.services.models.drawing.InkPresenter;
+using TextBlock = massive_moose.services.models.drawing.TextBlock;
 
 namespace massive_moose.services
 {
@@ -18,7 +23,10 @@ namespace massive_moose.services
                 System.Windows.Controls.Grid grid = new System.Windows.Controls.Grid();
                 grid.ClipToBounds = true;
                 grid.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(canvasContract.BackgroundColor.A, canvasContract.BackgroundColor.R, canvasContract.BackgroundColor.G, canvasContract.BackgroundColor.B));
-                System.Windows.Controls.Canvas canvas = new System.Windows.Controls.Canvas();
+                System.Windows.Controls.InkCanvas canvas = new System.Windows.Controls.InkCanvas();
+                System.Windows.Controls.InkPresenter inkPresenter = new System.Windows.Controls.InkPresenter();
+                canvas.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0, 0, 0, 0));
+                canvas.Children.Add(inkPresenter);
 
                 if (imageSource != null)
                 {
@@ -38,8 +46,8 @@ namespace massive_moose.services
                     if (child is InkPresenter)
                     {
                         var input = child as InkPresenter;
-                        var inkPresenter = new System.Windows.Controls.InkPresenter();
                         var drawingAttributes = new System.Windows.Ink.DrawingAttributes();
+                        canvas.EditingMode = InkCanvasEditingMode.Ink;
 
                         foreach (var stroke in input.Strokes)
                         {
@@ -57,7 +65,6 @@ namespace massive_moose.services
                                     }));
                         }
 
-                        canvas.Children.Add(inkPresenter);
                     }else if (child is Line)
                     {
                         var input = child as Line;
@@ -200,6 +207,19 @@ namespace massive_moose.services
                         canvas.Children.Add(shape);
                         System.Windows.Controls.Canvas.SetLeft(shape, input.X);
                         System.Windows.Controls.Canvas.SetTop(shape, input.Y);
+                    } else if (child is Eraser)
+                    {
+                        var input = child as Eraser;
+                        var drawingAttributes = new System.Windows.Ink.DrawingAttributes();
+                        canvas.EditingMode = InkCanvasEditingMode.EraseByStroke;
+                        canvas.EraserShape = new EllipseStylusShape(input.PointSize, input.PointSize);
+
+                        foreach (var stroke in input.Strokes)
+                        {
+                            inkPresenter.Strokes.Erase(
+                                stroke.StylusPoints.Select(sp => new System.Windows.Point() { X = sp.X, Y = sp.Y}),
+                                new EllipseStylusShape(0.01,0.01));
+                        }
                     }
                 }
 

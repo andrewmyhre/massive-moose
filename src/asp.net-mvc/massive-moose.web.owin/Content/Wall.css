@@ -139,7 +139,7 @@ body {
     position: relative;
     top: -11px;
 }
-#foregroundColor {
+#primaryColor, #secondaryColor {
     position: relative; 
     top: -12px
 }
