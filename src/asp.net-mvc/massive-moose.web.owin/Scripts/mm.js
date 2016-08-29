@@ -401,6 +401,8 @@
                                     Math.floor((Math.random() * 10000) + 1) +
                                     '")';
                             brickElement.scrollIntoView();
+                            viewport = document.querySelector("meta[name=viewport]");
+                            viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
                         }
 
                         _brickInUse = null;
