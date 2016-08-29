@@ -98,7 +98,6 @@ body {
     text-align: center;
     z-index: 2;
     position: fixed;
-    width: 100%;
 }
 #tools-inner { 
     display: inline-block;
