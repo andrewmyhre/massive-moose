@@ -182,7 +182,7 @@ button.tool svg circle {
 /* Custom, iPhone Retina */ 
     @media only screen and (min-width : 320px) {
     #help {
-        width: 300px;
+        width: 320px;
         height: 200px;
     }
         
@@ -191,7 +191,7 @@ button.tool svg circle {
     /* Extra Small Devices, Phones */ 
     @media only screen and (min-width : 480px) {
     #help {
-        width: 100%;
+        width: 480px;
         height: 300px;
     }
 
