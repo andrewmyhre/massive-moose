@@ -131,7 +131,7 @@ body {
     height: 34px;
 }
 #help {
-    font-size: 1em;
+    font-size: 2em;
     display: inline-block;
     position: fixed;
     width: 60%;
@@ -178,3 +178,48 @@ button.tool svg circle {
 	border-radius: 3px;
 	width: 140px;
 }
+
+/* Custom, iPhone Retina */ 
+    @media only screen and (min-width : 320px) {
+    #help {
+        width: 300px;
+        height: 200px;
+    }
+        
+    }
+
+    /* Extra Small Devices, Phones */ 
+    @media only screen and (min-width : 480px) {
+    #help {
+        width: 100%;
+        height: 300px;
+    }
+
+    }
+
+    /* Small Devices, Tablets */
+    @media only screen and (min-width : 768px) {
+    #help {
+        width: 760px;
+        height: 400px;
+    }
+
+    }
+
+    /* Medium Devices, Desktops */
+    @media only screen and (min-width : 992px) {
+            #help {
+        width: 980px;
+        height: 500px;
+    }
+
+    }
+
+    /* Large Devices, Wide Screens */
+    @media only screen and (min-width : 1200px) {
+            #help {
+        width: 1180px;
+        height: 600px;
+    }
+
+    }

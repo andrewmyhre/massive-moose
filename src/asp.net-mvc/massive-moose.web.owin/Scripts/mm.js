@@ -34,13 +34,24 @@
                 document.getElementById('progress-indicator').style.display = 'block';
             }
 
+            function setViewScale() {
+                var vs = cfg.viewPortScale;
+                if (cfg.firstTime) {
+                    vs=1.0;
+                }
+                else if (_brickInUse) {
+                    vs=cfg.viewportScaleWhenDrawing;
+                }
+                viewport = document.querySelector("meta[name=viewport]");
+                viewport.setAttribute('content', 'width=device-width, initial-scale=' + vs);
+
+            }
+
             _viewportScaleWhenDrawing = cfg.viewPortScaleWhenDrawing;
             _viewportScale = cfg.viewPortScale;
             _drawZoom = cfg.drawZoom;
             _baseApiUrl = cfg.baseApiUrl;
             _inviteCode = cfg.inviteCode;
-
-            dimensions();
 
             _brickInUse = null;
             _lc = null;
@@ -304,8 +315,7 @@
             function updateWall(updatedBrickElement) {
                 if (!_brickInUse) {
                     document.getElementById('progress').style.display = 'none';
-                    viewport = document.querySelector("meta[name=viewport]");
-                    viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
+                    setViewScale();
                     xhr.open('GET',_baseApiUrl + '/v2/wall/' + _inviteCode + '/0/0');
                     xhr.setRequestHeader('Content-Type', 'application/json');
                     xhr.onload = function() {
@@ -339,9 +349,7 @@
                             _wall = data;
                             document.body.style.minWidth = '1600px';
                             document.body.style.minHeight = '900px';
-                            viewport = document.querySelector("meta[name=viewport]");
-                            viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
-                            dimensions();
+                            setViewScale();
                             if (updatedBrickElement)
                                 updatedBrickElement.scrollIntoView();
 
@@ -401,8 +409,7 @@
                                     Math.floor((Math.random() * 10000) + 1) +
                                     '")';
                             brickElement.scrollIntoView();
-                            viewport = document.querySelector("meta[name=viewport]");
-                            viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
+                            setViewScale();
                         }
 
                         _brickInUse = null;
@@ -463,51 +470,6 @@
                 xhr.send();
 
                 return false;
-            }
-
-            function dimensions() {
-                var viewportwidth;
-                var viewportheight;
-
-                // the more standards compliant browsers (mozilla/netscape/opera/IE7) use window.innerWidth and window.innerHeight
-
-                if (typeof window.innerWidth != 'undefined') {
-                    viewportwidth = window.innerWidth,
-                    viewportheight = window.innerHeight
-                }
-
-                    // IE6 in standards compliant mode (i.e. with a valid doctype as the first line in the document)
-
-                else if (typeof document.documentElement != 'undefined'
-                    && typeof document.documentElement.clientWidth !=
-                    'undefined' && document.documentElement.clientWidth != 0) {
-                    viewportwidth = document.documentElement.clientWidth,
-                    viewportheight = document.documentElement.clientHeight
-                }
-
-                    // older versions of IE
-
-                else {
-                    viewportwidth = document.getElementsByTagName('body')[0].clientWidth,
-                    viewportheight = document.getElementsByTagName('body')[0].clientHeight
-                }
-                //alert('Viewport: ' + viewportwidth + 'x' + viewportheight);
-                //alert('availWidth:'+window.screen.availWidth+'x'+window.screen.availHeight);
-                var width = window.innerWidth
-                    || document.documentElement.clientWidth
-                    || document.body.clientWidth;
-
-                var height = window.innerHeight
-                    || document.documentElement.clientHeight
-                    || document.body.clientHeight;
-                //alert('body: ' + width + 'x' + height);
-
-                if (document.getElementById('help')) {
-                    document.getElementById('help').style.left = (window.screen.availWidth * 0.1) + 'px';
-                    document.getElementById('help').style.top = (window.screen.availHeight * 0.1) + 'px';
-                    document.getElementById('help').style.width = (window.screen.availWidth * 0.8) + 'px';
-                    document.getElementById('help').style.height = (window.screen.availHeight * 0.8) + 'px';
-                }
             }
 
         },
