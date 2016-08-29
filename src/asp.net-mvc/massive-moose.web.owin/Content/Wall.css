@@ -91,7 +91,7 @@ body {
 #tools-wrapper {
     z-index: 2;
     position: fixed;
-    width: 670px;
+    /*width: 670px;*/
 }
 #tools-inner { 
     display: inline-block;
