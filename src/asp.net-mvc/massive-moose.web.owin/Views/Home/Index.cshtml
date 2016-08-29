@@ -26,7 +26,13 @@
     <script src="/scripts/screenfull.js"></script>
     <script src="/scripts/literallycanvas/literallycanvas-core.min.js"></script>
     <script src="/scripts/mm.js"></script>
-    <script src="/scripts/jsColorPicker.min.js"></script>
+    
+<script type="text/javascript" src="/Scripts/colors.js"></script>
+<script type="text/javascript" src="/Scripts/colorPicker.data.js"></script>
+<script type="text/javascript" src="/Scripts/colorPicker.js"></script>
+    <script src="/scripts/jsColor.js"></script>
+    
+    
     <script type="text/javascript">
         MassiveMoose.initialize(
             {
@@ -56,7 +62,8 @@
                     _lc.setColor('primary', document.getElementById('primaryColor').value);
                     _lc.setColor('secondary', document.getElementById('secondaryColor').value);
                 }
-            }
+            },
+            size: 5
         });
     </script>
 }

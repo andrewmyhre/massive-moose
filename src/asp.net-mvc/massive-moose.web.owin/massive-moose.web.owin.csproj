@@ -281,6 +281,9 @@
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\canvasColorPicker.js" />
+    <Content Include="Scripts\colorPicker.data.js" />
+    <Content Include="Scripts\colorPicker.js" />
+    <Content Include="Scripts\colors.js" />
     <Content Include="Scripts\html.js" />
     <Content Include="Scripts\jquery-3.1.0.js" />
     <Content Include="Scripts\jquery-3.1.0.min.js" />
@@ -292,7 +295,7 @@
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
-    <Content Include="Scripts\jscolor.min.js" />
+    <Content Include="Scripts\jscolor.js" />
     <Content Include="Scripts\jsColorPicker.min.js" />
     <Content Include="Scripts\literallycanvas\.gitignore" />
     <Content Include="Scripts\literallycanvas\core\actions.js" />
