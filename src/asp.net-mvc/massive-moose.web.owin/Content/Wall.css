@@ -160,8 +160,8 @@ svg {
     max-height: 34px;
 }
 button.tool svg circle {
-    fill: white;
-    stroke: white;
+    fill: black;
+    stroke: black;
 }
 
 #progress-indicator {
