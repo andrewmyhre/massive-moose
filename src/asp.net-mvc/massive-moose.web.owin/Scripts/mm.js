@@ -68,6 +68,7 @@
                 document.getElementById('tools-wrapper').style.display = 'block';
                 document.getElementById('save-button').disabled = '';
                 document.getElementById('cancel-button').disabled = '';
+                document.getElementById('alert').style.display = 'none';
 
                 // configure literally canvas
                 _lc = LC.init(document.getElementById('drawSpace'),

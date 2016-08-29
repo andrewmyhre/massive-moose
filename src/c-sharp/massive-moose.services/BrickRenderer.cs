@@ -100,14 +100,37 @@ namespace massive_moose.services
                     {
                         var input = child as Rectangle;
                         var shape = new System.Windows.Shapes.Rectangle();
-                        shape.Width = input.Width;
-                        shape.Height = input.Height;
+                        double x, y, width, height;
+                        if (input.Width < 0)
+                        {
+                            x = input.X + input.Width;
+                            width = -input.Width;
+                        }
+                        else
+                        {
+                            x = input.X;
+                            width = input.Width;
+                        }
+                        if (input.Height < 0)
+                        {
+                            y = input.Y + input.Height;
+                            height = -input.Height;
+                        }
+                        else
+                        {
+                            y = input.Y;
+                            height = input.Height;
+                        }
+
+
+                        shape.Width = width;
+                        shape.Height = height;
                         shape.Stroke=new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(input.StrokeColor.A, input.StrokeColor.R, input.StrokeColor.G, input.StrokeColor.B));
                         shape.Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(input.FillColor.A, input.FillColor.R, input.FillColor.G, input.FillColor.B));
                         shape.StrokeThickness = input.StrokeWidth;
                         canvas.Children.Add(shape);
-                        System.Windows.Controls.Canvas.SetLeft(shape, input.X);
-                        System.Windows.Controls.Canvas.SetTop(shape, input.Y);
+                        System.Windows.Controls.Canvas.SetLeft(shape, x);
+                        System.Windows.Controls.Canvas.SetTop(shape, y);
                     } else if (child is Polygon)
                     {
                         var input = child as Polygon;
@@ -125,15 +148,36 @@ namespace massive_moose.services
                     else if (child is Ellipse)
                     {
                         var input = child as Ellipse;
-                        var shape = new System.Windows.Shapes.Rectangle();
-                        shape.Width = input.Width;
-                        shape.Height = input.Height;
+                        var shape = new System.Windows.Shapes.Ellipse();
+                        double x, y, width, height;
+                        if (input.Width < 0)
+                        {
+                            x = input.X + input.Width;
+                            width = -input.Width;
+                        }
+                        else
+                        {
+                            x = input.X;
+                            width = input.Width;
+                        }
+                        if (input.Height < 0)
+                        {
+                            y = input.Y + input.Height;
+                            height = -input.Height;
+                        }
+                        else
+                        {
+                            y = input.Y;
+                            height = input.Height;
+                        }
+                        shape.Width = width;
+                        shape.Height = height;
                         shape.Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(input.StrokeColor.A, input.StrokeColor.R, input.StrokeColor.G, input.StrokeColor.B));
                         shape.Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(input.FillColor.A, input.FillColor.R, input.FillColor.G, input.FillColor.B));
                         shape.StrokeThickness = input.StrokeWidth;
                         canvas.Children.Add(shape);
-                        System.Windows.Controls.Canvas.SetLeft(shape, input.X);
-                        System.Windows.Controls.Canvas.SetTop(shape, input.Y);
+                        System.Windows.Controls.Canvas.SetLeft(shape, x);
+                        System.Windows.Controls.Canvas.SetTop(shape, y);
                     } else if (child is TextBlock)
                     {
                         var input = child as TextBlock;
