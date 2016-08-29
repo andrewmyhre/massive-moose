@@ -313,6 +313,8 @@
                             viewport = document.querySelector("meta[name=viewport]");
                             viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
                             dimensions();
+                            if (updatedBrickElement)
+                                updatedBrickElement.scrollIntoView();
 
                             setTimeout(updateWall, 10000);
                         }
@@ -382,7 +384,7 @@
 
                         // wait a second before updating to give Azure a chance to propagate the thumbnail image
                         setTimeout(function () {
-                            updateWall();
+                            updateWall(brickElement);
                         }, 5000);
                     } else {
                         document.getElementById('save-button').disabled = '';
