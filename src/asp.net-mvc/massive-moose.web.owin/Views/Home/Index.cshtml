@@ -109,61 +109,61 @@
     </table>
 </div>
 <div id="drawSpace"></div>
-<div id="tools-wrapper" style="display: none">
-    <div id="tools">
-        <button href="#" id="toolbar-dock" class="btn btn-lg btn-primary"><span class="glyphicon glyphicon-chevron-down"></span></button>
-        <button href="#" id="toolbar-size" class="btn btn-lg btn-primary"><span class="glyphicon glyphicon-minus"></span></button>
-        <div id="tools-inner">
-            <input name="primaryColor" id="primaryColor" class="primaryColor tool" readonly data-colormode="HEX" value="#000000"/>
-            <input name="secondaryColor" id="secondaryColor" class="secondaryColor tool" readonly data-colormode="HEX" value="#FFFFFF"/>
-            <a id="tool-pencil" class="tool" style="background-image: url('/content/img/pencil.png')"></a>
-            <a id="tool-eraser" class="tool" style="background-image: url('/content/img/eraser.png')"></a>
-            <a id="tool-line" class="tool" style="background-image: url('/content/img/line.png')"></a>
-            <a id="tool-rectangle" class="tool" style="background-image: url('/content/img/rectangle.png')"></a>
-            <a id="tool-ellipse" class="tool" style="background-image: url('/content/img/ellipse.png')"></a>
-            <a id="tool-polygon" class="tool" style="background-image: url('/content/img/polygon.png')"></a>
-            <a id="tool-text" class="tool" style="background-image: url('/content/img/text.png')"></a>
-            <a id="tool-pan" class="tool" style="background-image: url('/content/img/pan.png')"></a>
-            <a id="stroke-1" class="tool" style="position: relative; top: -7px">
-                <div class="square-toolbar-button">
-                    <svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="0.5"></circle></svg>
+<div id="tools-wrapper" class="text-left" style="display: none">
+    <div id="tools" class="container-fluid">
+        <div class="row">
+            <div class="col-xs-12 col-sm-1 col-md-1 col-lg-2">
+                <button href="#" id="toolbar-dock" class="btn btn-primary"><span class="glyphicon glyphicon-chevron-down"></span></button>
+                <button href="#" id="toolbar-size" class="btn btn-primary"><span class="glyphicon glyphicon-minus"></span></button>
+            </div>
+            <div class="col-xs-12 col-sm-11 col-md-11 col-lg-10">
+                <div id="tools-inner" class="row">
+                    <div class="col-xs-12 col-md-4 tool-group">
+                        <button id="zoom-out" class="tool btn btn-sm btn-primary"><span class="glyphicon glyphicon-zoom-out"></span></button>
+                        <button id="zoom-in" class="tool btn btn-sm btn-primary"><span class="glyphicon glyphicon-zoom-in"></span></button>
+                        <button id="undo" class="tool btn btn-sm btn-primary"><span class="glyphicon glyphicon-chevron-left"></span></button>
+                        <button id="redo" class="tool btn btn-sm btn-primary"><span class="glyphicon glyphicon-chevron-right"></span></button>
+                        <button id="save-button" class="tool btn btn-sm btn-primary"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
+                        <button id="cancel-button" class="tool btn btn-sm btn-primary"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                    </div>
+                    <div class="col-xs-12 col-md-4 tool-group">
+                        <button id="tool-pencil" class="tool btn btn-sm btn-primary" style="background-image: url('/content/img/pencil.png')">&nbsp;</button>
+                        <button id="tool-eraser" class="tool btn btn-sm btn-primary" style="background-image: url('/content/img/eraser.png')">&nbsp;</button>
+                        <button id="tool-line" class="tool btn btn-sm btn-primary" style="background-image: url('/content/img/line.png')">&nbsp;</button>
+                        <button id="tool-rectangle" class="tool btn btn-sm btn-primary" style="background-image: url('/content/img/rectangle.png')">&nbsp;</button>
+                        <button id="tool-ellipse" class="tool btn btn-sm btn-primary" style="background-image: url('/content/img/ellipse.png')">&nbsp;</button>
+                        <button id="tool-polygon" class="tool btn btn-sm btn-primary" style="background-image: url('/content/img/polygon.png')">&nbsp;</button>
+                        <button id="tool-text" class="tool btn btn-sm btn-primary" style="background-image: url('/content/img/text.png')">&nbsp;</button>
+                        <button id="tool-pan" class="tool btn btn-sm btn-primary" style="background-image: url('/content/img/pan.png')">&nbsp;</button>
+                    </div>
+                    <div class="col-xs-12 col-md-4 tool-group">
+                        <input name="primaryColor" id="primaryColor" class="primaryColor tool btn btn-sm" readonly data-colormode="HEX" value="#000000" />
+                        <input name="secondaryColor" id="secondaryColor" class="secondaryColor tool btn btn-sm" readonly data-colormode="HEX" value="#FFFFFF" />
+                        <a id="stroke-1" class="tool btn btn-sm btn-primary" style="padding:0">
+                            <svg version="1.1"><circle cx="16" cy="16" r="0.5" stroke="white" fill="white"></circle></svg>
+                        </a>
+                        <a id="stroke-2" class="tool btn btn-sm btn-primary" style="padding:0">
+                            <svg version="1.1"><circle cx="16" cy="16" r="1" stroke="white" fill="white"></circle></svg>
+                        </a>
+                        <a id="stroke-3" class="tool btn btn-sm btn-primary" style="padding:0">
+                            <svg version="1.1"><circle cx="16" cy="16" r="2.5" stroke="white" fill="white"></circle></svg>
+                        </a>
+                        <a id="stroke-4" class="tool btn btn-sm btn-primary" style="padding:0">
+                            <svg version="1.1"><circle cx="16" cy="16" r="5" stroke="white" fill="white"></circle></svg>
+                        </a>
+                        <a id="stroke-5" class="tool btn btn-sm btn-primary" style="padding:0">
+                            <svg version="1.1"><circle cx="16" cy="16" r="10" stroke="white" fill="white"></circle></svg>
+                        </a>
+                        <a id="stroke-6" class="tool btn btn-sm btn-primary" style="padding:0">
+                            <svg  version="1.1"><circle cx="16" cy="16" r="15" stroke="white" fill="white"></circle></svg>
+                        </a>
+                    </div>
+                    <div id="alert" class="alert alert-danger" style="display: none" role="alert">
+                        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                        <span class="sr-only">Error:</span>
+                        <span id="alert-message">Sorry! There was a problem saving the image... try again? :/</span>
+                    </div>
                 </div>
-            </a>
-            <a id="stroke-2" class="tool" style="position: relative; top: -7px">
-                <div class="square-toolbar-button">
-                    <svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="1"></circle></svg>
-                </div>
-            </a>
-            <a id="stroke-3" class="tool" style="position: relative; top: -7px">
-                <div class="square-toolbar-button">
-                    <svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="2.5"></circle></svg>
-                </div>
-            </a>
-            <a id="stroke-4" class="tool" style="position: relative; top: -7px">
-                <div class="square-toolbar-button">
-                    <svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="5"></circle></svg>
-                </div>
-            </a>
-            <a id="stroke-5" class="tool" style="position: relative; top: -7px">
-                <div class="square-toolbar-button">
-                    <svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="10"></circle></svg>
-                </div>
-            </a>
-            <a id="stroke-6" class="tool" style="position: relative; top: -7px">
-                <div class="square-toolbar-button">
-                    <svg width="26" height="26" version="1.1"><circle cx="13" cy="13" r="15"></circle></svg>
-                </div>
-            </a>
-            <a id="zoom-out" class="tool" style="position: relative; background-image: url('/content/img/zoom-out.png')"></a>
-            <a id="zoom-in" class="tool" style="position: relative; background-image: url('/content/img/zoom-in.png')"></a>
-            <a id="undo" class="tool" style="position: relative; top: -10px;"><span class="glyphicon glyphicon-chevron-left"></span></a>
-            <a id="redo" class="tool" style="position: relative; top: -10px;"><span class="glyphicon glyphicon-chevron-right"></span></a>
-            <button id="save-button" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
-            <button id="cancel-button" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
-            <div id="alert" class="alert alert-danger" style="display: none" role="alert">
-                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                <span class="sr-only">Error:</span>
-                <span id="alert-message">Sorry! There was a problem saving the image... try again? :/</span>
             </div>
         </div>
     </div>
