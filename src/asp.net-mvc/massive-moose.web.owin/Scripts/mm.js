@@ -264,6 +264,7 @@
                     if (document.getElementById('tools-wrapper').style.display != 'none') {
                         document.getElementById('tools-wrapper').style.display = 'none';
                     }
+                    hideColorPickers();
                     // do stuff
                 });
                 var unsubscribeOnDrawEnd = _lc.on('drawEnd', function (arguments) {
