@@ -393,7 +393,7 @@
                         document.getElementById('alert').style.display = 'block';
                     }
                 };
-                var imageSize = { width: 1600, height: 900 };
+                var imageSize = { width: 1600, height: 800 };
                 var imageBounds = {
                     x: 0, y: 0, width: imageSize.width, height: imageSize.height
                 };
