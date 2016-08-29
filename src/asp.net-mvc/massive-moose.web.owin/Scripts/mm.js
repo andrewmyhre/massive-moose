@@ -19,6 +19,35 @@
 
             setTimeout(updateWall, 10);
 
+            document.getElementById('toolbar-size').onclick = function() {
+                var toolsInner = document.getElementById('tools-inner');
+                if (toolsInner.style.display == '' || toolsInner.style.display=='inline-block') {
+                    toolsInner.style.display = 'none';
+                    document.getElementById('toolbar-size').getElementsByTagName('span')[0].className = 'glyphicon glyphicon-plus';
+                } else {
+                    toolsInner.style.display = 'inline-block';
+                    document.getElementById('toolbar-size').getElementsByTagName('span')[0].className = 'glyphicon glyphicon-minus';
+                }
+            }
+
+            document.getElementById('tools-wrapper').style.top = '0px';
+            document.getElementById('tools-wrapper').style.bottom = '';
+            document.getElementById('toolbar-dock').onclick = function () {
+                if (document.getElementById('tools-wrapper').style.top == '' &&
+                    document.getElementById('tools-wrapper').style.bottom == '') {
+                    document.getElementById('tools-wrapper').style.bottom = '0px';
+                    document.getElementById('toolbar-dock').getElementsByTagName('span')[0].className = 'glyphicon glyphicon-chevron-up';
+                } else if (document.getElementById('tools-wrapper').style.top == '0px') {
+                    document.getElementById('tools-wrapper').style.bottom = '0px';
+                    document.getElementById('tools-wrapper').style.top = '';
+                    document.getElementById('toolbar-dock').getElementsByTagName('span')[0].className = 'glyphicon glyphicon-chevron-up';
+                } else {
+                    document.getElementById('tools-wrapper').style.top = '0px';
+                    document.getElementById('tools-wrapper').style.bottom = '';
+                    document.getElementById('toolbar-dock').getElementsByTagName('span')[0].className = 'glyphicon glyphicon-chevron-down';
+                }
+            }
+
             if (document.getElementById('help')) {
                 document.getElementById('moreHelp')
                     .onclick = function() {

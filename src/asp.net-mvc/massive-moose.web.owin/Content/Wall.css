@@ -97,9 +97,12 @@ body {
 #tools-wrapper {
     text-align: center;
     z-index: 2;
-    top: 0px;
     position: fixed;
     width: 100%;
+}
+#tools-inner { 
+    display: inline-block;
+    width: 450px;
 }
 #tools {
     display: inline-block;
@@ -108,7 +111,6 @@ body {
     border: 1px solid black;
     top: 0px;
     border-radius: 3px;
-
 }
 .square-toolbar-button {
     border: 1px solid #aaa;
@@ -137,7 +139,7 @@ body {
 }
 #tools button {
     position: relative;
-    top: -11px;
+    top: -9px;
 }
 #primaryColor, #secondaryColor {
     position: relative; 
