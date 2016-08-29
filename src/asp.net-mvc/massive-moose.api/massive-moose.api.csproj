@@ -241,6 +241,7 @@
     </Compile>
     <Compile Include="Models\BrickUpdate.cs" />
     <Compile Include="Models\BrickViewModel.cs" />
+    <Compile Include="Models\ThumbnailCache.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Results\ChallengeResult.cs" />
     <Compile Include="Startup.cs" />

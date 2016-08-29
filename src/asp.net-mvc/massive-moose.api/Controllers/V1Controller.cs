@@ -27,7 +27,7 @@ namespace massive_moose.api.Controllers
         private readonly WallOperations _wallOperations;
         private static ILog Log = LogManager.GetLogger(typeof(V1Controller));
         private IFileStorage _fileStorage;
-
+        private static ThumbnailCache ThumbnailCache = new ThumbnailCache();
         public V1Controller()
         {
 
@@ -160,10 +160,13 @@ namespace massive_moose.api.Controllers
                     System.IO.MemoryStream myResult = new System.IO.MemoryStream();
                     newImage.Save(myResult, System.Drawing.Imaging.ImageFormat.Png);
 
+
                     outputPath = string.Format("{0}/b_{1}-{2}-{3}_1.png",
                         ConfigurationManager.AppSettings["storageContainer"],
                         drawingSession.Wall.InviteCode, drawingSession.AddressX, drawingSession.AddressY);
-                    _fileStorage.Store(outputPath, myResult.ToArray(), true);
+                    byte[] thumbnailImageData = myResult.ToArray();
+                    _fileStorage.Store(outputPath, thumbnailImageData, true);
+                    ThumbnailCache.Set(outputPath, thumbnailImageData);
 
                     drawingSession.Closed = true;
 
@@ -310,7 +313,9 @@ namespace massive_moose.api.Controllers
             outputPath = string.Format("{0}/b_{1}-{2}-{3}_1.png",
                 ConfigurationManager.AppSettings["storageContainer"],
                 drawingSession.Wall.InviteCode, drawingSession.AddressX, drawingSession.AddressY);
-            _fileStorage.Store(outputPath, myResult.ToArray(), true);
+            var thumbnailImageData = myResult.ToArray();
+            _fileStorage.Store(outputPath, thumbnailImageData, true);
+            ThumbnailCache.Set(outputPath, thumbnailImageData);
         }
 
         [HttpGet]
@@ -349,13 +354,32 @@ namespace massive_moose.api.Controllers
         {
             HttpResponseMessage result = new HttpResponseMessage();
             Wall wall = null;
-            using (var session = SessionFactory.Instance.OpenStatelessSession())
+
+            if (string.IsNullOrWhiteSpace(wallKey))
             {
-                wall = _wallOperations.GetWallByKeyOrDefault(wallKey, session);
+                using (var session = SessionFactory.Instance.OpenStatelessSession())
+                {
+                    wall = _wallOperations.GetWallByKeyOrDefault(wallKey, session);
+                    if (wall == null)
+                    {
+                        result.StatusCode = HttpStatusCode.NotFound;
+                        return result;
+                    }
+
+                    wallKey = wall.InviteCode;
+                }
             }
             string filePath = string.Format("{0}/b_{1}-{2}-{3}_1.png",
                     ConfigurationManager.AppSettings["storageContainer"],
-                    wall.InviteCode, addressX, addressY);
+                    wallKey, addressX, addressY);
+
+            var fromCache = ThumbnailCache.Get(filePath);
+            if (fromCache != null)
+            {
+                result.Content = new ByteArrayContent(fromCache);
+                result.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("image/png");
+                return result;
+            }
 
             if (!_fileStorage.Exists(filePath))
             {

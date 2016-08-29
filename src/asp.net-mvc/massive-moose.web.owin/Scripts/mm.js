@@ -285,9 +285,6 @@
                             viewport.setAttribute('content', 'width=device-width, initial-scale=' + _viewportScale);
                             dimensions();
 
-                            if (updatedBrickElement) {
-                                updatedBrickElement.scrollIntoView();
-                            }
                             setTimeout(updateWall, 10000);
                         }
                     };
@@ -342,9 +339,10 @@
                                     '/' + _inviteCode +
                                     '/' + _brickInUse.X +
                                     '/' + _brickInUse.Y +
-                                    '/t?r=' +
+                                    '?r=' +
                                     Math.floor((Math.random() * 10000) + 1) +
                                     '")';
+                            brickElement.scrollIntoView();
                         }
 
                         _brickInUse = null;
@@ -355,7 +353,7 @@
 
                         // wait a second before updating to give Azure a chance to propagate the thumbnail image
                         setTimeout(function () {
-                            updateWall(brickElement);
+                            updateWall();
                         }, 5000);
                     } else {
                         document.getElementById('save-button').disabled = '';

@@ -41,36 +41,55 @@
         );
     </script>
     <script type="text/javascript">
-        initColorPicker('input.primaryColor', 'primary');
-        initColorPicker('input.secondaryColor', 'secondary');
-
-        function initColorPicker(elementName, target) {
-
-            var picker = jsColorPicker(elementName,
-            {
-                customBG: '#222',
-                readOnly: true,
-                // patch: false,
-                init: function(elm, colors) { // colors is a different instance (not connected to colorPicker)
-                    elm.style.backgroundColor = elm.value;
-                    elm.style.color = colors.rgbaMixCustom.luminance > 0.22 ? '#222' : '#ddd';
-                },
-                actionCallback: function(event, type) {
-                    if (type === 'changeXYValue') { // overwriting right after repaint...
-                        var hslaString = 'hsla(' +
-                            picker.current.color.colors.RND.hsl.h +
-                            ',' +
-                            picker.current.color.colors.RND.hsl.s +
-                            '%,' +
-                            picker.current.color.colors.RND.hsl.l +
-                            '%,' +
-                            picker.current.color.colors.alpha +
-                            ')';
-                        _lc.setColor(target, hslaString);
-                    }
+        var primaryPicker= jsColorPicker('input.primaryColor',
+        {
+            customBG: '#222',
+            readOnly: true,
+            // patch: false,
+            init: function(elm, colors) { // colors is a different instance (not connected to colorPicker)
+                elm.style.backgroundColor = elm.value;
+                elm.style.color = colors.rgbaMixCustom.luminance > 0.22 ? '#222' : '#ddd';
+            },
+            actionCallback: function(event, type) {
+                if (type === 'changeXYValue') { // overwriting right after repaint...
+                    var hslaString = 'hsla(' +
+                        primaryPicker.current.color.colors.RND.hsl.h +
+                        ',' +
+                        primaryPicker.current.color.colors.RND.hsl.s +
+                        '%,' +
+                        primaryPicker.current.color.colors.RND.hsl.l +
+                        '%,' +
+                        primaryPicker.current.color.colors.alpha +
+                        ')';
+                    _lc.setColor('primary', hslaString);
                 }
-            });
-        }
+            }
+        });
+
+        var secondaryPicker = jsColorPicker('input.secondaryColor',
+        {
+            customBG: '#222',
+            readOnly: true,
+            // patch: false,
+            init: function(elm, colors) { // colors is a different instance (not connected to colorPicker)
+                elm.style.backgroundColor = elm.value;
+                elm.style.color = colors.rgbaMixCustom.luminance > 0.22 ? '#222' : '#ddd';
+            },
+            actionCallback: function(event, type) {
+                if (type === 'changeXYValue') { // overwriting right after repaint...
+                    var hslaString = 'hsla(' +
+                        secondaryPicker.current.color.colors.RND.hsl.h +
+                        ',' +
+                        secondaryPicker.current.color.colors.RND.hsl.s +
+                        '%,' +
+                        secondaryPicker.current.color.colors.RND.hsl.l +
+                        '%,' +
+                        secondaryPicker.current.color.colors.alpha +
+                        ')';
+                    _lc.setColor('secondary', hslaString);
+                }
+            }
+        });
     </script>
 }
 
