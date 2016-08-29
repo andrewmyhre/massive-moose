@@ -140,7 +140,7 @@ body {
     left: 0;
     margin:auto;
     z-index: 3;
-    padding: 15px;
+    padding: 0;
 }
 #help .container {width:100%}
 #help-scroller {
