@@ -5,7 +5,7 @@
             cfg = configuration;
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function(evt) {
-                console.log('onReadyStateChanged: state=' + xhr.readyState);
+
             }
 //            xhr.addEventListener("progress", updateProgress);
 //            xhr.addEventListener("load", transferComplete);
@@ -14,23 +14,23 @@
 //            xhr.addEventListener("loadstart", transferStarted);
 
             function updateProgress(evt) {
-                console.log('ajax ' + evt.loaded + '/' + evt.total);
+
                 document.getElementById('progress-indicator').style.display = 'block';
             }
             function transferComplete(evt) {
-                console.log('transferComplete');
+
                 document.getElementById('progress-indicator').style.display = 'none';
             }
             function transferFailed(evt) {
-                console.log('transferFailed');
+
                 document.getElementById('progress-indicator').style.display = 'none';
             }
             function transferCanceled(evt) {
-                console.log('transferCanceled');
+
                 document.getElementById('progress-indicator').style.display = 'none';
             }
             function transferStarted(evt) {
-                console.log('transferStarted');
+
                 document.getElementById('progress-indicator').style.display = 'block';
             }
 
