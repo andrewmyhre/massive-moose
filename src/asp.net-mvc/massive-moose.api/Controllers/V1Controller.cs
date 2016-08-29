@@ -157,8 +157,8 @@ namespace massive_moose.api.Controllers
                     System.IO.MemoryStream myMemStream = new System.IO.MemoryStream(imageDataBytes);
                     System.Drawing.Image fullsizeImage = System.Drawing.Image.FromStream(myMemStream);
                     int thumbnailWidth = 0, thumbnailHeight = 0;
-                    int.TryParse(ConfigurationManager.AppSettings["ThumbnailWidth"], out thumbnailWidth);
-                    int.TryParse(ConfigurationManager.AppSettings["ThumbnailHeight"], out thumbnailHeight);
+                    int.TryParse(ConfigurationManager.AppSettings["thumbnailWidth"], out thumbnailWidth);
+                    int.TryParse(ConfigurationManager.AppSettings["thumbnailHeight"], out thumbnailHeight);
                     System.Drawing.Image newImage = fullsizeImage.GetThumbnailImage(thumbnailWidth, thumbnailHeight, null, IntPtr.Zero);
                     System.IO.MemoryStream myResult = new System.IO.MemoryStream();
                     newImage.Save(myResult, System.Drawing.Imaging.ImageFormat.Png);
@@ -307,9 +307,12 @@ namespace massive_moose.api.Controllers
 
             _fileStorage.Store(outputPath, imageData, true);
 
+            int thumbnailWidth = 0, thumbnailHeight = 0;
+            int.TryParse(ConfigurationManager.AppSettings["thumbnailWidth"], out thumbnailWidth);
+            int.TryParse(ConfigurationManager.AppSettings["thumbnailHeight"], out thumbnailHeight);
             System.IO.MemoryStream myMemStream = new System.IO.MemoryStream(imageData);
             System.Drawing.Image fullsizeImage = System.Drawing.Image.FromStream(myMemStream);
-            System.Drawing.Image newImage = fullsizeImage.GetThumbnailImage(200, 100, null, IntPtr.Zero);
+            System.Drawing.Image newImage = fullsizeImage.GetThumbnailImage(thumbnailWidth, thumbnailHeight, null, IntPtr.Zero);
             System.IO.MemoryStream myResult = new System.IO.MemoryStream();
             newImage.Save(myResult, System.Drawing.Imaging.ImageFormat.Gif);
 
