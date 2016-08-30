@@ -8,6 +8,7 @@ using massive_moose.web.owin.Models;
 using log4net;
 using massive_moose.services.models;
 using System.Configuration;
+using massive_moose.services.viewmodels;
 using NHibernate;
 using NHibernate.Criterion;
 using Newtonsoft.Json;
@@ -40,59 +41,13 @@ namespace massive_moose.web.owin.Controllers
                 return View(new WallViewModel
                 {
                     InviteCode = wall.InviteCode,
-                    Bricks = GetBricksForWall(0,0,inviteCode,session),
-                    BackgroundImageUrl=
-                    string.Format("{0}/v1/background/{1}",
+                    Bricks = _wallOperations.GetBricksForWall(0,0,inviteCode,session),
+                    BackgroundImageUrl=string.Format("{0}/v1/background/{1}",
                     ConfigurationManager.AppSettings["MMApi"],
                     string.IsNullOrWhiteSpace(wall.BackgroundImageFilename) ? "white-brick.jpg" : wall.BackgroundImageFilename),
                     DontHelpMe=(cookie != null ? cookie.DontHelpMe : false)
                 });
             }
-        }
-
-        private BrickViewModel[,] GetBricksForWall(int originX, int originY, string wallKey, IStatelessSession session)
-        {
-            Wall wallRecord = _wallOperations.GetWallByKeyOrDefault(wallKey, session);
-
-            IList<object[]> bricks = session.QueryOver<Brick>()
-                .And(b => b.Wall.Id == wallRecord.Id)
-                .Select(
-                    b => b.AddressX,
-                    b => b.AddressY,
-                    b => b.LastUpdated,
-                    b => b.Guid).List<object[]>();
-
-            var wall = new BrickViewModel[12, 12];
-            for (int y = 0; y < 12; y++)
-            {
-                for (int x = 0; x < 12; x++)
-                {
-                    var relativeX = originX - 6 + x;
-                    var relativeY = originY - 6 + y;
-                    var o = bricks.SingleOrDefault(b => (int)b[0] == relativeX && (int)b[1] == relativeY);
-                    if (o != null)
-                    {
-                        wall[x, y] = new BrickViewModel()
-                        {
-                            AddressX = (int)o[0],
-                            AddressY = (int)o[1],
-                            DateUpdated = ((DateTime?)o[2]).HasValue ? ((DateTime?)o[2]).Value.Ticks.ToString() : "",
-                            HasContent=true,
-                            ThumbnailImageUrl = _wallOperations.GetThumbnailImageUrl(wallRecord.InviteCode, (int)o[0],(int)o[1])
-                        };
-                    }
-                    else
-                    {
-                        wall[x, y] = new BrickViewModel()
-                        {
-                            AddressX = relativeX,
-                            AddressY = relativeY
-                        };
-                    }
-                }
-            }
-
-            return wall;
         }
 
         public ActionResult About()

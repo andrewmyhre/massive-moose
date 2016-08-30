@@ -1,4 +1,4 @@
-﻿@model massive_moose.web.owin.Models.WallViewModel
+﻿@model massive_moose.services.viewmodels.WallViewModel
 @using System.Linq;
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -16,7 +16,7 @@
 
 @if (Model.FocusBrickHistory != null)
 {
-    <img src="@Model.FocusBrick.ImageUrl" style="width:100%" />
+    <img src="@Model.GetImageUrl(Model.FocusBrick)" style="width:100%" />
     <h2>History for the brick you selected</h2>
     <table class="table table-striped">
         @foreach (var history in Model.FocusBrickHistory)
@@ -53,10 +53,10 @@
             selected = true;
         }
     }
-    <div class="brick col-md-1 @if (selected){<text>bg-primary</text>}" style="background-size: 100% 100%; background-image: url('@(brick != null ? brick.ThumbnailImageUrl : "/content/blank.png")')">
+    <div class="brick col-md-1 @if (selected){<text>bg-primary</text>}" style="background-size: 100% 100%; background-image: url('@(brick != null ? Model.GetThumbnailUrl(brick)) : "/content/blank.png")')">
         @if (brick != null)
         {
-            @Html.ActionLink("History", "Manage", new { inviteCode = Model.Wall.InviteCode, addressX = brick.AddressX, addressY = brick.AddressY })
+            @Html.ActionLink("History", "Manage", new { inviteCode = Model.Wall.InviteCode, addressX = brick.X, addressY = brick.Y })
         }
     </div>
 }

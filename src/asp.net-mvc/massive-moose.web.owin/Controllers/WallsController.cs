@@ -8,6 +8,7 @@ using NHibernate.Criterion;
 using NHibernate;
 using massive_moose.web.owin.Models;
 using System.Configuration;
+using massive_moose.services.viewmodels;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
 
@@ -83,18 +84,8 @@ namespace massive_moose.web.owin.Controllers
                 {
                     wallViewModel.Bricks[relativeX, relativeY] = new BrickViewModel()
                     {
-                        AddressX = brick.AddressX,
-                        AddressY = brick.AddressY,
-                        ThumbnailImageUrl = string.Format("{0}/v1/image/t/{1}/{2}/{3}",
-                            ConfigurationManager.AppSettings["MMApi"],
-                            inviteCode,
-                            brick.AddressX,
-                            brick.AddressY),
-                        ImageUrl= string.Format("{0}/v1/image/{1}/{2}/{3}",
-                            ConfigurationManager.AppSettings["MMApi"],
-                            inviteCode,
-                            brick.AddressX,
-                            brick.AddressY)
+                        X = brick.AddressX,
+                        Y = brick.AddressY
                     };
                     if (detail && brick.AddressX == detailForX && brick.AddressY == detailForY)
                     {

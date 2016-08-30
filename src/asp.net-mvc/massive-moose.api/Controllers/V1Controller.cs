@@ -145,59 +145,14 @@ namespace massive_moose.api.Controllers
                     if (drawingSession == null)
                         return NotFound();
 
-
-                        string outputPath = string.Format("{0}/b_{1}-{2}-{3}.png",
-                            ConfigurationManager.AppSettings["storageContainer"],
-                            drawingSession.Wall.InviteCode, drawingSession.AddressX, drawingSession.AddressY);
+                    var unencodedSnapshotJson = System.Web.HttpUtility.UrlDecode(update.SnapshotJson);
 
                     string imageDataBase64 = update.ImageData.Replace("data:image/png;base64,", "");
                     byte[] imageDataBytes = Convert.FromBase64String(imageDataBase64);
-                    _fileStorage.Store(outputPath, imageDataBytes, true);
 
-                    System.IO.MemoryStream myMemStream = new System.IO.MemoryStream(imageDataBytes);
-                    System.Drawing.Image fullsizeImage = System.Drawing.Image.FromStream(myMemStream);
-                    int thumbnailWidth = 0, thumbnailHeight = 0;
-                    int.TryParse(ConfigurationManager.AppSettings["thumbnailWidth"], out thumbnailWidth);
-                    int.TryParse(ConfigurationManager.AppSettings["thumbnailHeight"], out thumbnailHeight);
-                    System.Drawing.Image newImage = fullsizeImage.GetThumbnailImage(thumbnailWidth, thumbnailHeight, null, IntPtr.Zero);
-                    System.IO.MemoryStream myResult = new System.IO.MemoryStream();
-                    newImage.Save(myResult, System.Drawing.Imaging.ImageFormat.Png);
-
-
-                    outputPath = string.Format("{0}/b_{1}-{2}-{3}_1.png",
-                        ConfigurationManager.AppSettings["storageContainer"],
-                        drawingSession.Wall.InviteCode, drawingSession.AddressX, drawingSession.AddressY);
-                    byte[] thumbnailImageData = myResult.ToArray();
-                    _fileStorage.Store(outputPath, thumbnailImageData, true);
-                    ThumbnailCache.Set(outputPath, thumbnailImageData);
-
-                    drawingSession.Closed = true;
-
-                    Log.DebugFormat("Updated brick ({0},{1}) for session {2}", drawingSession.AddressX,
-                        drawingSession.AddressY, drawingSession.SessionToken);
-
-                    var brick = session.CreateCriteria<Brick>()
-                        .Add(Restrictions.Eq("AddressX", drawingSession.AddressX))
-                        .Add(Restrictions.Eq("AddressY", drawingSession.AddressY))
-                        .Add(Restrictions.Eq("Wall.Id", drawingSession.Wall.Id))
-                        .UniqueResult<Brick>();
-
-                    if (brick == null)
-                    {
-                        brick = new Brick()
-                        {
-                            AddressX = drawingSession.AddressX,
-                            AddressY = drawingSession.AddressY,
-                            Wall = drawingSession.Wall
-                        };
-
-                    }
-
-                    var unencodedSnapshotJson = System.Web.HttpUtility.UrlDecode(update.SnapshotJson);
-
-                    brick.LastUpdated = DateTime.Now;
-                    brick.SnapshotJson = unencodedSnapshotJson;
-                    session.SaveOrUpdate(brick);
+                    _wallOperations.Contribute(update.SnapshotJson, token,
+                        imageDataBytes, unencodedSnapshotJson, SessionFactory.Instance,
+                        Request.GetOwinContext().Request.RemoteIpAddress);
 
                     tx.Commit();
 

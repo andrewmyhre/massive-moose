@@ -8,6 +8,7 @@ using massive_moose.services.models;
 using NHibernate;
 using NHibernate.Criterion;
 using massive_moose.services.models.drawing;
+using massive_moose.services.viewmodels;
 
 namespace massive_moose.services
 {
@@ -46,42 +47,83 @@ namespace massive_moose.services
             }
         }
 
-        public void Contribute(string inputJson, Canvas canvas, DrawingSession drawingSession, ISession dbSession, string clientIp)
+        public void Contribute(string inputJson, Guid sessionToken,
+            byte[] imageData, string snapshotJson, ISessionFactory sessionFactory, string clientIp)
         {
+            using (var session = SessionFactory.Instance.OpenSession())
+            using (var tx = session.BeginTransaction())
+            {
+                try
+                {
+                    var drawingSession = session.CreateCriteria<DrawingSession>()
+                        .Add(Restrictions.Eq("SessionToken", sessionToken))
+                        .UniqueResult<DrawingSession>();
 
-            var imageData = new BrickRenderer().Render(canvas);
-            string fullSizeImagePath = string.Format("{0}/b_{1}-{2}-{3}.png",
-                ConfigurationManager.AppSettings["storageContainer"],
-                drawingSession.Wall.InviteCode, drawingSession.AddressX, drawingSession.AddressY);
-            _fileStorage.Store(fullSizeImagePath, imageData, true);
+                    string fullSizeImagePath = string.Format("{0}/b_{1}-{2}-{3}.png",
+                            ConfigurationManager.AppSettings["storageContainer"],
+                            drawingSession.Wall.InviteCode, drawingSession.AddressX, drawingSession.AddressY);
+                    string thumbnailImagePath = string.Format("{0}/b_{1}-{2}-{3}_1.png",
+                        ConfigurationManager.AppSettings["storageContainer"],
+                        drawingSession.Wall.InviteCode, drawingSession.AddressX, drawingSession.AddressY);
 
-            int thumbnailWidth = 400, thumbnailHeight=200;
-            int.TryParse(ConfigurationManager.AppSettings["thumbnailWidth"], out thumbnailWidth);
-            int.TryParse(ConfigurationManager.AppSettings["thumbnailHeight"], out thumbnailHeight);
+                    _fileStorage.Store(fullSizeImagePath, imageData, true);
+                    System.IO.MemoryStream myMemStream = new System.IO.MemoryStream(imageData);
+                    System.Drawing.Image fullsizeImage = System.Drawing.Image.FromStream(myMemStream);
+                    int thumbnailWidth = 0, thumbnailHeight = 0;
+                    int.TryParse(ConfigurationManager.AppSettings["thumbnailWidth"], out thumbnailWidth);
+                    int.TryParse(ConfigurationManager.AppSettings["thumbnailHeight"], out thumbnailHeight);
+                    System.Drawing.Image newImage = fullsizeImage.GetThumbnailImage(thumbnailWidth, thumbnailHeight,
+                        null, IntPtr.Zero);
+                    System.IO.MemoryStream myResult = new System.IO.MemoryStream();
+                    newImage.Save(myResult, System.Drawing.Imaging.ImageFormat.Png);
 
-            string thumbnailImagePath = string.Format("{0}/b_{1}-{2}-{3}_1.png",
-                ConfigurationManager.AppSettings["storageContainer"],
-                drawingSession.Wall.InviteCode, drawingSession.AddressX, drawingSession.AddressY);
-            System.IO.MemoryStream myMemStream = new System.IO.MemoryStream(imageData);
-            System.Drawing.Image fullsizeImage = System.Drawing.Image.FromStream(myMemStream);
-            System.Drawing.Image newImage = fullsizeImage.GetThumbnailImage(thumbnailWidth, thumbnailHeight, null, IntPtr.Zero);
-            System.IO.MemoryStream myResult = new System.IO.MemoryStream();
-            newImage.Save(myResult, System.Drawing.Imaging.ImageFormat.Png);
+                    drawingSession.Closed = true;
 
-            var thumbnailImageData = myResult.ToArray();
-            _fileStorage.Store(thumbnailImagePath, thumbnailImageData, true);
+                    byte[] thumbnailImageData = myResult.ToArray();
+                    _fileStorage.Store(thumbnailImagePath, thumbnailImageData, true);
 
-            // store a history entry for this contribution
-            var wallHistoryItem = new WallHistoryItem();
-            wallHistoryItem.Wall = drawingSession.Wall;
-            wallHistoryItem.SnapshotImage = imageData;
-            wallHistoryItem.SnapshotImageThumbnail = thumbnailImageData;
-            wallHistoryItem.SnapshotJson = inputJson;
-            wallHistoryItem.Timestamp = DateTime.Now;
-            wallHistoryItem.ClientIp = clientIp;
-            wallHistoryItem.DrawingSession = drawingSession;
-            dbSession.Save(wallHistoryItem);
-            dbSession.Flush();
+                    var brick = session.CreateCriteria<Brick>()
+                        .Add(Restrictions.Eq("AddressX", drawingSession.AddressX))
+                        .Add(Restrictions.Eq("AddressY", drawingSession.AddressY))
+                        .Add(Restrictions.Eq("Wall.Id", drawingSession.Wall.Id))
+                        .UniqueResult<Brick>();
+
+                    if (brick == null)
+                    {
+                        brick = new Brick()
+                        {
+                            AddressX = drawingSession.AddressX,
+                            AddressY = drawingSession.AddressY,
+                            Wall = drawingSession.Wall
+                        };
+
+                    }
+
+                    var unencodedSnapshotJson = System.Web.HttpUtility.UrlDecode(snapshotJson);
+
+                    brick.LastUpdated = DateTime.Now;
+                    brick.SnapshotJson = unencodedSnapshotJson;
+                    
+                    session.SaveOrUpdate(brick);
+
+                    // store a history entry for this contribution
+                    var wallHistoryItem = new WallHistoryItem();
+                    wallHistoryItem.Wall = drawingSession.Wall;
+                    wallHistoryItem.SnapshotImage = imageData;
+                    wallHistoryItem.SnapshotImageThumbnail = thumbnailImageData;
+                    wallHistoryItem.SnapshotJson = inputJson;
+                    wallHistoryItem.Timestamp = DateTime.Now;
+                    wallHistoryItem.ClientIp = clientIp;
+                    wallHistoryItem.DrawingSession = drawingSession;
+                    session.Save(wallHistoryItem);
+                    tx.Commit();
+                }
+                catch (Exception ex)
+                {
+                    tx.Rollback();
+                    throw;
+                }
+            }
         }
 
         public string GetImageUrl(Brick brick)
@@ -112,6 +154,64 @@ namespace massive_moose.services
                 inviteCode,
                 addressX,
                 addressY);
+        }
+
+        public BrickViewModel[,] GetBricksForWall(int originX, int originY, string wallKey, IStatelessSession session)
+        {
+            Wall wallRecord = GetWallByKeyOrDefault(wallKey, session);
+
+            IList<object[]> bricks = session.QueryOver<Brick>()
+                .And(b => b.Wall.Id == wallRecord.Id)
+                .Select(
+                    b => b.AddressX,
+                    b => b.AddressY,
+                    b => b.LastUpdated,
+                    b => b.Guid).List<object[]>();
+
+            var wall = new BrickViewModel[12, 12];
+            for (int y = 0; y < 12; y++)
+            {
+                for (int x = 0; x < 12; x++)
+                {
+                    var addressX = originX - 6 + x;
+                    var addressY = originY - 6 + y;
+                    var o = bricks.SingleOrDefault(b => (int)b[0] == addressX && (int)b[1] == addressY);
+                    if (o != null)
+                    {
+                        wall[x, y] = new BrickViewModel()
+                        {
+                            X = (int)o[0],
+                            Y = (int)o[1],
+                            C=1,
+                            D=((DateTime)o[2]).Ticks,
+                            U = BrickInUse(session, addressX, addressY, wallRecord.Id) ? 1 : 0
+                        };
+                    }
+                    else
+                    {
+                        wall[x, y] = new BrickViewModel()
+                        {
+                            X = addressX,
+                            Y = addressY,
+                            C = 0,
+                            U = BrickInUse(session, addressX, addressY, wallRecord.Id) ? 1 : 0
+                        };
+                    }
+                }
+            }
+
+            return wall;
+        }
+        private bool BrickInUse(IStatelessSession session, int addressX, int addressY, int wallId)
+        {
+            return session.CreateCriteria<DrawingSession>()
+                .Add(Restrictions.Eq("Closed", false))
+                .Add(Restrictions.Gt("Opened", DateTime.Now.Subtract(TimeSpan.FromMinutes(5))))
+                .Add(Restrictions.Eq("AddressX", addressX))
+                .Add(Restrictions.Eq("AddressY", addressY))
+                .Add(Restrictions.Eq("Wall.Id", wallId))
+                .SetProjection(Projections.Count("Id"))
+                .UniqueResult<int>() > 0;
         }
     }
 }

@@ -206,13 +206,11 @@
     <Compile Include="MassiveMooseNinjectModule.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\ApplicationUserStore.cs" />
-    <Compile Include="Models\BrickViewModel.cs" />
     <Compile Include="Models\ChooseBackgroundViewModel.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\MassiveMooseCookie.cs" />
     <Compile Include="Models\WallsViewModel.cs" />
-    <Compile Include="Models\WallViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>

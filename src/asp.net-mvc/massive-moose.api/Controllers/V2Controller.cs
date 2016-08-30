@@ -12,6 +12,7 @@ using massive_moose.storage.azure;
 using System.Configuration;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using massive_moose.services.viewmodels;
 using NHibernate;
 
 namespace massive_moose.api.Controllers
@@ -34,53 +35,8 @@ namespace massive_moose.api.Controllers
         {
             using (var session = SessionFactory.Instance.OpenStatelessSession())
             {
-                return GetBricksForWall(originX, originY, wallKey, session);
+                return _wallOperations.GetBricksForWall(originX, originY, wallKey, session);
             }
-        }
-
-        private BrickViewModel[,] GetBricksForWall(int originX, int originY, string wallKey, IStatelessSession session)
-        {
-            Wall wallRecord = _wallOperations.GetWallByKeyOrDefault(wallKey, session);
-
-            IList<object[]> bricks = session.QueryOver<Brick>()
-                .And(b => b.Wall.Id == wallRecord.Id)
-                .Select(
-                    b => b.AddressX,
-                    b => b.AddressY,
-                    b => b.LastUpdated,
-                    b => b.Guid).List<object[]>();
-
-            var wall = new BrickViewModel[12, 12];
-            for (int y = 0; y < 12; y++)
-            {
-                for (int x = 0; x < 12; x++)
-                {
-                    var relativeX = originX - 6 + x;
-                    var relativeY = originY - 6 + y;
-                    var o = bricks.SingleOrDefault(b => (int) b[0] == relativeX && (int) b[1] == relativeY);
-                    if (o != null)
-                    {
-                        wall[x, y] = new BrickViewModel()
-                        {
-                            X = (int) o[0],
-                            Y = (int) o[1],
-                            D = ((DateTime?) o[2]).HasValue ? ((DateTime?) o[2]).Value.Ticks.ToString() : "",
-                            G = o[3].ToString()
-                        };
-                    }
-                    else
-                    {
-                        wall[x, y] = new BrickViewModel()
-                        {
-                            X = relativeX,
-                            Y = relativeY,
-                            G = ""
-                        };
-                    }
-                }
-            }
-
-            return wall;
         }
 
         [Route("v2/wall/history/image/{historyItemId}")]

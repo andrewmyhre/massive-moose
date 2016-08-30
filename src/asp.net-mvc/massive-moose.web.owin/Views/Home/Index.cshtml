@@ -1,4 +1,4 @@
-﻿@model massive_moose.web.owin.Models.WallViewModel
+﻿@model massive_moose.services.viewmodels.WallViewModel
 @{
     ViewBag.Title = "Home Page";
     Layout = "~/Views/Shared/_Wall.cshtml";
@@ -78,8 +78,34 @@
                 @for (int x = 0; x < 12; x++)
                 {
                     var brick = Model.Bricks[x, y];
-                    <td class="brick" id="c@(y*12 + x)" @if (brick.HasContent)
-                                                        {<text>style="background-image: url('@brick.ThumbnailImageUrl')"</text>}></td>
+                    if (brick != null)
+                    {
+                        <td class="brick @(brick.U == 1 ? "inuse" : "free")" 
+                            data-inuse="@brick.U" 
+                            id="c@(y*12 + x)" 
+                            data-viewX="@x"
+                            data-viewY="@y"
+                            data-addressx="@brick.X"
+                            data-addressy="@brick.Y"
+                            data-updated="@brick.D"
+                            @if (brick.C == 1)
+                            {
+                                <text>style="background-image: url('@Model.GetThumbnailUrl(brick)')"</text>
+                            }>
+                            @if (brick.U == 1)
+                            {
+                                <span class="bc glyphicon glyphicon-ban-circle"></span>
+                            }
+                            else
+                            {
+                                <span class=""></span>
+                            }
+                        </td>
+                    }
+                    else
+                    {
+                        <td class="brick" id="c@(y*12 + x)"><span class=""></span></td>
+                    }
                 }
             </tr>
         }

@@ -466,23 +466,45 @@
 
                                 for (var x = 0; x < data[y].length; x++) {
                                     var brickView = document.getElementById('c' + (y * 12 + x));
-                                    var brick = data[x][y];
-                                    brick.element = brickView;
-                                    if (brick && brick.G != ''
-                                        && (_wall && _wall[x][y] && (_wall[x][y].D != data.D))) {
-                                        brickView.style.backgroundImage = 'url("' +
-                                                _baseApiUrl +
-                                                '/v1/image/t'
-                                                + '/' + _inviteCode
-                                                + '/' + brick.X
-                                                + '/' + brick.Y
-                                                + '/?d=' + brick.D
-                                                + '")';
-                                    }
-                                    brickView.setAttribute('data-addressx', brick.X);
-                                    brickView.setAttribute('data-addressY', brick.Y);
                                     brickView.setAttribute('data-viewX', x);
                                     brickView.setAttribute('data-viewY', y);
+                                    var brick = data[x][y];
+                                    brick.element = brickView;
+                                    if (!brick) {
+                                        brickView.className = 'brick free';
+                                        continue;
+                                    }
+                                    if (brick.C==1
+                                        && (_wall && _wall[x][y])) {
+                                        // TODO: only update source image if the brick.D value is different to the data-updated attribute on the element
+                                        if (brick.D != brickView.getAttribute('data-updated')) {
+                                            brickView.style.backgroundImage = 'url("' +
+                                                _baseApiUrl +
+                                                '/v1/image/t' +
+                                                '/' +
+                                                _inviteCode +
+                                                '/' +
+                                                brick.X +
+                                                '/' +
+                                                brick.Y +
+                                                '?d=' +
+                                                brick.D +
+                                                '")';
+                                        }
+                                    }
+                                    if (brick.U != 1) {
+                                        brickView.innerHTML = '';
+                                        brickView.className = 'brick free';
+                                    } else {
+                                        brickView
+                                            .innerHTML = '<span class="bc glyphicon glyphicon-ban-circle"></span>';
+                                        brickView.className = 'brick inuse';
+                                    }
+                                    brickView.setAttribute('data-inuse', brick.U);
+                                    brickView.setAttribute('data-hascontent', brick.C);
+                                    brickView.setAttribute('data-addressx', brick.X);
+                                    brickView.setAttribute('data-addressY', brick.Y);
+                                    brickView.setAttribute('data-updated', brick.D);
                                 }
                             }
                             _wall = data;
