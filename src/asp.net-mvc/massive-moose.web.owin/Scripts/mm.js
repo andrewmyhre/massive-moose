@@ -47,6 +47,21 @@
 
             }
 
+document.getElementById('font-face').onclick = function(){
+_lc.setFontFace(e.targetElement.value);}
+
+document.getElementById('font-size').onclick = function(){
+_lc.setFontSize(e.targetElement.value);}
+
+function showTextOptions(){
+document.getElementById('textTools').style.display='inline-block';
+document.getElementById('drawTools').style.display='none';
+}
+function showDrawingOptions(){
+document.getElementById('drawTools').style.display='inline-block';
+document.getElementById('textTools').style.display='none';
+}
+
             _viewportScaleWhenDrawing = cfg.viewPortScaleWhenDrawing;
             _viewportScale = cfg.viewPortScale;
             _drawZoom = cfg.drawZoom;
@@ -190,6 +205,8 @@
 
                 var activateTool = function (t) {
                     _lc.setTool(t.tool);
+                    if(t.tool.name == 'text'){showTextTools();}
+                    else{showDrawTools();}
 
                     tools.forEach(function(t2) {
                     if (t == t2) {
