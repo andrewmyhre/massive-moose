@@ -136,16 +136,48 @@
                         </a>
                     </div>
                     <div id="textTools" class="col-xs-12 col-md-4 tool-group">
-                        <select name="font-size" name="font-size">
-@{
-var fontSizes=new[]{8,10,12,14,16,20,28,36,48,60,90};
-}
-@foreach (var fontSize in fontSizes) {
-                            <option value="@(fontSize+"px")">@fontSize</option>
-}
+                        <input type="checkbox" name="font-bold" id="font-bold" value="bold" />
+                        <input type="checkbox" name="font-italic" id="font-italic" value="italic" />
+                        <select name="font-size" id="font-size">
+                            @{
+                                var fontSizes = new[] { 9, 10, 12, 14, 18, 24, 36, 48, 64, 72, 96, 144, 288 };
+                            }
+                            @for (int i=0;i<fontSizes.Length;i++)
+                            {
+                                <option value="@i">@(fontSizes[i] + "px")</option>
+                            }
                         </select>
                         <select name="font-face" id="font-face">
-                            <option value="Helvetica">Helvetica</option>
+                            <optgroup label="Sans Serif">
+                                <option value="Arial">Arial</option>
+                                <option value="Arial Black">Arial Black</option>
+                                <option value="Arial Narrow">Arial Narrow</option>
+                                <option value="Gill Sans">Gill Sans</option>
+                                <option value="Helvetica">Helvetica</option>
+                                <option value="Impact">Impact</option>
+                                <option value="Tahoma">Tahoma</option>
+                                <option value="Trebuchet MS">Trebuchet MS</option>
+                                <option value="Verdana">Verdana</option>
+                            </optgroup>
+                            <optgroup label="Serif">
+                                <option value="Baskerville">Baskerville</option>
+                                <option value="Garamond">Garamond</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Hoefler Text">Hoefler Text</option>
+                                <option value="Lucida Bright">Lucida Bright</option>
+                                <option value="Palatino">Palatino</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                            </optgroup>
+                            <optgroup label="Monospace">
+                                <option value="Consolas/Monaco">Consolas/Monaco</option>
+                                <option value="Courier New">Courier New</option>
+                                <option value="Lucida Sans Typewriter">Lucida Sans Typewriter</option>
+                            </optgroup>
+                            <optgroup label="Other">
+                                <option value="Copperplate">Copperplate</option>
+                                <option value="Papyrus">Papyrus</option>
+                                <option value="Script">Script</option>
+                            </optgroup>
                         </select>
                     </div>
                 </div>

@@ -89,7 +89,7 @@ body {
     width: 100px;
 }
 #tools-wrapper {
-    z-index: 2;
+    z-index: 1000;
     position: fixed;
     /*width: 670px;*/
 }
@@ -139,7 +139,7 @@ body {
     top: 0;
     left: 0;
     margin:auto;
-    z-index: 3;
+    z-index: 1000;
     padding: 0;
 }
 #help .container {width:100%}

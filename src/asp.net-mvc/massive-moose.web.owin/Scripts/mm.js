@@ -15,23 +15,21 @@
 
             function updateProgress(evt) {
 
-                document.getElementById('progress-indicator').style.display = 'block';
             }
             function transferComplete(evt) {
 
-                document.getElementById('progress-indicator').style.display = 'none';
+                document.getElementById('progress').style.display = 'none';
             }
             function transferFailed(evt) {
 
-                document.getElementById('progress-indicator').style.display = 'none';
+                document.getElementById('progress').style.display = 'none';
             }
             function transferCanceled(evt) {
 
-                document.getElementById('progress-indicator').style.display = 'none';
+                document.getElementById('progress').style.display = 'none';
             }
             function transferStarted(evt) {
 
-                document.getElementById('progress-indicator').style.display = 'block';
             }
 
             function setViewScale() {
@@ -47,20 +45,141 @@
 
             }
 
-document.getElementById('font-face').onclick = function(){
-_lc.setFontFace(e.targetElement.value);}
+            var fontState ={
+                    isItalic: false,
+                    isBold: false,
+                    fontName: 'Helvetica',
+                    fontSizeIndex: 4
+                };
 
-document.getElementById('font-size').onclick = function(){
-_lc.setFontSize(e.targetElement.value);}
 
-function showTextOptions(){
-document.getElementById('textTools').style.display='inline-block';
-document.getElementById('drawTools').style.display='none';
-}
-function showDrawingOptions(){
-document.getElementById('drawTools').style.display='inline-block';
-document.getElementById('textTools').style.display='none';
-}
+            SANS_SERIF_FONTS = [['Arial', 'Arial,"Helvetica Neue",Helvetica,sans-serif'], ['Arial Black', '"Arial Black","Arial Bold",Gadget,sans-serif'], ['Arial Narrow', '"Arial Narrow",Arial,sans-serif'], ['Gill Sans', '"Gill Sans","Gill Sans MT",Calibri,sans-serif'], ['Helvetica', '"Helvetica Neue",Helvetica,Arial,sans-serif'], ['Impact', 'Impact,Haettenschweiler,"Franklin Gothic Bold",Charcoal,"Helvetica Inserat","Bitstream Vera Sans Bold","Arial Black",sans-serif'], ['Tahoma', 'Tahoma,Verdana,Segoe,sans-serif'], ['Trebuchet MS', '"Trebuchet MS","Lucida Grande","Lucida Sans Unicode","Lucida Sans",Tahoma,sans-serif'], ['Verdana', 'Verdana,Geneva,sans-serif']].map(function (_arg) {
+                var name, value;
+                name = _arg[0], value = _arg[1];
+                return {
+                    name: name,
+                    value: value
+                };
+            });
+
+            SERIF_FONTS = [['Baskerville', 'Baskerville,"Baskerville Old Face","Hoefler Text",Garamond,"Times New Roman",serif'], ['Garamond', 'Garamond,Baskerville,"Baskerville Old Face","Hoefler Text","Times New Roman",serif'], ['Georgia', 'Georgia,Times,"Times New Roman",serif'], ['Hoefler Text', '"Hoefler Text","Baskerville Old Face",Garamond,"Times New Roman",serif'], ['Lucida Bright', '"Lucida Bright",Georgia,serif'], ['Palatino', 'Palatino,"Palatino Linotype","Palatino LT STD","Book Antiqua",Georgia,serif'], ['Times New Roman', 'TimesNewRoman,"Times New Roman",Times,Baskerville,Georgia,serif']].map(function (_arg) {
+                var name, value;
+                name = _arg[0], value = _arg[1];
+                return {
+                    name: name,
+                    value: value
+                };
+            });
+
+            MONOSPACE_FONTS = [['Consolas/Monaco', 'Consolas,monaco,"Lucida Console",monospace'], ['Courier New', '"Courier New",Courier,"Lucida Sans Typewriter","Lucida Typewriter",monospace'], ['Lucida Sans Typewriter', '"Lucida Sans Typewriter","Lucida Console",monaco,"Bitstream Vera Sans Mono",monospace']].map(function (_arg) {
+                var name, value;
+                name = _arg[0], value = _arg[1];
+                return {
+                    name: name,
+                    value: value
+                };
+            });
+
+            OTHER_FONTS = [['Copperplate', 'Copperplate,"Copperplate Gothic Light",fantasy'], ['Papyrus', 'Papyrus,fantasy'], ['Script', '"Brush Script MT",cursive']].map(function (_arg) {
+                var name, value;
+                name = _arg[0], value = _arg[1];
+                return {
+                    name: name,
+                    value: value
+                };
+            });
+
+            ALL_FONTS = [['Sans Serif', SANS_SERIF_FONTS], ['Serif', SERIF_FONTS], ['Monospace', MONOSPACE_FONTS], ['Other', OTHER_FONTS]];
+
+            FONT_NAME_TO_VALUE = {};
+
+            for (_i = 0, _len = SANS_SERIF_FONTS.length; _i < _len; _i++) {
+                _ref = SANS_SERIF_FONTS[_i], name = _ref.name, value = _ref.value;
+                FONT_NAME_TO_VALUE[name] = value;
+            }
+
+            for (_j = 0, _len1 = SERIF_FONTS.length; _j < _len1; _j++) {
+                _ref1 = SERIF_FONTS[_j], name = _ref1.name, value = _ref1.value;
+                FONT_NAME_TO_VALUE[name] = value;
+            }
+
+            for (_k = 0, _len2 = MONOSPACE_FONTS.length; _k < _len2; _k++) {
+                _ref2 = MONOSPACE_FONTS[_k], name = _ref2.name, value = _ref2.value;
+                FONT_NAME_TO_VALUE[name] = value;
+            }
+
+            for (_l = 0, _len3 = OTHER_FONTS.length; _l < _len3; _l++) {
+                _ref3 = OTHER_FONTS[_l], name = _ref3.name, value = _ref3.value;
+                FONT_NAME_TO_VALUE[name] = value;
+            }
+
+
+            function getFontSizes() {
+                return [9, 10, 12, 14, 18, 24, 36, 48, 64, 72, 96, 144, 288];
+            }
+
+            function updateFontSettings(newState) {
+                var fontSize, items, k;
+                if (newState == null) {
+                    newState = {};
+                }
+                for (k in fontState) {
+                    if (!(k in newState)) {
+                        newState[k] = fontState[k];
+                    }
+                }
+                fontSize = getFontSizes()[newState.fontSizeIndex];
+                items = [];
+                if (newState.isItalic) {
+                    items.push('italic');
+                }
+                if (newState.isBold) {
+                    items.push('bold');
+                }
+                items.push("" + fontSize + "px");
+                items.push(FONT_NAME_TO_VALUE[newState.fontName]);
+                fontState = newState;
+                _lc.tool.font = items.join(' ');
+                return _lc.trigger('setFont', items.join(' '));
+            }
+
+            document.getElementById('font-face').onchange = function (e) {
+                var newState= {
+                    fontName:e.target.value
+                }
+                updateFontSettings(newState);
+            };
+
+            document.getElementById('font-size').onchange = function(e) {
+                var newState = {
+                    fontSizeIndex: e.target.value
+                }
+                updateFontSettings(newState);
+            }
+
+            document.getElementById('font-italic').onchange = function() {
+                var newState = {
+                    isItalic: e.target.isChecked
+                }
+                updateFontSettings(newState);
+            };
+
+            document.getElementById('font-bold').onchange = function (e) {
+                var newState = {
+                    isBold: e.target.isChecked
+                }
+                updateFontSettings(newState);
+            };
+
+            function showTextOptions(){
+                document.getElementById('textTools').style.display='inline-block';
+                document.getElementById('drawTools').style.display = 'none';
+                updateFontSettings(null);
+            }
+            function showDrawingOptions(){
+                document.getElementById('drawTools').style.display='inline-block';
+                document.getElementById('textTools').style.display='none';
+            }
 
             _viewportScaleWhenDrawing = cfg.viewPortScaleWhenDrawing;
             _viewportScale = cfg.viewPortScale;
@@ -205,8 +324,11 @@ document.getElementById('textTools').style.display='none';
 
                 var activateTool = function (t) {
                     _lc.setTool(t.tool);
-                    if(t.tool.name == 'text'){showTextTools();}
-                    else{showDrawTools();}
+                    if (t.tool.name == 'Text') {
+                        showTextOptions();
+                    } else {
+                        showDrawingOptions();
+                    }
 
                     tools.forEach(function(t2) {
                     if (t == t2) {
@@ -282,6 +404,7 @@ document.getElementById('textTools').style.display='none';
                   };
                 });
                 activateTool(tools[0]);
+                updateFontSettings(null);
                 //finish configuring
 
                 var uploadButton = document.getElementById('save-button').onclick = ClickUpload;
@@ -492,3 +615,71 @@ document.getElementById('textTools').style.display='none';
         
     }
 })();
+
+/**
+ * JavaScript code to detect available availability of a
+ * particular font in a browser using JavaScript and CSS.
+ *
+ * Author : Lalit Patel
+ * Website: http://www.lalit.org/lab/javascript-css-font-detect/
+ * License: Apache Software License 2.0
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ * Version: 0.15 (21 Sep 2009)
+ *          Changed comparision font to default from sans-default-default,
+ *          as in FF3.0 font of child element didn't fallback
+ *          to parent element if the font is missing.
+ * Version: 0.2 (04 Mar 2012)
+ *          Comparing font against all the 3 generic font families ie,
+ *          'monospace', 'sans-serif' and 'sans'. If it doesn't match all 3
+ *          then that font is 100% not available in the system
+ * Version: 0.3 (24 Mar 2012)
+ *          Replaced sans with serif in the list of baseFonts
+ */
+
+/**
+ * Usage: d = new Detector();
+ *        d.detect('font name');
+ */
+var Detector = function () {
+    // a font will be compared against all the three default fonts.
+    // and if it doesn't match all 3 then that font is not available.
+    var baseFonts = ['monospace', 'sans-serif', 'serif'];
+
+    //we use m or w because these two characters take up the maximum width.
+    // And we use a LLi so that the same matching fonts can get separated
+    var testString = "mmmmmmmmmmlli";
+
+    //we test using 72px font size, we may use any size. I guess larger the better.
+    var testSize = '72px';
+
+    var h = document.getElementsByTagName("body")[0];
+
+    // create a SPAN in the document to get the width of the text we use to test
+    var s = document.createElement("span");
+    s.style.fontSize = testSize;
+    s.innerHTML = testString;
+    var defaultWidth = {};
+    var defaultHeight = {};
+    for (var index in baseFonts) {
+        //get the default width for the three base fonts
+        s.style.fontFamily = baseFonts[index];
+        h.appendChild(s);
+        defaultWidth[baseFonts[index]] = s.offsetWidth; //width for the default font
+        defaultHeight[baseFonts[index]] = s.offsetHeight; //height for the defualt font
+        h.removeChild(s);
+    }
+
+    function detect(font) {
+        var detected = false;
+        for (var index in baseFonts) {
+            s.style.fontFamily = font + ',' + baseFonts[index]; // name of the font along with the base font for fallback.
+            h.appendChild(s);
+            var matched = (s.offsetWidth != defaultWidth[baseFonts[index]] || s.offsetHeight != defaultHeight[baseFonts[index]]);
+            h.removeChild(s);
+            detected = detected || matched;
+        }
+        return detected;
+    }
+
+    this.detect = detect;
+};
