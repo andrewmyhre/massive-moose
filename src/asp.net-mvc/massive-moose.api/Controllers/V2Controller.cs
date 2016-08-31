@@ -58,7 +58,7 @@ Log.Debug("2");
 Log.Debug("3");
                     result.Content = new ByteArrayContent(new byte[0]);
 Log.Debug("4");
-                    result.Content.Headers.Add("ETag"ByteArrayContent wall.GetHashCode().ToString());
+                    result.Content.Headers.Add("ETag", wall.GetHashCode().ToString());
                     Log.Debug("5");
                     return result;
                 }
