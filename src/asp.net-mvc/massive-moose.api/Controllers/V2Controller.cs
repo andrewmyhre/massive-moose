@@ -42,7 +42,7 @@ namespace massive_moose.api.Controllers
         [AcceptVerbs("HEAD")]
         [Route("v2/wall/{wallKey}/{originX}/{originY}")]
         [EnableCors(origins: "*", headers: "*", methods: "*")]
-        public HttpResponseMessage Wall(int originX, int originY, string wallKey = null)
+        public HttpResponseMessage WallETag(int originX, int originY, string wallKey = null)
         {
             var result = new HttpResponseMessage();
             
