@@ -1,6 +1,7 @@
 ﻿var MassiveMoose = (function () {
     return {
         cfg: { baseApiUrl: '', drawZoom: 0.8 , viewportScale:1.0, viewportScaleWhenDrawing:0.7, inviteCode:''},
+        wallETag: '',
         initialize: function(configuration) {
             cfg = configuration;
             var xhr = new XMLHttpRequest();
@@ -451,6 +452,20 @@
                 }
             }
 
+            function checkWallStaleness() {
+                xhr.open('HEAD',_baseApiUrl + '/v2/wall/' + _inviteCode + '/0/0');
+                xhr.onload = function() {
+                    if (xhr.status == 200) {
+                        var eTag = getResponseHeader("eTag");
+                        if (this.wallETag != eTag) {
+                            updateWall();
+                            this.wallETag = eTag;
+                        }
+                    }
+                }
+
+            }
+
             function updateWall(updatedBrickElement) {
                 if (!_brickInUse) {
                     document.getElementById('progress').style.display = 'none';
@@ -514,7 +529,7 @@
                             if (updatedBrickElement)
                                 updatedBrickElement.scrollIntoView();
 
-                            setTimeout(updateWall, 10000);
+                            setTimeout(checkWallStaleness, 10000);
                         }
                     };
                     xhr.send();
