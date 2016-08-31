@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using log4net;
@@ -52,6 +53,7 @@ namespace massive_moose.api.Controllers
             {
                 var wall = _wallOperations.GetBricksForWall(originX, originY, wallKey, session);
                 if (wall != null) {
+                    result.Content = new HttpMessageContent();
                     result.Content.Headers.Add("ETag", wall.GetHashCode().ToString());
                     
                     return result;
