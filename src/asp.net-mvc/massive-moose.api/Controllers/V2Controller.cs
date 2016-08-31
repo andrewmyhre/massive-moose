@@ -53,8 +53,7 @@ namespace massive_moose.api.Controllers
                 using (var session = SessionFactory.Instance.OpenStatelessSession())
                 {
                     Wall wallRecord = _wallOperations.GetWallByKeyOrDefault(wallKey, session);
-                    var wall = _wallOperations.GetBricksForWall(originX, originY, wallKey, session);
-                    if (wall == null)
+                    if (wallRecord == null)
                     {
                         result.StatusCode = HttpStatusCode.NotFound;
                     }
