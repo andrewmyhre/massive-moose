@@ -47,7 +47,7 @@ namespace massive_moose.api.Controllers
         public HttpResponseMessage WallETag(int originX, int originY, string wallKey = null)
         {
             var result = new HttpResponseMessage();
-            
+            try {
             using (var session = SessionFactory.Instance.OpenStatelessSession())
             {
                 var wall = _wallOperations.GetBricksForWall(originX, originY, wallKey, session);
@@ -58,6 +58,10 @@ namespace massive_moose.api.Controllers
                 }
                 result.StatusCode =HttpStatusCode.NotFound;
                 return result;
+            }
+            } catch (Exception ex) {
+                Log.Error("error generating etag", ex);
+                throw;
             }
         }
 
