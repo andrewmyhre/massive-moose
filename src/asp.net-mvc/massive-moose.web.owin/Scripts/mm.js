@@ -1,9 +1,10 @@
 ﻿var MassiveMoose = (function () {
     return {
         cfg: { baseApiUrl: '', drawZoom: 0.8 , viewportScale:1.0, viewportScaleWhenDrawing:0.7, inviteCode:''},
-        wallETag: '',
         initialize: function(configuration) {
             cfg = configuration;
+            wallETag = '0';
+            xhrWaitHandle = null;
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function(evt) {
 
@@ -453,17 +454,19 @@
             }
 
             function checkWallStaleness() {
-                xhr.open('HEAD',_baseApiUrl + '/v2/wall/' + _inviteCode + '/0/0');
-                xhr.onload = function() {
-                    if (xhr.status == 200) {
-                        var eTag = getResponseHeader("eTag");
-                        if (this.wallETag != eTag) {
+                if (xhr.readyState == 0 || xhr.readyState == 4) {
+                    xhr.open('HEAD', _baseApiUrl + '/v2/wall/' + _inviteCode + '/0/0/' + wallETag);
+                    xhr.onload = function() {
+                        if (xhr.status == 200) {
+                            wallETag = xhr.getResponseHeader('ETag').replace("\"", "").replace("\"", "");
                             updateWall();
-                            this.wallETag = eTag;
                         }
+                        setTimeout(checkWallStaleness, 10000);
                     }
+                    xhr.send();
+                } else {
+                    setTimeout(checkWallStaleness, 10000);
                 }
-                xhr.send();
             }
 
             function updateWall(updatedBrickElement) {
@@ -528,7 +531,6 @@
                             setViewScale();
                             if (updatedBrickElement)
                                 updatedBrickElement.scrollIntoView();
-
                             setTimeout(checkWallStaleness, 10000);
                         }
                     };
@@ -593,6 +595,7 @@
                         document.getElementById('drawSpace').style.display = 'none';
                         document.getElementById('tools-wrapper').style.display = 'none';
                         document.getElementById('wall').style.display = 'block';
+                        document.getElementById('progress').style.display = 'block';
 
                         // wait a second before updating to give Azure a chance to propagate the thumbnail image
                         setTimeout(function () {
@@ -603,6 +606,7 @@
                         document.getElementById('cancel-button').disabled = '';
                         document.getElementById('alert-message').innerHtml = 'Sorry! There was a problem saving the image... try again? :/';
                         document.getElementById('alert').style.display = 'block';
+                        document.getElementById('progress').style.display = 'block';
                     }
                 };
                 var imageSize = { width: 1600, height: 800 };

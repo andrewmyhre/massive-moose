@@ -24,6 +24,7 @@ namespace massive_moose.services.models
         public virtual IList<Brick> Bricks { get; set; }
         public virtual string InviteCode { get; set; }
         public virtual string BackgroundImageFilename { get; set; }
+        public virtual string ETag { get; set; }
 
         private static Random random = new Random();
         private static string validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";

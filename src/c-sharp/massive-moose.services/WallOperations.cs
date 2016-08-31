@@ -103,7 +103,14 @@ namespace massive_moose.services
 
                     brick.LastUpdated = DateTime.Now;
                     brick.SnapshotJson = unencodedSnapshotJson;
-                    
+                    var sb = new StringBuilder();
+                    var bytes = Guid.NewGuid().ToByteArray();
+                    foreach (var b in bytes)
+                    {
+                        sb.Append(string.Format("{0:X}", b));
+                    }
+                    brick.Wall.ETag = sb.ToString();
+
                     session.SaveOrUpdate(brick);
 
                     // store a history entry for this contribution

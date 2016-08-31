@@ -16,7 +16,8 @@ using System.Configuration;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using massive_moose.services.viewmodels;
-using NHibernate;
+using Newtonsoft.Json;
+using System.Text;
 
 namespace massive_moose.api.Controllers
 {
@@ -43,30 +44,30 @@ namespace massive_moose.api.Controllers
         }
 
         [AcceptVerbs("HEAD")]
-        [Route("v2/wall/{wallKey}/{originX}/{originY}")]
-        [EnableCors(origins: "*", headers: "*", methods: "*")]
-        public HttpResponseMessage WallETag(int originX, int originY, string wallKey = null)
+        [Route("v2/wall/{wallKey}/{originX}/{originY}/{etag}")]
+        [EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders:"ETag")]
+        public HttpResponseMessage WallETag(int originX, int originY, string etag=null, string wallKey = null)
         {
             var result = new HttpResponseMessage();
             try {
-Log.Debug("1");
-            using (var session = SessionFactory.Instance.OpenStatelessSession())
-            {
-                var wall = _wallOperations.GetBricksForWall(originX, originY, wallKey, session);
-Log.Debug("2");
-                if (wall != null) {
-Log.Debug("3");
-                    result.Content = new ByteArrayContent(new byte[0]);
-Log.Debug("4");
-                    result.Content.Headers.Add("ETag", wall.GetHashCode().ToString());
-                    Log.Debug("5");
+                using (var session = SessionFactory.Instance.OpenStatelessSession())
+                {
+                    Wall wallRecord = _wallOperations.GetWallByKeyOrDefault(wallKey, session);
+                    var wall = _wallOperations.GetBricksForWall(originX, originY, wallKey, session);
+                    if (wall == null)
+                    {
+                        result.StatusCode = HttpStatusCode.NotFound;
+                    }
+                    else
+                    {
+                        var actualETag = wallRecord.ETag;
+                        result.Headers.ETag = new EntityTagHeaderValue("\""+actualETag+"\"");
+                        if (etag == actualETag)
+                            result.StatusCode = HttpStatusCode.NotModified;
+                        return result;
+                    }
                     return result;
                 }
-Log.Debug("6");
-                result.StatusCode =HttpStatusCode.NotFound;
-Log.Debug("7");
-                return result;
-            }
             } catch (Exception ex) {
                 Log.Error("error generating etag", ex);
                 throw;

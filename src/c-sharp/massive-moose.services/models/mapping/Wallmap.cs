@@ -20,6 +20,7 @@ namespace massive_moose.services.models.mapping
             Map(x => x.BackgroundImageFilename);
             HasMany<WallHistoryItem>(x => x.History).KeyColumn("WallId");
             HasMany<Brick>(x => x.Bricks).KeyColumn("WallId");
+            Map(x => x.ETag);
         }
     }
 }
