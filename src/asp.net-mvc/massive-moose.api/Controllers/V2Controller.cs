@@ -53,8 +53,8 @@ namespace massive_moose.api.Controllers
             {
                 var wall = _wallOperations.GetBricksForWall(originX, originY, wallKey, session);
                 if (wall != null) {
-                    result.Content = new HttpMessageContent();
-                    result.Content.Headers.Add("ETag", wall.GetHashCode().ToString());
+                    result.Content = new ByteArrayContent(new byte[0]);
+                    result.Content.Headers.Add("ETag"ByteArrayContent wall.GetHashCode().ToString());
                     
                     return result;
                 }
