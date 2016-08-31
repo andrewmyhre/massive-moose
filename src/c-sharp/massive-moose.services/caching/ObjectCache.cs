@@ -2,10 +2,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using massive_moose.caching;
 
 namespace massive_moose.services.caching
 {
-    public class ObjectCache<T> where T : new()
+    public class ObjectCache<T> : IObjectCache<T> where T : new()
     {
         private ILog _log = LogManager.GetLogger(typeof(ObjectCache<T>));
         private readonly int _itemLifetimeInSeconds;

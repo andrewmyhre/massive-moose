@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "massive-moose.api", "asp.ne
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "massive-moose.drawing.console", "c-sharp\massive-moose.drawing.console\massive-moose.drawing.console.csproj", "{096028FD-5DDA-4CD2-8EBE-81AB9D527B81}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "massive-moose.caching", "massive-moose.caching\massive-moose.caching.csproj", "{6DE0275A-CA88-43E0-A6E7-123769FBE54F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{096028FD-5DDA-4CD2-8EBE-81AB9D527B81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{096028FD-5DDA-4CD2-8EBE-81AB9D527B81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{096028FD-5DDA-4CD2-8EBE-81AB9D527B81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DE0275A-CA88-43E0-A6E7-123769FBE54F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DE0275A-CA88-43E0-A6E7-123769FBE54F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DE0275A-CA88-43E0-A6E7-123769FBE54F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DE0275A-CA88-43E0-A6E7-123769FBE54F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

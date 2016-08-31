@@ -152,6 +152,12 @@
   <ItemGroup>
     <Folder Include="auth\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\massive-moose.caching\massive-moose.caching.csproj">
+      <Project>{6de0275a-ca88-43e0-a6e7-123769fbe54f}</Project>
+      <Name>massive-moose.caching</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
