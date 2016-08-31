@@ -48,7 +48,7 @@ namespace massive_moose.api.Controllers
             
             using (var session = SessionFactory.Instance.OpenStatelessSession())
             {
-                var wall _wallOperations.GetBricksForWall(originX, originY, wallKey, session);
+                var wall = _wallOperations.GetBricksForWall(originX, originY, wallKey, session);
                 if (wall != null) {
                     result.Content.Headers.Add("ETag", wall.GetHashCode().ToString());
                     result.StatusCode = HttpStatusCode.Ok;
