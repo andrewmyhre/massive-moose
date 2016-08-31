@@ -193,7 +193,7 @@
             _wall = null;
             _toolsWaitHandle = 0;
 
-            setTimeout(updateWall, 10);
+            setTimeout(checkWallStaleness, 10);
 
             document.getElementById('toolbar-size').onclick = function() {
                 var toolsInner = document.getElementById('tools-inner');
@@ -463,7 +463,7 @@
                         }
                     }
                 }
-
+                xhr.send();
             }
 
             function updateWall(updatedBrickElement) {
