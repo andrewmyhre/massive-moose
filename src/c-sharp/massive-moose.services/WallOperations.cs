@@ -9,12 +9,15 @@ using NHibernate;
 using NHibernate.Criterion;
 using massive_moose.services.models.drawing;
 using massive_moose.services.viewmodels;
+using massive_moose.services.caching;
 
 namespace massive_moose.services
 {
     public class WallOperations
     {
         private readonly IFileStorage _fileStorage;
+        private static ObjectCache<Wall> _wallCache = new ObjectCache<Wall>(10);
+        private static ObjectCache<BrickWallSet> _wallAtLocationCache = new ObjectCache<BrickWallSet>(30);
 
         public WallOperations(IFileStorage fileStorage)
         {
@@ -22,11 +25,21 @@ namespace massive_moose.services
         }
         public Wall GetWallByKeyOrDefault(string wallKey, IStatelessSession session)
         {
+            
             if (!string.IsNullOrWhiteSpace(wallKey))
             {
-                return session.CreateCriteria<Wall>()
+                if (_wallCache.Get(wallKey) != null)
+                {
+                    return _wallCache.Get(wallKey);
+                }
+
+                var wall = session.CreateCriteria<Wall>()
                     .Add(Restrictions.Eq("InviteCode", wallKey))
                     .UniqueResult<Wall>();
+
+                _wallCache.Set(wallKey, wall);
+
+                return wall;
             }
             else
             {
@@ -37,6 +50,11 @@ namespace massive_moose.services
         {
             if (!string.IsNullOrWhiteSpace(wallKey))
             {
+                if (_wallCache.Get(wallKey) != null)
+                {
+                    return _wallCache.Get(wallKey);
+                }
+
                 return session.CreateCriteria<Wall>()
                     .Add(Restrictions.Eq("InviteCode", wallKey))
                     .UniqueResult<Wall>();
@@ -165,6 +183,11 @@ namespace massive_moose.services
 
         public BrickViewModel[,] GetBricksForWall(int originX, int originY, string wallKey, IStatelessSession session)
         {
+            string cacheKey = string.Format("{0}_{1}_{2}", wallKey, originX, originY);
+            var cachedBricks = _wallAtLocationCache.Get(cacheKey);
+            if (cachedBricks != null)
+                return cachedBricks.Set;
+
             Wall wallRecord = GetWallByKeyOrDefault(wallKey, session);
 
             IList<object[]> bricks = session.QueryOver<Brick>()
@@ -206,6 +229,8 @@ namespace massive_moose.services
                     }
                 }
             }
+
+            _wallAtLocationCache.Set(cacheKey, new BrickWallSet(wall));
 
             return wall;
         }

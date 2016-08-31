@@ -67,7 +67,7 @@ namespace massive_moose.api.Controllers
         {
             using (var session = SessionFactory.Instance.OpenSession())
             {
-                Log.DebugFormat("Receiving data for session {0}", token);
+                Log.DebugFormat("Releasing session {0}", token);
                 var drawingSession = session.CreateCriteria<DrawingSession>()
                     .Add(Restrictions.Eq("SessionToken", token))
                     .UniqueResult<DrawingSession>();
@@ -137,7 +137,7 @@ namespace massive_moose.api.Controllers
             {
                 try
                 {
-                    Log.DebugFormat("Receiving data for session {0}", token);
+                    Log.DebugFormat("Receiving image data for session {0}", token);
                     var drawingSession = session.CreateCriteria<DrawingSession>()
                         .Add(Restrictions.Eq("SessionToken", token))
                         .UniqueResult<DrawingSession>();

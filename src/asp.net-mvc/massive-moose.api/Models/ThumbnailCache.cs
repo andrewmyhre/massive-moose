@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Web;
+using massive_moose.services.caching;
 
 namespace massive_moose.api.Models
 {
-    public class ThumbnailCacheEntry
+    public class ThumbnailCacheEntry : ICacheEntry
     {
         public byte[] Data { get; set; }
         public DateTimeOffset DateTimeOffset { get; set; }

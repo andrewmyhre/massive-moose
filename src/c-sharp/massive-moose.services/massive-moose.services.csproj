@@ -101,6 +101,9 @@
   <ItemGroup>
     <Compile Include="Auth.cs" />
     <Compile Include="BrickRenderer.cs" />
+    <Compile Include="caching\ICacheEntry.cs" />
+    <Compile Include="caching\ObjectCache.cs" />
+    <Compile Include="caching\CacheEntry.cs" />
     <Compile Include="IFileStorage.cs" />
     <Compile Include="LiterallyMapper.cs" />
     <Compile Include="models\ApplicationUser.cs" />
