@@ -49,16 +49,22 @@ namespace massive_moose.api.Controllers
         {
             var result = new HttpResponseMessage();
             try {
+Log.Debug("1");
             using (var session = SessionFactory.Instance.OpenStatelessSession())
             {
                 var wall = _wallOperations.GetBricksForWall(originX, originY, wallKey, session);
+Log.Debug("2");
                 if (wall != null) {
+Log.Debug("3");
                     result.Content = new ByteArrayContent(new byte[0]);
+Log.Debug("4");
                     result.Content.Headers.Add("ETag"ByteArrayContent wall.GetHashCode().ToString());
-                    
+                    Log.Debug("5");
                     return result;
                 }
+Log.Debug("6");
                 result.StatusCode =HttpStatusCode.NotFound;
+Log.Debug("7");
                 return result;
             }
             } catch (Exception ex) {
