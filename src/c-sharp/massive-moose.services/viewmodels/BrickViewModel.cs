@@ -1,10 +1,15 @@
 ﻿using System.Configuration;
+using System.Runtime.Serialization;
 
 namespace massive_moose.services.viewmodels
 {
+    [DataContract(Name ="brickWallSet")]
     public class BrickWallSet
     {
+        [DataMember(Name="set")]
         public BrickViewModel[,] Set { get; private set; }
+        [DataMember(Name = "hello")]
+        public string Hello { get; set; }
 
         public BrickWallSet()
         {

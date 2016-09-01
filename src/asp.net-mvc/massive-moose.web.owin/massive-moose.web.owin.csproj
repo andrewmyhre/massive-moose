@@ -97,6 +97,10 @@
       <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="StackExchange.Redis, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\StackExchange.Redis.1.1.603\lib\net46\StackExchange.Redis.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -203,7 +207,6 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="MassiveMooseNinjectModule.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\ApplicationUserStore.cs" />
     <Compile Include="Models\ChooseBackgroundViewModel.cs" />
@@ -211,6 +214,7 @@
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\MassiveMooseCookie.cs" />
     <Compile Include="Models\WallsViewModel.cs" />
+    <Compile Include="NinjectModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
@@ -422,6 +426,10 @@
     <ProjectReference Include="..\..\c-sharp\massive-moose.storage.azure\massive-moose.storage.azure.csproj">
       <Project>{9d3c3e96-37d2-4e5f-81d1-1e2230e1db51}</Project>
       <Name>massive-moose.storage.azure</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\massive-moose.caching\massive-moose.caching.csproj">
+      <Project>{6de0275a-ca88-43e0-a6e7-123769fbe54f}</Project>
+      <Name>massive-moose.caching</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

@@ -10,34 +10,35 @@ using NHibernate.Criterion;
 using massive_moose.services.models.drawing;
 using massive_moose.services.viewmodels;
 using massive_moose.services.caching;
+using massive_moose.caching;
 
 namespace massive_moose.services
 {
-    public class WallOperations
+    public class WallOperations : IWallOperations
     {
         private readonly IFileStorage _fileStorage;
-        private static ObjectCache<Wall> _wallCache = new ObjectCache<Wall>(10);
-        private static ObjectCache<BrickWallSet> _wallAtLocationCache = new ObjectCache<BrickWallSet>(30);
+        private readonly ISessionFactory _sessionFactory;
+        private readonly IObjectCache<Wall> _wallCache;
+        private readonly IObjectCache<BrickWallSet> _wallAtLocationCache;
 
-        public WallOperations(IFileStorage fileStorage)
+        public WallOperations(IFileStorage fileStorage, 
+            ISessionFactory sessionFactory,
+            IObjectCache<Wall> wallCache,
+            IObjectCache<BrickWallSet> wallAtLocationCache)
         {
             _fileStorage = fileStorage;
+            _sessionFactory = sessionFactory;
+            _wallCache = wallCache;
+            _wallAtLocationCache = wallAtLocationCache;
         }
         public Wall GetWallByKeyOrDefault(string wallKey, IStatelessSession session)
         {
             
             if (!string.IsNullOrWhiteSpace(wallKey))
             {
-                if (_wallCache.Get(wallKey) != null)
-                {
-                    return _wallCache.Get(wallKey);
-                }
-
                 var wall = session.CreateCriteria<Wall>()
                     .Add(Restrictions.Eq("InviteCode", wallKey))
                     .UniqueResult<Wall>();
-
-                _wallCache.Set(wallKey, wall);
 
                 return wall;
             }
@@ -50,11 +51,6 @@ namespace massive_moose.services
         {
             if (!string.IsNullOrWhiteSpace(wallKey))
             {
-                if (_wallCache.Get(wallKey) != null)
-                {
-                    return _wallCache.Get(wallKey);
-                }
-
                 return session.CreateCriteria<Wall>()
                     .Add(Restrictions.Eq("InviteCode", wallKey))
                     .UniqueResult<Wall>();
@@ -68,7 +64,7 @@ namespace massive_moose.services
         public void Contribute(string inputJson, Guid sessionToken,
             byte[] imageData, string snapshotJson, ISessionFactory sessionFactory, string clientIp)
         {
-            using (var session = SessionFactory.Instance.OpenSession())
+            using (var session = _sessionFactory.OpenSession())
             using (var tx = session.BeginTransaction())
             {
                 try
@@ -185,7 +181,7 @@ namespace massive_moose.services
         {
             string cacheKey = string.Format("{0}_{1}_{2}", wallKey, originX, originY);
             var cachedBricks = _wallAtLocationCache.Get(cacheKey);
-            if (cachedBricks != null)
+            if (cachedBricks != null && cachedBricks.Set != null)
                 return cachedBricks.Set;
 
             Wall wallRecord = GetWallByKeyOrDefault(wallKey, session);
@@ -230,7 +226,7 @@ namespace massive_moose.services
                 }
             }
 
-            _wallAtLocationCache.Set(cacheKey, new BrickWallSet(wall));
+            _wallAtLocationCache.Set(cacheKey, new BrickWallSet(wall) {Hello="test"});
 
             return wall;
         }

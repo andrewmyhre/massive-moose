@@ -1,43 +1,37 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using log4net;
 using massive_moose.services.models;
 using massive_moose.services;
-using NHibernate.Criterion;
-using massive_moose.api.Models;
-using massive_moose.storage.azure;
-using System.Configuration;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using massive_moose.services.viewmodels;
-using Newtonsoft.Json;
-using System.Text;
+using NHibernate;
 
 namespace massive_moose.api.Controllers
 {
     [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class V2Controller : ApiController
     {
-        private readonly WallOperations _wallOperations;
+        private readonly IWallOperations _wallOperations;
+        private readonly ILog _log;
+        private readonly ISessionFactory _sessionFactory;
 
-        public V2Controller()
+        public V2Controller(IWallOperations wallOperations, ILog log, ISessionFactory sessionFactory)
         {
-            _wallOperations = new WallOperations(new AzureFileStorage(new AzureFileStorageConfiguration() {ConnectionString = ConfigurationManager.ConnectionStrings["azure-storage"].ConnectionString}));
+            _wallOperations = wallOperations;
+            _log = log;
+            _sessionFactory = sessionFactory;
         }
-        private static ILog Log = LogManager.GetLogger(typeof(V2Controller));
 
         [HttpGet]
         [Route("v2/wall/{wallKey}/{originX}/{originY}")]
         [EnableCors(origins: "*", headers: "*", methods: "*")]
         public BrickViewModel[,] Wall(int originX, int originY, string wallKey = null)
         {
-            using (var session = SessionFactory.Instance.OpenStatelessSession())
+            using (var session = _sessionFactory.OpenStatelessSession())
             {
                 return _wallOperations.GetBricksForWall(originX, originY, wallKey, session);
             }
@@ -50,7 +44,7 @@ namespace massive_moose.api.Controllers
         {
             var result = new HttpResponseMessage();
             try {
-                using (var session = SessionFactory.Instance.OpenStatelessSession())
+                using (var session = _sessionFactory.OpenStatelessSession())
                 {
                     Wall wallRecord = _wallOperations.GetWallByKeyOrDefault(wallKey, session);
                     if (wallRecord == null)
@@ -68,7 +62,7 @@ namespace massive_moose.api.Controllers
                     return result;
                 }
             } catch (Exception ex) {
-                Log.Error("error generating etag", ex);
+                _log.Error("error generating etag", ex);
                 throw;
             }
         }
@@ -76,7 +70,7 @@ namespace massive_moose.api.Controllers
         [Route("v2/wall/history/image/{historyItemId}")]
         public HttpResponseMessage GetHistoricImage(int historyItemId)
         {
-            using (var session = SessionFactory.Instance.OpenSession())
+            using (var session = _sessionFactory.OpenSession())
             {
                 var historyItem = session.Get<WallHistoryItem>(historyItemId);
                 HttpResponseMessage result = new HttpResponseMessage();
@@ -89,7 +83,7 @@ namespace massive_moose.api.Controllers
         [Route("v2/wall/history/image/t/{historyItemId}")]
         public HttpResponseMessage GetHistoricThumbnailImage(int historyItemId)
         {
-            using (var session = SessionFactory.Instance.OpenSession())
+            using (var session = _sessionFactory.OpenSession())
             {
                 var historyItem = session.Get<WallHistoryItem>(historyItemId);
                 HttpResponseMessage result = new HttpResponseMessage();

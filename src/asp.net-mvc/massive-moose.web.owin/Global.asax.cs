@@ -1,4 +1,5 @@
 ﻿using log4net;
+using massive_moose.caching;
 using massive_moose.services;
 using NHibernate;
 using Ninject;
@@ -26,7 +27,9 @@ namespace massive_moose.web.owin
                 _kernel.Bind<Func<IKernel>>().ToMethod(ctx => () => new Bootstrapper().Kernel);
                 _kernel.Bind<IHttpModule>().To<HttpApplicationInitializationHttpModule>();
 
+                _kernel.Load(new NinjectModule());
                 _kernel.Load(new MassiveMooseNinjectModule());
+                _kernel.Load(new CachingNinjectModule());
                 return _kernel;
             }
             catch

@@ -11,12 +11,10 @@ using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Xml;
 using log4net;
-using massive_moose.storage.azure;
 using NHibernate.Criterion;
 using massive_moose.services.models;
 using massive_moose.services;
 using massive_moose.services.models.drawing;
-using NHibernate;
 using massive_moose.api.Models;
 
 namespace massive_moose.api.Controllers
@@ -24,15 +22,16 @@ namespace massive_moose.api.Controllers
     [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class V1Controller : ApiController
     {
-        private readonly WallOperations _wallOperations;
-        private static ILog Log = LogManager.GetLogger(typeof(V1Controller));
+        private readonly IWallOperations _wallOperations;
+        private readonly ILog _log;
         private IFileStorage _fileStorage;
         private static ThumbnailCache ThumbnailCache = new ThumbnailCache();
-        public V1Controller()
+        public V1Controller(IFileStorage fileStorage, IWallOperations wallOperations, ILog log)
         {
 
-            _fileStorage = new AzureFileStorage(new AzureFileStorageConfiguration() { ConnectionString = ConfigurationManager.ConnectionStrings["azure-storage"].ConnectionString });
-            _wallOperations = new WallOperations(_fileStorage);
+            _fileStorage = fileStorage;
+            _wallOperations = wallOperations;
+            _log = log;
         }
         [HttpGet]
         [Route("v1/image/sessions")]
@@ -67,7 +66,7 @@ namespace massive_moose.api.Controllers
         {
             using (var session = SessionFactory.Instance.OpenSession())
             {
-                Log.DebugFormat("Releasing session {0}", token);
+                _log.DebugFormat("Releasing session {0}", token);
                 var drawingSession = session.CreateCriteria<DrawingSession>()
                     .Add(Restrictions.Eq("SessionToken", token))
                     .UniqueResult<DrawingSession>();
@@ -108,7 +107,7 @@ namespace massive_moose.api.Controllers
                 session.Save(drawingSession);
                 session.Flush();
 
-                Log.DebugFormat("Opened session {0}", drawingSession.SessionToken);
+                _log.DebugFormat("Opened session {0}", drawingSession.SessionToken);
                 var brick = session.CreateCriteria<Brick>()
                     .Add(Restrictions.Eq("AddressX", addressX))
                     .Add(Restrictions.Eq("AddressY", addressY))
@@ -137,7 +136,7 @@ namespace massive_moose.api.Controllers
             {
                 try
                 {
-                    Log.DebugFormat("Receiving image data for session {0}", token);
+                    _log.DebugFormat("Receiving image data for session {0}", token);
                     var drawingSession = session.CreateCriteria<DrawingSession>()
                         .Add(Restrictions.Eq("SessionToken", token))
                         .UniqueResult<DrawingSession>();
@@ -161,7 +160,7 @@ namespace massive_moose.api.Controllers
                 catch (Exception ex)
                 {
                     tx.Rollback();
-                    Log.Error("Failed to save image", ex);
+                    _log.Error("Failed to save image", ex);
                     return InternalServerError();
                 }
             }
@@ -175,7 +174,7 @@ namespace massive_moose.api.Controllers
                 using (var tx = session.BeginTransaction())
             {
 
-                Log.DebugFormat("Receiving data for session {0}", token);
+                _log.DebugFormat("Receiving data for session {0}", token);
                 var drawingSession = session.CreateCriteria<DrawingSession>()
                     .Add(Restrictions.Eq("SessionToken", token))
                     .UniqueResult<DrawingSession>();
@@ -203,7 +202,7 @@ namespace massive_moose.api.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Log.Error("Failed to deserialise canvas", ex);
+                    _log.Error("Failed to deserialise canvas", ex);
                     throw;
                 }
 
@@ -213,13 +212,13 @@ namespace massive_moose.api.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Log.Error("Failed to render canvas", ex);
+                    _log.Error("Failed to render canvas", ex);
                     throw;
                 }
 
                 drawingSession.Closed = true;
 
-                Log.DebugFormat("Updated brick ({0},{1}) for session {2}", drawingSession.AddressX,
+                _log.DebugFormat("Updated brick ({0},{1}) for session {2}", drawingSession.AddressX,
                     drawingSession.AddressY, drawingSession.SessionToken);
 
                 var brick = session.CreateCriteria<Brick>()
@@ -369,7 +368,7 @@ namespace massive_moose.api.Controllers
                 result.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("image/jpg");
                 return result;
             }
-            Log.WarnFormat("can't find background image {0}", filePath);
+            _log.WarnFormat("can't find background image {0}", filePath);
             result.StatusCode = HttpStatusCode.NotFound;
             return result;
         }

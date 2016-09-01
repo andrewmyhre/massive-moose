@@ -5,12 +5,38 @@ using System.Text;
 using System.Web.Http;
 using log4net;
 using massive_moose.services;
+using massive_moose.services.models;
+using massive_moose.caching;
 
 namespace massive_moose.api.Controllers
 {
     public class ConfigController : ApiController
     {
-        private static ILog Log = LogManager.GetLogger(typeof(ConfigController));
+        private readonly ILog _log;
+        private readonly RedisCache<Wall> _wallcache;
+
+        public ConfigController(ILog log, RedisCache<Wall> wallcache)
+        {
+            _log = log;
+            _wallcache = wallcache;
+        }
+
+        [HttpGet]
+        [Route("config/redis")]
+        public IHttpActionResult Redis()
+        {
+            try
+            {
+                _wallcache.Get("");
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _log.Error("Error in config/redis", ex);
+                return InternalServerError();
+            }
+        }
+    
         [HttpGet]
         [Route("config/create-database")]
         public IHttpActionResult CreateDatabase()
@@ -22,7 +48,7 @@ namespace massive_moose.api.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error("Failed to create database", ex);
+                _log.Error("Failed to create database", ex);
                 return InternalServerError();
             }
         }
