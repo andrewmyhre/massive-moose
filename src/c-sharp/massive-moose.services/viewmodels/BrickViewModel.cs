@@ -21,12 +21,18 @@ namespace massive_moose.services.viewmodels
             Set = set;
         }
     }
+    [DataContract(Name ="brick")]
     public class BrickViewModel
     {
+        [DataMember(Name ="x")]
         public int X { get; set; }
+        [DataMember(Name = "y")]
         public int Y { get; set; }
+        [DataMember(Name = "c")]
         public int C { get; set; }
+        [DataMember(Name = "u")]
         public int U { get; internal set; }
+        [DataMember(Name = "d")]
         public long D { get; internal set; }
     }
 

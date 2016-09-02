@@ -28,13 +28,14 @@ namespace massive_moose.caching
             }
 
             _log.DebugFormat("Cache returned:{0}", serializedValue.ToString().Length);
-            return JsonConvert.DeserializeObject<T>(serializedValue.ToString());
+            return JsonConvert.DeserializeObject<T>(serializedValue);
         }
 
         public void Set(string key, T item)
         {
+            _db.KeyDelete(key);
             var serializedValue = JsonConvert.SerializeObject(item);
-            _log.DebugFormat("Cache store:{0}", serializedValue.Length);
+            _log.DebugFormat("Cache store:{0}", serializedValue);
             _db.StringSet(key, serializedValue);
         }
     }

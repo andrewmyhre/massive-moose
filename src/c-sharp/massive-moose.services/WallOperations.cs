@@ -64,6 +64,7 @@ namespace massive_moose.services
         public void Contribute(string inputJson, Guid sessionToken,
             byte[] imageData, string snapshotJson, ISessionFactory sessionFactory, string clientIp)
         {
+            string wallInviteCode = null;
             using (var session = _sessionFactory.OpenSession())
             using (var tx = session.BeginTransaction())
             {
@@ -72,6 +73,7 @@ namespace massive_moose.services
                     var drawingSession = session.CreateCriteria<DrawingSession>()
                         .Add(Restrictions.Eq("SessionToken", sessionToken))
                         .UniqueResult<DrawingSession>();
+                    wallInviteCode = drawingSession.Wall.InviteCode;
 
                     string fullSizeImagePath = string.Format("{0}/b_{1}-{2}-{3}.png",
                             ConfigurationManager.AppSettings["storageContainer"],
@@ -136,8 +138,14 @@ namespace massive_moose.services
                     wallHistoryItem.Timestamp = DateTime.Now;
                     wallHistoryItem.ClientIp = clientIp;
                     wallHistoryItem.DrawingSession = drawingSession;
+
+                    string cacheKey = string.Format("{0}_{1}_{2}", drawingSession.Wall.InviteCode, 0, 0);
+                    var bricks = GetBricksForWallFromDatabase(0, 0, drawingSession.Wall.InviteCode, session);
+                    _wallAtLocationCache.Set(cacheKey, new BrickWallSet(bricks) { Hello = "updated" });
+
                     session.Save(wallHistoryItem);
                     tx.Commit();
+
                 }
                 catch (Exception ex)
                 {
@@ -145,6 +153,7 @@ namespace massive_moose.services
                     throw;
                 }
             }
+
         }
 
         public string GetImageUrl(Brick brick)
@@ -184,6 +193,21 @@ namespace massive_moose.services
             if (cachedBricks != null && cachedBricks.Set != null)
                 return cachedBricks.Set;
 
+            return GetBricksForWallFromDatabaseAndSetCache(originX, originY, wallKey, session, cacheKey);
+        }
+
+        private BrickViewModel[,] GetBricksForWallFromDatabaseAndSetCache(int originX, int originY, string wallKey, IStatelessSession session,
+            string cacheKey)
+        {
+            var wall = GetBricksForWallFromDatabase(originX, originY, wallKey, session);
+
+            _wallAtLocationCache.Set(cacheKey, new BrickWallSet(wall) {Hello = "test"});
+
+            return wall;
+        }
+
+        private BrickViewModel[,] GetBricksForWallFromDatabase(int originX, int originY, string wallKey, ISession session)
+        {
             Wall wallRecord = GetWallByKeyOrDefault(wallKey, session);
 
             IList<object[]> bricks = session.QueryOver<Brick>()
@@ -208,8 +232,8 @@ namespace massive_moose.services
                         {
                             X = (int)o[0],
                             Y = (int)o[1],
-                            C=1,
-                            D=((DateTime)o[2]).Ticks,
+                            C = 1,
+                            D = ((DateTime)o[2]).Ticks,
                             U = BrickInUse(session, addressX, addressY, wallRecord.Id) ? 1 : 0
                         };
                     }
@@ -225,12 +249,67 @@ namespace massive_moose.services
                     }
                 }
             }
-
-            _wallAtLocationCache.Set(cacheKey, new BrickWallSet(wall) {Hello="test"});
-
             return wall;
         }
+
+        private BrickViewModel[,] GetBricksForWallFromDatabase(int originX, int originY, string wallKey, IStatelessSession session)
+        {
+            Wall wallRecord = GetWallByKeyOrDefault(wallKey, session);
+
+            IList<object[]> bricks = session.QueryOver<Brick>()
+                .And(b => b.Wall.Id == wallRecord.Id)
+                .Select(
+                    b => b.AddressX,
+                    b => b.AddressY,
+                    b => b.LastUpdated,
+                    b => b.Guid).List<object[]>();
+
+            var wall = new BrickViewModel[12, 12];
+            for (int y = 0; y < 12; y++)
+            {
+                for (int x = 0; x < 12; x++)
+                {
+                    var addressX = originX - 6 + x;
+                    var addressY = originY - 6 + y;
+                    var o = bricks.SingleOrDefault(b => (int) b[0] == addressX && (int) b[1] == addressY);
+                    if (o != null)
+                    {
+                        wall[x, y] = new BrickViewModel()
+                        {
+                            X = (int) o[0],
+                            Y = (int) o[1],
+                            C = 1,
+                            D = 100,
+                            U = BrickInUse(session, addressX, addressY, wallRecord.Id) ? 1 : 0
+                        };
+                    }
+                    else
+                    {
+                        wall[x, y] = new BrickViewModel()
+                        {
+                            X = addressX,
+                            Y = addressY,
+                            C = 0,
+                            U = BrickInUse(session, addressX, addressY, wallRecord.Id) ? 1 : 0
+                        };
+                    }
+                }
+            }
+            return wall;
+        }
+
         private bool BrickInUse(IStatelessSession session, int addressX, int addressY, int wallId)
+        {
+            return session.CreateCriteria<DrawingSession>()
+                .Add(Restrictions.Eq("Closed", false))
+                .Add(Restrictions.Gt("Opened", DateTime.Now.Subtract(TimeSpan.FromMinutes(5))))
+                .Add(Restrictions.Eq("AddressX", addressX))
+                .Add(Restrictions.Eq("AddressY", addressY))
+                .Add(Restrictions.Eq("Wall.Id", wallId))
+                .SetProjection(Projections.Count("Id"))
+                .UniqueResult<int>() > 0;
+        }
+        private bool BrickInUse(ISession session, int addressX, int addressY, int wallId)
         {
             return session.CreateCriteria<DrawingSession>()
                 .Add(Restrictions.Eq("Closed", false))
