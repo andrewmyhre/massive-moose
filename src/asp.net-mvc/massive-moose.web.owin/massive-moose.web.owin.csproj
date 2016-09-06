@@ -201,6 +201,7 @@
     <Compile Include="App_Start\Startup.Assets.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\LegalController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Controllers\ProfileController.cs" />
     <Compile Include="Controllers\WallsController.cs" />
@@ -411,6 +412,8 @@
     <Content Include="Views\Walls\ChooseBackground.cshtml" />
     <Content Include="Views\Home\ColorPicker.cshtml" />
     <Content Include="Views\Home\Help.cshtml" />
+    <Content Include="Views\Legal\PrivacyPolicy.cshtml" />
+    <Content Include="Views\Legal\TermsOfUse.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
