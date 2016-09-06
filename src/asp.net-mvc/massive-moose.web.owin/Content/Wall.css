@@ -133,16 +133,15 @@ body {
     height: 34px;
 }
 #help {
-    font-size: 2em;
+    font-size: 1em;
     display: inline-block;
     position: fixed;
-    width: 60%;
-    height: 60%;
+    width: 90%;
+    min-height: 200px;
+    margin:20px;
+    z-index: 1000;
     top: 0;
     left: 0;
-    margin:auto;
-    z-index: 1000;
-    padding: 0;
 }
 #help .container {width:100%}
 #help-scroller {
@@ -206,6 +205,7 @@ button.tool svg circle {
     /* Small Devices, Tablets */
     @media only screen and (min-width : 768px) {
     #help {
+        font-size: 2em;
         width: 80%;
         height: 50%;
         min-height: 200px;
@@ -217,6 +217,7 @@ button.tool svg circle {
     /* Medium Devices, Desktops */
     @media only screen and (min-width : 992px) {
             #help {
+                font-size: 2em;
         width: 80%;
         height: 50%;
         min-height: 200px;
@@ -228,6 +229,7 @@ button.tool svg circle {
     /* Large Devices, Wide Screens */
     @media only screen and (min-width : 1200px) {
             #help {
+                font-size: 2em;
         width: 80%;
         height: 50%;
         margin: 100px;
