@@ -1,6 +1,6 @@
 ﻿@model massive_moose.services.viewmodels.WallViewModel
 @{
-    ViewBag.Title = "Home Page";
+    ViewBag.Title = System.Configuration.ConfigurationManager.AppSettings["SiteName"];
     Layout = "~/Views/Shared/_Wall.cshtml";
 }
 
