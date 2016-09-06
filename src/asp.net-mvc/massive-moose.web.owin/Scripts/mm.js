@@ -226,23 +226,47 @@
             }
 
             if (document.getElementById('help')) {
-                document.getElementById('moreHelp')
+                document.getElementById('moreHelp1')
                     .onclick = function() {
                         xhr.open('GET', '/Home/Help');
                         xhr.setRequestHeader('Content-Type', 'text/html');
                         xhr.onload = function () {
                             document.getElementById('help-scroller').style.overflowY = 'scroll';
                             document.getElementById('help-full').innerHTML = xhr.responseText;
-                            document.getElementById('help-full').style.display = 'block';
+                            document.getElementById('help-full-container').style.display = 'block';
                             document.getElementById('help-question').style.display = 'none';
                         }
                         xhr.send();
                     };
-                document.getElementById('help-close').onclick = function() {
+                document.getElementById('noHelpThanks1').onclick = function () {
                     SetDontHelpMe();
                     document.getElementById('help').style.display = 'none';
                 };
-                document.getElementById('noHelpThanks').onclick = function() {
+                document.getElementById('help-close').onclick = function () {
+                    SetDontHelpMe();
+                    document.getElementById('help').style.display = 'none';
+                };
+                document.getElementById('moreHelp2')
+                    .onclick = function () {
+                        xhr.open('GET', '/Home/Help');
+                        xhr.setRequestHeader('Content-Type', 'text/html');
+                        xhr.onload = function () {
+                            document.getElementById('help-scroller').style.overflowY = 'scroll';
+                            document.getElementById('help-full').innerHTML = xhr.responseText;
+                            document.getElementById('help-full-container').style.display = 'block';
+                            document.getElementById('help-question').style.display = 'none';
+                        }
+                        xhr.send();
+                    };
+                document.getElementById('noHelpThanks2').onclick = function () {
+                    SetDontHelpMe();
+                    document.getElementById('help').style.display = 'none';
+                };
+                document.getElementById('noHelpThanks3').onclick = function () {
+                    SetDontHelpMe();
+                    document.getElementById('help').style.display = 'none';
+                };
+                document.getElementById('help-close').onclick = function () {
                     SetDontHelpMe();
                     document.getElementById('help').style.display = 'none';
                 };
@@ -532,8 +556,8 @@
                                 }
                             }
                             _wall = data;
-                            document.body.style.minWidth = '1600px';
-                            document.body.style.minHeight = '900px';
+                            //document.body.style.minWidth = '1600px';
+                            //document.body.style.minHeight = '900px';
                             setViewScale();
                             if (updatedBrickElement)
                                 updatedBrickElement.scrollIntoView();

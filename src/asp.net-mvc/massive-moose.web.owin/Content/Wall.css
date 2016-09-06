@@ -6,8 +6,6 @@
 
 html,body{margin:0;padding:0;}
 body {
-    min-width:1600px;
-     min-height: 900px;
      margin:0px !important;
 }
 .literally {
@@ -28,7 +26,7 @@ body {
     height: 100%;
 }
 #tblWall {
-    width: 104%;
+    width: 100%;
     height: 100%;
     background-size: 50% 50%;
     background-repeat: repeat;
@@ -36,11 +34,10 @@ body {
 .row {
 }
 .offset_row {
-    width: 104%;
 }
 .offset_row td {
     position: relative;
-    left: -4%;
+    left: 4%;
 }
 .row td {
     position: relative;
@@ -150,7 +147,7 @@ body {
     border-radius: 10px;
     overflow-x: hidden;
     overflow-y: hidden;
-    max-height: 240px;
+    max-height: 80%;
 }
 #help .row {
     margin-top: 1em;
@@ -185,8 +182,10 @@ button.tool svg circle {
 /* Custom, iPhone Retina */ 
     @media only screen and (min-width : 320px) {
     #help {
-        width: 320px;
-        height: 200px;
+        width: 400px;
+    height: 70%;
+    min-height: 300px;
+    margin: 20px;
     }
         
     }
@@ -194,8 +193,10 @@ button.tool svg circle {
     /* Extra Small Devices, Phones */ 
     @media only screen and (min-width : 480px) {
     #help {
-        width: 480px;
-        height: 300px;
+        width: 80%;
+        height: 50%;
+        min-height: 270px;
+        margin: 50px;
     }
 
     }
@@ -203,8 +204,10 @@ button.tool svg circle {
     /* Small Devices, Tablets */
     @media only screen and (min-width : 768px) {
     #help {
-        width: 760px;
-        height: 400px;
+        width: 80%;
+        height: 50%;
+        min-height: 200px;
+        margin: 50px;
     }
 
     }
@@ -212,8 +215,10 @@ button.tool svg circle {
     /* Medium Devices, Desktops */
     @media only screen and (min-width : 992px) {
             #help {
-        width: 980px;
-        height: 500px;
+        width: 80%;
+        height: 50%;
+        min-height: 200px;
+        margin: 50px;
     }
 
     }
@@ -221,8 +226,9 @@ button.tool svg circle {
     /* Large Devices, Wide Screens */
     @media only screen and (min-width : 1200px) {
             #help {
-        width: 1180px;
-        height: 600px;
+        width: 80%;
+        height: 50%;
+        margin: 100px;
     }
 
     }
