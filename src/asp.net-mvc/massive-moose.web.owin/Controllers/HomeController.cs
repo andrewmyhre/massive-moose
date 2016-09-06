@@ -41,7 +41,7 @@ namespace massive_moose.web.owin.Controllers
                 return View(new WallViewModel
                 {
                     InviteCode = wall.InviteCode,
-                    Bricks = _wallOperations.GetBricksForWall(0,0,inviteCode,session),
+                    Bricks = _wallOperations.GetWallSnapshot(0,0,inviteCode,session),
                     BackgroundImageUrl=string.Format("{0}/v1/background/{1}",
                     ConfigurationManager.AppSettings["MMApi"],
                     string.IsNullOrWhiteSpace(wall.BackgroundImageFilename) ? "white-brick.jpg" : wall.BackgroundImageFilename),

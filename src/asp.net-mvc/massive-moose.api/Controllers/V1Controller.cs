@@ -41,7 +41,7 @@ namespace massive_moose.api.Controllers
             {
                 return session.CreateCriteria<DrawingSession>()
                     .Add(Restrictions.Eq("Closed", false))
-                    .Add(Restrictions.Gt("Opened", DateTime.Now.Subtract(TimeSpan.FromMinutes(5))))
+                    .Add(Restrictions.Gt("Opened", DateTime.Now.ToUniversalTime().Subtract(TimeSpan.FromMinutes(5))))
                     .List<DrawingSession>();
             }
         }
@@ -77,6 +77,8 @@ namespace massive_moose.api.Controllers
                 drawingSession.Closed = true;
                 session.Flush();
 
+                _wallOperations.GetLatestWallSnapshotAndUpdateCache(0,0,drawingSession.Wall.InviteCode, session);
+
                 return Ok();
             }
         }
@@ -95,7 +97,7 @@ namespace massive_moose.api.Controllers
 
                 if (session.CreateCriteria<DrawingSession>()
                     .Add(Restrictions.Eq("Closed", false))
-                    .Add(Restrictions.Gt("Opened", DateTime.Now.Subtract(TimeSpan.FromMinutes(5))))
+                    .Add(Restrictions.Gt("Opened", DateTime.Now.ToUniversalTime().Subtract(TimeSpan.FromMinutes(5))))
                     .Add(Restrictions.Eq("AddressX", addressX))
                     .Add(Restrictions.Eq("AddressY",addressY))
                     .Add(Restrictions.Eq("Wall.Id", wall.Id))
@@ -106,6 +108,8 @@ namespace massive_moose.api.Controllers
                 var drawingSession = new DrawingSession(wall, addressX, addressY);
                 session.Save(drawingSession);
                 session.Flush();
+
+                _wallOperations.GetLatestWallSnapshotAndUpdateCache(0, 0, wallKey, session, true);
 
                 _log.DebugFormat("Opened session {0}", drawingSession.SessionToken);
                 var brick = session.CreateCriteria<Brick>()
@@ -237,10 +241,12 @@ namespace massive_moose.api.Controllers
                     };
                     
                 }
-                brick.LastUpdated = DateTime.Now;
+                brick.LastUpdated = DateTime.Now.ToUniversalTime();
                 session.SaveOrUpdate(brick);
 
                 tx.Commit();
+
+                _wallOperations.GetLatestWallSnapshotAndUpdateCache(0, 0, drawingSession.Wall.InviteCode, session);
 
                 return Ok();
             }

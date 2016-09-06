@@ -14,7 +14,7 @@ namespace massive_moose.services.models
             this.AddressX = addressX;
             this.AddressY = addressY;
             this.SessionToken = Guid.NewGuid();
-            Opened = DateTime.Now;
+            Opened = DateTime.Now.ToUniversalTime();
         }
         public virtual DateTime Opened { get; set; }
         public virtual Guid SessionToken { get; set; }

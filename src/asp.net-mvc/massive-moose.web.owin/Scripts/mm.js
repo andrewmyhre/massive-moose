@@ -480,9 +480,13 @@
             function checkWallStaleness() {
                 if (xhr.readyState == 0 || xhr.readyState == 4) {
                     xhr.open('HEAD', _baseApiUrl + '/v2/wall/' + _inviteCode + '/0/0/' + wallETag);
+                    xhr.setRequestHeader('If-None-Match', wallETag);
                     xhr.onload = function() {
                         if (xhr.status == 200) {
-                            wallETag = xhr.getResponseHeader('ETag').replace("\"", "").replace("\"", "");
+                            wallETag = xhr.getResponseHeader('ETag');
+                            if (wallETag) {
+                                wallETag = wallETag.replace("\"", "").replace("\"", "")
+                            }
                             updateWall();
                         }
                         setTimeout(checkWallStaleness, 10000);
@@ -545,7 +549,7 @@
                                         brickView.className = 'brick free';
                                     } else {
                                         brickView
-                                            .innerHTML = '<span class="bc glyphicon glyphicon-ban-circle"></span>';
+                                            .innerHTML = '<span class="bc iu glyphicon glyphicon-ban-circle"></span>';
                                         brickView.className = 'brick inuse';
                                     }
                                     brickView.setAttribute('data-inuse', brick.u);

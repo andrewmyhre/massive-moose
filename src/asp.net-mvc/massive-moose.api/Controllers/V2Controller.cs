@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
@@ -9,6 +10,7 @@ using massive_moose.services;
 using System.Net.Http.Headers;
 using massive_moose.services.viewmodels;
 using NHibernate;
+using System.Text;
 
 namespace massive_moose.api.Controllers
 {
@@ -33,12 +35,12 @@ namespace massive_moose.api.Controllers
         {
             using (var session = _sessionFactory.OpenStatelessSession())
             {
-                return _wallOperations.GetBricksForWall(originX, originY, wallKey, session);
+                return _wallOperations.GetWallSnapshot(originX, originY, wallKey, session);
             }
         }
 
         [AcceptVerbs("HEAD")]
-        [Route("v2/wall/{wallKey:string}/{originX:int}/{originY:int}/{etag:string?}")]
+        [Route("v2/wall/{wallKey}/{originX:int}/{originY:int}/{etag?}")]
         [EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders:"ETag")]
         public HttpResponseMessage WallETag(int originX, int originY, string etag=null, string wallKey = null)
         {
@@ -57,7 +59,15 @@ namespace massive_moose.api.Controllers
                     }
                     else
                     {
-                        var actualETag = wallRecord.ETag;
+                        var drawingSessions = _wallOperations.GetActiveDrawingSessions(wallRecord.Id, session);
+                        var sb = new StringBuilder();
+                        var bytes = drawingSessions.Select(ds=>ds.Id).ToArray();
+                        foreach (var b in bytes)
+                        {
+                            sb.Append(string.Format("{0:X}", b));
+                        }
+
+                        var actualETag = wallRecord.ETag+ sb.ToString();
                         result.Headers.ETag = new EntityTagHeaderValue("\""+actualETag+"\"");
                         if (etag == actualETag)
                             result.StatusCode = HttpStatusCode.NotModified;

@@ -94,7 +94,7 @@
                             }>
                             @if (brick.U == 1)
                             {
-                                <span class="bc glyphicon glyphicon-ban-circle"></span>
+                                <span class="bc iu glyphicon glyphicon-ban-circle"></span>
                             }
                             else
                             {
@@ -104,7 +104,16 @@
                     }
                     else
                     {
-                        <td class="brick" id="c@(y*12 + x)"><span class=""></span></td>
+                        <td class="brick" id="c@(y*12 + x)">
+                            @if (brick.U == 1)
+                            {
+                                <span class="bc iu glyphicon glyphicon-ban-circle"></span>
+                            }
+                            else
+                            {
+                                <span class=""></span>
+                            }
+                        </td>
                     }
                 }
             </tr>

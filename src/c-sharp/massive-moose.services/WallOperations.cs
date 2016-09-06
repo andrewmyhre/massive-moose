@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FluentNHibernate.Utils;
 using massive_moose.services.models;
 using NHibernate;
 using NHibernate.Criterion;
@@ -117,7 +118,7 @@ namespace massive_moose.services
 
                     var unencodedSnapshotJson = System.Web.HttpUtility.UrlDecode(snapshotJson);
 
-                    brick.LastUpdated = DateTime.Now;
+                    brick.LastUpdated = DateTime.Now.ToUniversalTime();
                     brick.SnapshotJson = unencodedSnapshotJson;
                     var sb = new StringBuilder();
                     var bytes = Guid.NewGuid().ToByteArray();
@@ -135,13 +136,11 @@ namespace massive_moose.services
                     wallHistoryItem.SnapshotImage = imageData;
                     wallHistoryItem.SnapshotImageThumbnail = thumbnailImageData;
                     wallHistoryItem.SnapshotJson = inputJson;
-                    wallHistoryItem.Timestamp = DateTime.Now;
+                    wallHistoryItem.Timestamp = DateTime.Now.ToUniversalTime();
                     wallHistoryItem.ClientIp = clientIp;
                     wallHistoryItem.DrawingSession = drawingSession;
 
-                    string cacheKey = string.Format("{0}_{1}_{2}", drawingSession.Wall.InviteCode, 0, 0);
-                    var bricks = GetBricksForWallFromDatabase(0, 0, drawingSession.Wall.InviteCode, session);
-                    _wallAtLocationCache.Set(cacheKey, new BrickWallSet(bricks) { Hello = "updated" });
+                    GetLatestWallSnapshot(0,0, drawingSession.Wall.InviteCode, session);
 
                     session.Save(wallHistoryItem);
                     tx.Commit();
@@ -154,6 +153,15 @@ namespace massive_moose.services
                 }
             }
 
+        }
+
+        public IList<DrawingSession> GetActiveDrawingSessions(int wallId, IStatelessSession session)
+        {
+            return session.CreateCriteria<DrawingSession>()
+                .Add(Restrictions.Eq("Wall.Id", wallId))
+                .Add(Restrictions.Eq("Closed", false))
+                .Add(Restrictions.Gt("Opened", DateTime.Now.ToUniversalTime().Subtract(TimeSpan.FromMinutes(5))))
+                .List<DrawingSession>();
         }
 
         public string GetImageUrl(Brick brick)
@@ -186,27 +194,47 @@ namespace massive_moose.services
                 addressY);
         }
 
-        public BrickViewModel[,] GetBricksForWall(int originX, int originY, string wallKey, IStatelessSession session)
+        public string GetCacheKey(string wallKey, int originX, int originY)
         {
-            string cacheKey = string.Format("{0}_{1}_{2}", wallKey, originX, originY);
-            var cachedBricks = _wallAtLocationCache.Get(cacheKey);
-            if (cachedBricks != null && cachedBricks.Set != null)
-                return cachedBricks.Set;
-
-            return GetBricksForWallFromDatabaseAndSetCache(originX, originY, wallKey, session, cacheKey);
+            return string.Format("{0}_{1}_{2}", wallKey, originX, originY);
         }
 
-        private BrickViewModel[,] GetBricksForWallFromDatabaseAndSetCache(int originX, int originY, string wallKey, IStatelessSession session,
-            string cacheKey)
+        public BrickViewModel[,] GetWallSnapshot(int originX, int originY, string wallKey, IStatelessSession session,bool mustBeUpToDate=false, bool updateCache=true)
         {
-            var wall = GetBricksForWallFromDatabase(originX, originY, wallKey, session);
+            if (!mustBeUpToDate)
+            {
+                var cachedBricks = _wallAtLocationCache.Get(GetCacheKey(wallKey, originX, originY));
+                if (cachedBricks != null && cachedBricks.Set != null)
+                    return cachedBricks.Set;
+            }
 
-            _wallAtLocationCache.Set(cacheKey, new BrickWallSet(wall) {Hello = "test"});
+            return GetLatestWallSnapshotAndUpdateCache(originX, originY, wallKey, session, updateCache);
+        }
+
+        public BrickViewModel[,] GetLatestWallSnapshotAndUpdateCache(int originX, int originY, string wallKey, IStatelessSession session, bool updateCache= true)
+        {
+            var wall = GetLatestWallSnapshot(originX, originY, wallKey, session);
+
+            if (updateCache)
+            {
+                _wallAtLocationCache.Set(GetCacheKey(wallKey, originX, originY), new BrickWallSet(wall) {Hello = "test"});
+            }
+
+            return wall;
+        }
+        public BrickViewModel[,] GetLatestWallSnapshotAndUpdateCache(int originX, int originY, string wallKey, ISession session, bool updateCache = true)
+        {
+            var wall = GetLatestWallSnapshot(originX, originY, wallKey, session);
+
+            if (updateCache)
+            {
+                _wallAtLocationCache.Set(GetCacheKey(wallKey, originX, originY), new BrickWallSet(wall) {Hello = "test"});
+            }
 
             return wall;
         }
 
-        private BrickViewModel[,] GetBricksForWallFromDatabase(int originX, int originY, string wallKey, ISession session)
+        private BrickViewModel[,] GetLatestWallSnapshot(int originX, int originY, string wallKey, ISession session)
         {
             Wall wallRecord = GetWallByKeyOrDefault(wallKey, session);
 
@@ -217,6 +245,21 @@ namespace massive_moose.services
                     b => b.AddressY,
                     b => b.LastUpdated,
                     b => b.Guid).List<object[]>();
+
+            var openDrawingSessionsForThisWall = session.QueryOver<DrawingSession>()
+                .And(s => !s.Closed)
+                .And(s => s.Wall.Id == wallRecord.Id)
+                .Select(
+                    s => s.AddressX,
+                    s => s.AddressY,
+                    s=>s.Opened)
+                    .List<object[]>();
+
+            openDrawingSessionsForThisWall =
+                openDrawingSessionsForThisWall.Where(
+                    s =>
+                        (DateTime) s[2] >
+                        DateTime.Now.ToUniversalTime().Subtract(TimeSpan.FromMinutes(5))).ToList();
 
             var wall = new BrickViewModel[12, 12];
             for (int y = 0; y < 12; y++)
@@ -230,11 +273,11 @@ namespace massive_moose.services
                     {
                         wall[x, y] = new BrickViewModel()
                         {
-                            X = (int)o[0],
-                            Y = (int)o[1],
+                            X = addressX,
+                            Y = addressY,
                             C = 1,
                             D = ((DateTime)o[2]).Ticks,
-                            U = BrickInUse(session, addressX, addressY, wallRecord.Id) ? 1 : 0
+                            U = openDrawingSessionsForThisWall.Any(s=>(int)s[0]== addressX && (int)s[1]== addressY) ? 1 : 0
                         };
                     }
                     else
@@ -244,7 +287,7 @@ namespace massive_moose.services
                             X = addressX,
                             Y = addressY,
                             C = 0,
-                            U = BrickInUse(session, addressX, addressY, wallRecord.Id) ? 1 : 0
+                            U = openDrawingSessionsForThisWall.Any(s => (int)s[0] == addressX && (int)s[1] == addressY) ? 1 : 0
                         };
                     }
                 }
@@ -252,7 +295,7 @@ namespace massive_moose.services
             return wall;
         }
 
-        private BrickViewModel[,] GetBricksForWallFromDatabase(int originX, int originY, string wallKey, IStatelessSession session)
+        private BrickViewModel[,] GetLatestWallSnapshot(int originX, int originY, string wallKey, IStatelessSession session)
         {
             Wall wallRecord = GetWallByKeyOrDefault(wallKey, session);
 
@@ -263,6 +306,22 @@ namespace massive_moose.services
                     b => b.AddressY,
                     b => b.LastUpdated,
                     b => b.Guid).List<object[]>();
+
+            var openDrawingSessionsForThisWall = session.QueryOver<DrawingSession>()
+                .And(s => !s.Closed)
+                .And(s => s.Wall.Id == wallRecord.Id)
+                .Select(
+                    s=>s.AddressX,
+                    s=>s.AddressY,
+                    s => s.Opened)
+                    .List<object[]>();
+
+            openDrawingSessionsForThisWall =
+                openDrawingSessionsForThisWall.Where(
+                    s =>
+                        (DateTime)s[2] >
+                        DateTime.Now.ToUniversalTime().Subtract(TimeSpan.FromMinutes(5))).ToList();
+
 
             var wall = new BrickViewModel[12, 12];
             for (int y = 0; y < 12; y++)
@@ -276,11 +335,11 @@ namespace massive_moose.services
                     {
                         wall[x, y] = new BrickViewModel()
                         {
-                            X = (int) o[0],
-                            Y = (int) o[1],
+                            X = addressX,
+                            Y = addressY,
                             C = 1,
                             D = 100,
-                            U = BrickInUse(session, addressX, addressY, wallRecord.Id) ? 1 : 0
+                            U = openDrawingSessionsForThisWall.Any(s=>(int)s[0]== addressX && (int)s[1]== addressY) ?1:0
                         };
                     }
                     else
@@ -290,7 +349,7 @@ namespace massive_moose.services
                             X = addressX,
                             Y = addressY,
                             C = 0,
-                            U = BrickInUse(session, addressX, addressY, wallRecord.Id) ? 1 : 0
+                            U = openDrawingSessionsForThisWall.Any(s => (int)s[0] == addressX && (int)s[1] == addressY) ? 1 : 0
                         };
                     }
                 }

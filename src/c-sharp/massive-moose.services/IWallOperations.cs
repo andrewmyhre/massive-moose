@@ -2,6 +2,7 @@
 using massive_moose.services.models;
 using massive_moose.services.viewmodels;
 using NHibernate;
+using System.Collections.Generic;
 
 namespace massive_moose.services
 {
@@ -17,6 +18,11 @@ namespace massive_moose.services
         string GetThumbnailImageUrl(Brick brick);
         string GetImageUrl(string inviteCode, int addressX, int addressY);
         string GetThumbnailImageUrl(string inviteCode, int addressX, int addressY);
-        BrickViewModel[,] GetBricksForWall(int originX, int originY, string wallKey, IStatelessSession session);
+        BrickViewModel[,] GetWallSnapshot(int originX, int originY, string wallKey, IStatelessSession session, bool mustBeUpToDate = false, bool updateCache = true);
+        IList<DrawingSession> GetActiveDrawingSessions(int wallId, IStatelessSession session);
+
+        BrickViewModel[,] GetLatestWallSnapshotAndUpdateCache(int originX, int originY, string wallKey, IStatelessSession session, bool updateCache = true);
+
+        BrickViewModel[,] GetLatestWallSnapshotAndUpdateCache(int originX, int originY, string wallKey, ISession session, bool updateCache = true);
     }
 }
