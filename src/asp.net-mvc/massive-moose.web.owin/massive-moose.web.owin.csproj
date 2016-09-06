@@ -219,6 +219,7 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="animated_favicon1.gif" />
     <Content Include="Colorpicker.html" />
     <Content Include="Content\backgrounds\red-brick.jpg" />
     <Content Include="Content\2858936-red-brick-wall-texture.jpg" />
