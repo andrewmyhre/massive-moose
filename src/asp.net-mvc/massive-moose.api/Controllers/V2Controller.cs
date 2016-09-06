@@ -53,7 +53,7 @@ namespace massive_moose.api.Controllers
                     }
                     else
                     {
-                        var actualETag = string.IsNullOrWhiteSpace(wallRecord.ETag) ? "0" : "");
+                        var actualETag = string.IsNullOrWhiteSpace(wallRecord.ETag) ? "0" : "";
                         result.Headers.ETag = new EntityTagHeaderValue("\""+actualETag+"\"");
                         if (etag == actualETag)
                             result.StatusCode = HttpStatusCode.NotModified;
