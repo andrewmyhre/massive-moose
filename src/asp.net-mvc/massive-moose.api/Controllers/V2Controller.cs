@@ -28,7 +28,7 @@ namespace massive_moose.api.Controllers
             _sessionFactory = sessionFactory;
         }
 
-        [HttpGet]
+        [HttpGet] 
         [Route("v2/wall/{wallKey}/{originX}/{originY}")]
         [EnableCors(origins: "*", headers: "*", methods: "*")]
         public BrickViewModel[,] Wall(int originX, int originY, string wallKey = null)
@@ -40,7 +40,7 @@ namespace massive_moose.api.Controllers
         }
 
         [AcceptVerbs("HEAD")]
-        [Route("v2/wall/{wallKey}/{originX:int}/{originY:int}/{etag?}")]
+        [Route("v2/wall/{wallKey}/{originX}/{originY}/{etag?}")]
         [EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders:"ETag")]
         public HttpResponseMessage WallETag(int originX, int originY, string etag=null, string wallKey = null)
         {
