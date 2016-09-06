@@ -38,12 +38,16 @@ namespace massive_moose.api.Controllers
         }
 
         [AcceptVerbs("HEAD")]
-        [Route("v2/wall/{wallKey}/{originX}/{originY}/{etag}")]
+        [Route("v2/wall/{wallKey:string}/{originX:int}/{originY:int}/{etag:string?}")]
         [EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders:"ETag")]
         public HttpResponseMessage WallETag(int originX, int originY, string etag=null, string wallKey = null)
         {
             var result = new HttpResponseMessage();
-            try {
+            if (string.IsNullOrWhiteSpace(etag))
+                return result; // always return 200 (has content)
+
+            try
+            {
                 using (var session = _sessionFactory.OpenStatelessSession())
                 {
                     Wall wallRecord = _wallOperations.GetWallByKeyOrDefault(wallKey, session);
@@ -53,7 +57,7 @@ namespace massive_moose.api.Controllers
                     }
                     else
                     {
-                        var actualETag = string.IsNullOrWhiteSpace(wallRecord.ETag) ? "0" : "";
+                        var actualETag = wallRecord.ETag;
                         result.Headers.ETag = new EntityTagHeaderValue("\""+actualETag+"\"");
                         if (etag == actualETag)
                             result.StatusCode = HttpStatusCode.NotModified;
