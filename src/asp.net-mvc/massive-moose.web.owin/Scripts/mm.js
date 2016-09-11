@@ -14,6 +14,9 @@
                 viewport = document.querySelector("meta[name=viewport]");
                 document.getElementById('diagnostics').innerHTML = '<div>'+viewport.getAttribute('content')+'</div>';
                 document.getElementById('diagnostics').innerHTML += '<div>inner:'+window.innerWidth+','+window.innerHeight+'</div>';
+                var help = document.getElementById('help');
+                help.style.width=window.innerWidth;
+                help.style.height=window.innerHeight;
             }
             updateHelpDialogDimensions();
 //            xhr.addEventListener("progress", updateProgress);
@@ -282,8 +285,6 @@
                     xhr.open('POST', '/Home/DontHelpMe');
                     xhr.send();
                 }
-                document.getElementById('help').style.width=window.innerWidth+'px';
-                document.getElementById('help').style.height=window.innerHeight+px';
             }
 
             var bricks = document.getElementsByClassName('brick');
