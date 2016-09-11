@@ -114,7 +114,7 @@ namespace massive_moose.web.owin.Controllers
                 using (var file = System.IO.File.Open(logFilePath, System.IO.FileMode.Open, System.IO.FileAccess.Read, FileShare.Read))
                 using (System.IO.StreamReader reader = new StreamReader(file))
                 {
-                    return Content(new StringContent(reader.ReadToEnd(), Encoding.UTF8, "text/plain"));
+                    return Content(reader.ReadToEnd());
                 }
             }
             return HttpNotFound();
