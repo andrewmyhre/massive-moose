@@ -30,7 +30,10 @@
                 //help.style.right=paddingX+'px';
                 //help.style.bottom=paddingY+'px';
                 diag.innerHTML+='<div>padding: '+paddingX+','+paddingY+'</div>';
-                diag.style.display='none';
+                //diag.style.display='none';
+                diag.innerHTML+='<div>offset:'+window.pageXOffset+','+window.pageYOffset+'</div>';
+                diag.innerHTML+='<div>scroll:'+window.scrollX+','+window.scrollY+'</div>';
+                diag.innerHTML+='<div>offset:'+window.screenX+','+window.screenY+'</div>';
                 
                 if (window.innerWidth > 1300)
                 {
