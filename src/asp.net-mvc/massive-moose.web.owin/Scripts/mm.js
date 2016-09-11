@@ -1,6 +1,6 @@
 ﻿var MassiveMoose = (function () {
     return {
-        cfg: { baseApiUrl: '', drawZoom: 0.8 , viewportScale:1.0, viewportScaleWhenDrawing:0.7, inviteCode:''},
+        cfg: { baseApiUrl: '', drawZoom: 0.8 , viewportScale:1.0, viewportScaleWhenDrawing:0.7, inviteCode:'', refreshTime:3000},
         initialize: function(configuration) {
             cfg = configuration;
             wallETag = '0';
@@ -223,6 +223,7 @@
             _drawZoom = cfg.drawZoom;
             _baseApiUrl = cfg.baseApiUrl;
             _inviteCode = cfg.inviteCode;
+            _refreshTime = cfg.refreshTime;
 
             _brickInUse = null;
             _lc = null;
@@ -525,11 +526,11 @@
                             }
                             updateWall();
                         }
-                        setTimeout(checkWallStaleness, 10000);
+                        setTimeout(checkWallStaleness, _refreshTime);
                     }
                     xhr.send();
                 } else {
-                    setTimeout(checkWallStaleness, 10000);
+                    setTimeout(checkWallStaleness, _refreshTime);
                 }
             }
 
@@ -604,7 +605,7 @@
                             updateHelpDialogDimensions();
                             if (updatedBrickElement)
                                 updatedBrickElement.scrollIntoView();
-                            setTimeout(checkWallStaleness, 10000);
+                            setTimeout(checkWallStaleness, _refreshTime);
                         }
                     };
                     xhr.send();
