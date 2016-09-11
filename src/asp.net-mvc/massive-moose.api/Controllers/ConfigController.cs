@@ -49,7 +49,7 @@ namespace massive_moose.api.Controllers
             catch (Exception ex)
             {
                 _log.Error("Failed to create database", ex);
-                return InternalServerError();
+                throw;
             }
         }
 
