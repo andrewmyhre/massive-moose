@@ -149,6 +149,7 @@ body {
     display: inline-block;
     position: fixed;
     z-index: 1000;
+    padding:10px;
 }
 #help .container {width:100%}
 #help-scroller {
@@ -156,6 +157,7 @@ body {
     overflow-x: hidden;
     overflow-y: hidden;
     max-height: 80%;
+    width:100%;
 }
 #help .row {
     margin-top: 1em;
