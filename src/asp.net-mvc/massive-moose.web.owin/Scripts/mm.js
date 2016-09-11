@@ -64,8 +64,6 @@
                 } else {
                     document.getElementById('rotate-alert').style.display='none';
                 }
-                
-                console.log('update help dimensions');
             }
             updateHelpDialogDimensions();
 //            xhr.addEventListener("progress", updateProgress);
@@ -538,7 +536,6 @@
             }
 
             function checkWallStaleness() {
-                console.log('check wall staleness');
                 updateHelpDialogDimensions();
                 
                 if (xhr.readyState == 0 || xhr.readyState == 4) {
