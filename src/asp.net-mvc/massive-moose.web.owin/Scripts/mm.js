@@ -43,8 +43,13 @@
                 else if (window.innerWidth>768)
                 {
                     help.style.fontSize='2em';
-                } else {
+                } else if (window.innerWidth>320) {
                     help.style.fontSize='1em';
+                } else if (window.innerWidth>240)
+                {
+                    help.style.fontSize='0.5em';
+                } else {
+                    help.style.fontSize='0.2em';
                 }
             }
             updateHelpDialogDimensions();
