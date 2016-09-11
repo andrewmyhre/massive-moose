@@ -241,7 +241,7 @@ button.tool svg circle {
     /* Large Devices, Wide Screens */
     @media only screen and (min-width : 1200px) {
             #help {
-                font-size: 2em;
+                font-size: 3em;
         width: 80%;
         height: 50%;
         margin: 100px;
