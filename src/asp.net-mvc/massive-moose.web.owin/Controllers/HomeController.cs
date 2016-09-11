@@ -104,7 +104,7 @@ namespace massive_moose.web.owin.Controllers
         }
         
         [HttpGet]
-        public string Log()
+        public ActionResult Log()
         {
             var logFilePath = System.Web.Hosting.HostingEnvironment.MapPath("~/app_data/log.txt");
             if (System.IO.File.Exists(logFilePath))
@@ -112,10 +112,10 @@ namespace massive_moose.web.owin.Controllers
                 using (var file = System.IO.File.Open(logFilePath, System.IO.FileMode.Open, System.IO.FileAccess.Read, FileShare.Read))
                 using (System.IO.StreamReader reader = new StreamReader(file))
                 {
-                    return new StringContent(reader.ReadToEnd(), Encoding.UTF8, "text/plain");
+                    return Content(new StringContent(reader.ReadToEnd(), Encoding.UTF8, "text/plain"));
                 }
             }
-            return NotFound();
+            return HttpNotFound();
 }
     }
 }
