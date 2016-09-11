@@ -21,7 +21,12 @@
                 help.style.height=Math.round(window.innerHeight*ratio)+'px';
                 help.style.left='20px';
                 help.style.top='20px';
-                if (window.innerWidth>768)
+                
+                if (window.innerWidth > 1300)
+                {
+                    help.style.fontSize='3em';
+                }
+                else if (window.innerWidth>768)
                 {
                     help.style.fontSize='2em';
                 } else {
