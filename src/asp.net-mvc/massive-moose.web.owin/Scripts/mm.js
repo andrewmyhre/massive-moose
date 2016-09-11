@@ -13,7 +13,7 @@
             function updateHelpDialogDimensions() {
                 viewport = document.querySelector("meta[name=viewport]");
                 var diag = document.getElementById('diagnostics');
-                diag.innerHTML +='';
+                diag.innerHTML = '';
                 //diag.innerHTML = '<div>'+viewport.getAttribute('content')+'</div>';
                 //diag.innerHTML += '<div>inner:'+window.innerWidth+','+window.innerHeight+'</div>';
                 //diag.innerHTML += '<div>screen:'+screen.availWidth+','+screen.availHeight+'</div>';
@@ -21,12 +21,14 @@
                 var ratio=0.6;
                 var paddingX=Math.round(window.innerWidth*(1-ratio)/2);
                 var paddingY=Math.round(window.innerHeight*(1-ratio)/2);
-                //help.style.width=Math.round(window.innerWidth*ratio)+'px';
-                //help.style.height=Math.round(window.innerHeight*ratio)+'px';
+                var width=Math.round(window.innerWidth*ratio);
+                var height=Math.round(window.innerHeight*ratio);
+                help.style.width=width+'px';
+                help.style.height=height+'px';
                 help.style.left=paddingX+'px';
                 help.style.top=paddingY+'px';
-                help.style.right=paddingX+'px';
-                help.style.bottom=paddingY+'px';
+                //help.style.right=paddingX+'px';
+                //help.style.bottom=paddingY+'px';
                 diag.innerHTML+='<div>padding: '+paddingX+','+paddingY+'</div>';
                 
                 if (window.innerWidth > 1300)
