@@ -12,9 +12,9 @@
             
             function updateHelpDialogDimensions() {
                 viewport = document.querySelector("meta[name=viewport]");
-                document.getElementById('diagnostics').innerHTML = '<div>'+viewport.getAttribute('content')+'</div>';
-                document.getElementById('diagnostics').innerHTML += '<div>inner:'+window.innerWidth+','+window.innerHeight+'</div>';
-                document.getElementById('diagnostics').innerHTML += '<div>screen:'+screen.availWidth+','+screen.availHeight+'</div>';
+                //document.getElementById('diagnostics').innerHTML = '<div>'+viewport.getAttribute('content')+'</div>';
+                //document.getElementById('diagnostics').innerHTML += '<div>inner:'+window.innerWidth+','+window.innerHeight+'</div>';
+                //document.getElementById('diagnostics').innerHTML += '<div>screen:'+screen.availWidth+','+screen.availHeight+'</div>';
                 var help = document.getElementById('help');
                 var ratio=0.6;
                 help.style.width=Math.round(window.innerWidth*ratio)+'px';
