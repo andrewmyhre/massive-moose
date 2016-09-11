@@ -18,7 +18,7 @@
                 var help = document.getElementById('help');
                 var ratio=0.6;
                 help.style.width=Math.round(window.innerWidth*ratio)+'px';
-                help.style.height=Math.round(window.innerHeight*radio)+'px';
+                help.style.height=Math.round(window.innerHeight*ratio)+'px';
                 help.style.left='20px';
                 help.style.top='20px';
             }
