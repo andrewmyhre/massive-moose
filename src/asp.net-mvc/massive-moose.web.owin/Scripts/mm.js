@@ -14,9 +14,9 @@
                 viewport = document.querySelector("meta[name=viewport]");
                 var diag = document.getElementById('diagnostics');
                 diag.innerHTML = '';
-                //diag.innerHTML = '<div>'+viewport.getAttribute('content')+'</div>';
-                //diag.innerHTML += '<div>inner:'+window.innerWidth+','+window.innerHeight+'</div>';
-                //diag.innerHTML += '<div>screen:'+screen.availWidth+','+screen.availHeight+'</div>';
+                diag.innerHTML = '<div>'+viewport.getAttribute('content')+'</div>';
+                diag.innerHTML += '<div>inner:'+window.innerWidth+','+window.innerHeight+'</div>';
+                diag.innerHTML += '<div>screen:'+screen.availWidth+','+screen.availHeight+'</div>';
                 var help = document.getElementById('help');
                 var ratio=0.6;
                 var paddingX=Math.round(window.innerWidth*(1-ratio)/2);
@@ -30,6 +30,7 @@
                 //help.style.right=paddingX+'px';
                 //help.style.bottom=paddingY+'px';
                 diag.innerHTML+='<div>padding: '+paddingX+','+paddingY+'</div>';
+                diag.style.display='none';
                 
                 if (window.innerWidth > 1300)
                 {
