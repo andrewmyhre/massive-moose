@@ -36,16 +36,20 @@
                 diag.innerHTML+='<div>offset:'+window.screenX+','+window.screenY+'</div>';
                 diag.style.display='none';
                 
-                if (window.innerWidth > 1300)
+                if (window.innerWidth > 1200)
+                {
+                    help.style.fontSize='4em';
+                }
+                else if (window.innerWidth > 760)
                 {
                     help.style.fontSize='3em';
                 }
-                else if (window.innerWidth>768)
+                else if (window.innerWidth>540)
                 {
                     help.style.fontSize='2em';
-                } else if (window.innerWidth>320) {
+                } else if (window.innerWidth>240) {
                     help.style.fontSize='1em';
-                } else if (window.innerWidth>240)
+                } else if (window.innerWidth>120)
                 {
                     help.style.fontSize='0.5em';
                 } else {
