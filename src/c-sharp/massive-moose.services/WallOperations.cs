@@ -140,7 +140,7 @@ namespace massive_moose.services
                     wallHistoryItem.ClientIp = clientIp;
                     wallHistoryItem.DrawingSession = drawingSession;
 
-                    GetLatestWallSnapshot(0,0, drawingSession.Wall.InviteCode, session);
+                    GetLatestWallSnapshotAndUpdateCache(0,0, drawingSession.Wall.InviteCode, session);
 
                     session.Save(wallHistoryItem);
                     tx.Commit();
