@@ -24,6 +24,8 @@
                 if (window.innerWidth>768)
                 {
                     help.style.fontSize='2em';
+                } else {
+                    help.style.fontSize='1em';
                 }
             }
             updateHelpDialogDimensions();
