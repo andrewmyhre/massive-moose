@@ -52,12 +52,18 @@
                 {
                     diag.innerHTML+='<div>2: '+window.innerWidth+'</div>';
                     help.style.fontSize='1.5em';
+                } else if (window.innerWidth>440) {
+                    diag.innerHTML+='<div>1: '+window.innerWidth+'</div>';
+                    help.style.fontSize='1em';
+                } else if (window.innerWidth>360) {
+                    diag.innerHTML+='<div>1: '+window.innerWidth+'</div>';
+                    help.style.fontSize='0.8em';
                 } else if (window.innerWidth>240) {
                     diag.innerHTML+='<div>1: '+window.innerWidth+'</div>';
-                    help.style.fontSize='0.35em';
+                    help.style.fontSize='0.5em';
                 } else if (window.innerWidth>170) {
                     diag.innerHTML+='<div>1: '+window.innerWidth+'</div>';
-                    help.style.fontSize='0.5em';
+                    help.style.fontSize='0.35em';
                 } else {
                     diag.innerHTML+='<div>0: '+window.innerWidth+'</div>';
                     help.style.fontSize='0.2em';
