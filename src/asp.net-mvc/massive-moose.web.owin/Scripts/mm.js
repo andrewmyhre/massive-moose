@@ -14,12 +14,10 @@
             
             function updateHelpDialogDimensions() {
                 viewport = document.querySelector("meta[name=viewport]");
-                var diag = document.getElementById('diagnostics');
-                diag.innerHTML = '';
-                //diag.innerHTML = '<div>'+viewport.getAttribute('content')+'</div>';
-                //diag.innerHTML += '<div>inner:'+window.innerWidth+','+window.innerHeight+'</div>';
-                //diag.innerHTML += '<div>screen:'+screen.availWidth+','+screen.availHeight+'</div>';
                 var help = document.getElementById('help');
+                var diag = document.getElementById('diagnostics');
+                if (!help) return;
+                
                 var ratio=0.8;
                 var paddingX=Math.round(window.innerWidth*(1-ratio)/2);
                 var paddingY=Math.round(window.innerHeight*(1-ratio)/2);
@@ -31,41 +29,48 @@
                 help.style.top=(window.pageYOffset+paddingY)+'px';
                 //help.style.right=paddingX+'px';
                 //help.style.bottom=paddingY+'px';
-                //diag.innerHTML+='<div>padding: '+paddingX+','+paddingY+'</div>';
-                //diag.style.display='none';
-                //diag.innerHTML+='<div>offset:'+window.pageXOffset+','+window.pageYOffset+'</div>';
-                //diag.innerHTML+='<div>scroll:'+window.scrollX+','+window.scrollY+'</div>';
-                //diag.innerHTML+='<div>offset:'+window.screenX+','+window.screenY+'</div>';
-                diag.style.display='none';
+                if (diag)
+                {
+                diag.innerHTML = '';
+                    //diag.innerHTML = '<div>'+viewport.getAttribute('content')+'</div>';
+                    //diag.innerHTML += '<div>inner:'+window.innerWidth+','+window.innerHeight+'</div>';
+                    //diag.innerHTML += '<div>screen:'+screen.availWidth+','+screen.availHeight+'</div>';
+                    //diag.innerHTML+='<div>padding: '+paddingX+','+paddingY+'</div>';
+                    //diag.style.display='none';
+                    //diag.innerHTML+='<div>offset:'+window.pageXOffset+','+window.pageYOffset+'</div>';
+                    //diag.innerHTML+='<div>scroll:'+window.scrollX+','+window.scrollY+'</div>';
+                    //diag.innerHTML+='<div>offset:'+window.screenX+','+window.screenY+'</div>';
+                    diag.style.display='none';
+                }
                 
                 if (window.innerWidth > 1200)
                 {
-                    diag.innerHTML+='<div>4: '+window.innerWidth+'</div>';
+                    if (diag){diag.innerHTML+='<div>4: '+window.innerWidth+'</div>';}
                     help.style.fontSize='3em';
                 }
                 else if (window.innerWidth > 760)
                 {
-                    diag.innerHTML+='<div>3: '+window.innerWidth+'</div>';
+                    if (diag){diag.innerHTML+='<div>3: '+window.innerWidth+'</div>';}
                     help.style.fontSize='2em';
                 }
                 else if (window.innerWidth>540)
                 {
-                    diag.innerHTML+='<div>2: '+window.innerWidth+'</div>';
+                    if (diag){diag.innerHTML+='<div>2: '+window.innerWidth+'</div>';}
                     help.style.fontSize='1.5em';
                 } else if (window.innerWidth>440) {
-                    diag.innerHTML+='<div>1: '+window.innerWidth+'</div>';
+                    if (diag){diag.innerHTML+='<div>1: '+window.innerWidth+'</div>';}
                     help.style.fontSize='1em';
                 } else if (window.innerWidth>360) {
-                    diag.innerHTML+='<div>1: '+window.innerWidth+'</div>';
+                    if (diag){diag.innerHTML+='<div>1: '+window.innerWidth+'</div>';}
                     help.style.fontSize='0.8em';
                 } else if (window.innerWidth>240) {
-                    diag.innerHTML+='<div>1: '+window.innerWidth+'</div>';
+                    if (diag){diag.innerHTML+='<div>1: '+window.innerWidth+'</div>';}
                     help.style.fontSize='0.5em';
                 } else if (window.innerWidth>170) {
-                    diag.innerHTML+='<div>1: '+window.innerWidth+'</div>';
+                    if (diag){diag.innerHTML+='<div>1: '+window.innerWidth+'</div>';}
                     help.style.fontSize='0.35em';
                 } else {
-                    diag.innerHTML+='<div>0: '+window.innerWidth+'</div>';
+                    if (diag){diag.innerHTML+='<div>0: '+window.innerWidth+'</div>';}
                     help.style.fontSize='0.2em';
                 }
                 
