@@ -45,6 +45,18 @@ namespace massive_moose.api.Controllers
                     .List<DrawingSession>();
             }
         }
+        
+        [HttpGet]
+        [Route("v1/walls")]
+        public IEnumerable<Wall> Walls()
+        {
+            using (var session = SessionFactory.Instance.OpenSession())
+            {
+                var walls = session.CreateCriteria<Wall>()
+                .List<Wall>();
+                return walls;
+            }
+        }
 
         [HttpGet]
         [Route("v1/wall")]
