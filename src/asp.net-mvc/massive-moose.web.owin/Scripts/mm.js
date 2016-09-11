@@ -38,15 +38,15 @@
                 
                 if (window.innerWidth > 1200)
                 {
-                    help.style.fontSize='4em';
+                    help.style.fontSize='3em';
                 }
                 else if (window.innerWidth > 760)
                 {
-                    help.style.fontSize='3em';
+                    help.style.fontSize='2em';
                 }
                 else if (window.innerWidth>540)
                 {
-                    help.style.fontSize='2em';
+                    help.style.fontSize='1.5em';
                 } else if (window.innerWidth>240) {
                     help.style.fontSize='1em';
                 } else if (window.innerWidth>120)
