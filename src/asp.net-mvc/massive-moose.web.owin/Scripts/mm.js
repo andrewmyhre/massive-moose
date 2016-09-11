@@ -10,6 +10,8 @@
 
             }
             
+            window.addEventListener("resize", updateHelpDialogDimensions);
+            
             function updateHelpDialogDimensions() {
                 viewport = document.querySelector("meta[name=viewport]");
                 var diag = document.getElementById('diagnostics');
@@ -55,6 +57,15 @@
                 } else {
                     help.style.fontSize='0.2em';
                 }
+                
+                if (width < height) {
+                    // show an alert if the screen is not letterbox format
+                    document.getElementById('rotate-alert').style.display('inline-block');
+                } else {
+                    document.getElementById('rotate-alert').style.display('hidden');
+                }
+                
+                console.log('update help dimensions');
             }
             updateHelpDialogDimensions();
 //            xhr.addEventListener("progress", updateProgress);
@@ -527,7 +538,9 @@
             }
 
             function checkWallStaleness() {
+                console.log('check wall staleness');
                 updateHelpDialogDimensions();
+                
                 if (xhr.readyState == 0 || xhr.readyState == 4) {
                     xhr.open('HEAD', _baseApiUrl + '/v2/wall/' + _inviteCode + '/0/0/' + wallETag);
                     xhr.setRequestHeader('If-None-Match', wallETag);
