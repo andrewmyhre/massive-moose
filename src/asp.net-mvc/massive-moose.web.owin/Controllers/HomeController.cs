@@ -13,6 +13,7 @@ using NHibernate;
 using NHibernate.Criterion;
 using Newtonsoft.Json;
 using System.IO;
+using System.Text;
 
 namespace massive_moose.web.owin.Controllers
 {
