@@ -12,6 +12,7 @@ using massive_moose.services.viewmodels;
 using NHibernate;
 using NHibernate.Criterion;
 using Newtonsoft.Json;
+using System.IO;
 
 namespace massive_moose.web.owin.Controllers
 {
