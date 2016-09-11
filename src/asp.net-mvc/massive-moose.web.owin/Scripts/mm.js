@@ -19,8 +19,8 @@
                 //diag.innerHTML += '<div>screen:'+screen.availWidth+','+screen.availHeight+'</div>';
                 var help = document.getElementById('help');
                 var ratio=0.6;
-                var paddingX=window.innerWidth*(1-ratio);
-                var paddingY=window.innerHeight*(1-ratio);
+                var paddingX=Math.round(window.innerWidth*(1-ratio)/2);
+                var paddingY=Math.round(window.innerHeight*(1-ratio)/2);
                 //help.style.width=Math.round(window.innerWidth*ratio)+'px';
                 //help.style.height=Math.round(window.innerHeight*ratio)+'px';
                 help.style.left=paddingX+'px';
