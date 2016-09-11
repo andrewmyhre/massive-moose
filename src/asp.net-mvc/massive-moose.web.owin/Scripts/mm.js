@@ -62,7 +62,7 @@
                     // show an alert if the screen is not letterbox format
                     document.getElementById('rotate-alert').style.display='inline-block';
                 } else {
-                    document.getElementById('rotate-alert').style.display='hidden';
+                    document.getElementById('rotate-alert').style.display='none';
                 }
                 
                 console.log('update help dimensions');
