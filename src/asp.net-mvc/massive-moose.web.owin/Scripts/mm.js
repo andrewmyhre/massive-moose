@@ -279,6 +279,8 @@
                     xhr.open('POST', '/Home/DontHelpMe');
                     xhr.send();
                 }
+                document.getElementById('help').style.width=window.innerWidth;
+                document.getElementById('help').style.height=window.innerHeight;
             }
 
             var bricks = document.getElementsByClassName('brick');
