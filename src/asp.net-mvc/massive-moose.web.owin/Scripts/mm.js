@@ -21,6 +21,10 @@
                 help.style.height=Math.round(window.innerHeight*ratio)+'px';
                 help.style.left='20px';
                 help.style.top='20px';
+                if (window.innerWidth>768)
+                {
+                    help.style.fontSize='2em';
+                }
             }
             updateHelpDialogDimensions();
 //            xhr.addEventListener("progress", updateProgress);
