@@ -18,7 +18,7 @@
                 diag.innerHTML += '<div>inner:'+window.innerWidth+','+window.innerHeight+'</div>';
                 diag.innerHTML += '<div>screen:'+screen.availWidth+','+screen.availHeight+'</div>';
                 var help = document.getElementById('help');
-                var ratio=0.6;
+                var ratio=0.8;
                 var paddingX=Math.round(window.innerWidth*(1-ratio)/2);
                 var paddingY=Math.round(window.innerHeight*(1-ratio)/2);
                 var width=Math.round(window.innerWidth*ratio);
@@ -513,6 +513,7 @@
             }
 
             function checkWallStaleness() {
+                updateHelpDialogDimensions();
                 if (xhr.readyState == 0 || xhr.readyState == 4) {
                     xhr.open('HEAD', _baseApiUrl + '/v2/wall/' + _inviteCode + '/0/0/' + wallETag);
                     xhr.setRequestHeader('If-None-Match', wallETag);
@@ -534,6 +535,7 @@
 
             function updateWall(updatedBrickElement) {
                 if (!_brickInUse) {
+                    
                     document.getElementById('progress').style.display = 'none';
                     setViewScale();
                     updateHelpDialogDimensions();
