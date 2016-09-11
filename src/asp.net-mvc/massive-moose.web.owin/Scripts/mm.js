@@ -9,6 +9,10 @@
             xhr.onreadystatechange = function(evt) {
 
             }
+            
+            viewport = document.querySelector("meta[name=viewport]");
+            document.getElementById('diagnostics').innerHTML = '<div>'+viewport.getAttribute('content')+'</div>';
+            document.getElementById('diagnostics').innerHTML += '<div>inner:'+window.innerWidth+','+window.innerHeight+'</div>';
 //            xhr.addEventListener("progress", updateProgress);
 //            xhr.addEventListener("load", transferComplete);
 //            xhr.addEventListener("error", transferFailed);
