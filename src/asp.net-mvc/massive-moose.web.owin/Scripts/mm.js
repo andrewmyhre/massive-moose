@@ -25,8 +25,8 @@
                 var height=Math.round(window.innerHeight*ratio);
                 help.style.width=width+'px';
                 help.style.height=height+'px';
-                help.style.left=paddingX+'px';
-                help.style.top=paddingY+'px';
+                help.style.left=(window.pageXOffset+paddingX)+'px';
+                help.style.top=(window.pageYOffset+paddingY)+'px';
                 //help.style.right=paddingX+'px';
                 //help.style.bottom=paddingY+'px';
                 diag.innerHTML+='<div>padding: '+paddingX+','+paddingY+'</div>';
@@ -34,6 +34,7 @@
                 diag.innerHTML+='<div>offset:'+window.pageXOffset+','+window.pageYOffset+'</div>';
                 diag.innerHTML+='<div>scroll:'+window.scrollX+','+window.scrollY+'</div>';
                 diag.innerHTML+='<div>offset:'+window.screenX+','+window.screenY+'</div>';
+                diag.style.display='none';
                 
                 if (window.innerWidth > 1300)
                 {
