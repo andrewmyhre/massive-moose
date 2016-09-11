@@ -27,7 +27,7 @@
                 help.style.top=paddingY+'px';
                 help.style.right=paddingX+'px';
                 help.style.bottom=paddingY+'px';
-                diag.innerHTML+='padding: '+paddingX','+paddingY;
+                diag.innerHTML+='<div>padding: '+paddingX+','+paddingY+'</div>';
                 
                 if (window.innerWidth > 1300)
                 {
