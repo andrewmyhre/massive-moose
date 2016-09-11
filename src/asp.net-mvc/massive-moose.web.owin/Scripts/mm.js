@@ -60,9 +60,9 @@
                 
                 if (width < height) {
                     // show an alert if the screen is not letterbox format
-                    document.getElementById('rotate-alert').style.display('inline-block');
+                    document.getElementById('rotate-alert').style.display='inline-block';
                 } else {
-                    document.getElementById('rotate-alert').style.display('hidden');
+                    document.getElementById('rotate-alert').style.display='hidden';
                 }
                 
                 console.log('update help dimensions');
