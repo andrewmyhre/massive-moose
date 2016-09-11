@@ -162,6 +162,12 @@ body {
 #help .row {
     margin-top: 1em;
 }
+#help .container {
+    width:100%;
+}
+#help-full img {
+	width:70%;
+}
 .cp-app {
     z-index: 1001;
 }
