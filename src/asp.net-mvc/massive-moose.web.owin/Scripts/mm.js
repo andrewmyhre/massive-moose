@@ -16,10 +16,11 @@
                 document.getElementById('diagnostics').innerHTML += '<div>inner:'+window.innerWidth+','+window.innerHeight+'</div>';
                 document.getElementById('diagnostics').innerHTML += '<div>screen:'+screen.availWidth+','+screen.availHeight+'</div>';
                 var help = document.getElementById('help');
-                help.style.width=Math.round(window.innerWidth*0.8)+'px';
-                help.style.height=Math.round(window.innerWidth*0.8)+'px';
-                help.style.left=Math.round(window.innerWidth*0.2)+'px';
-                help.style.top=Math.round(window.innerHeight*0.2)+'px';
+                var ratio=0.6;
+                help.style.width=Math.round(window.innerWidth*ratio)+'px';
+                help.style.height=Math.round(window.innerHeight*radio)+'px';
+                help.style.left='20px';
+                help.style.top='20px';
             }
             updateHelpDialogDimensions();
 //            xhr.addEventListener("progress", updateProgress);
