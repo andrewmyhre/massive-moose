@@ -1,6 +1,6 @@
 ﻿var MassiveMoose = (function () {
     return {
-        cfg: { baseApiUrl: '', drawZoom: 0.8 , viewportScale:1.0, viewportScaleWhenDrawing:0.7, inviteCode:''},
+        cfg: { baseApiUrl: '', drawZoom: 0.8 , viewportScale:1.0, viewportScaleWhenDrawing:0.7, inviteCode:'', refreshTime:3000},
         initialize: function(configuration) {
             cfg = configuration;
             wallETag = '0';
@@ -9,6 +9,79 @@
             xhr.onreadystatechange = function(evt) {
 
             }
+            
+            window.addEventListener("resize", updateHelpDialogDimensions);
+            
+            function updateHelpDialogDimensions() {
+                viewport = document.querySelector("meta[name=viewport]");
+                var help = document.getElementById('help');
+                var diag = document.getElementById('diagnostics');
+                if (!help) return;
+                
+                var ratio=0.8;
+                var paddingX=Math.round(window.innerWidth*(1-ratio)/2);
+                var paddingY=Math.round(window.innerHeight*(1-ratio)/2);
+                var width=Math.round(window.innerWidth*ratio);
+                var height=Math.round(window.innerHeight*ratio);
+                help.style.width=width+'px';
+                help.style.height=height+'px';
+                help.style.left=(window.pageXOffset+paddingX)+'px';
+                help.style.top=(window.pageYOffset+paddingY)+'px';
+                //help.style.right=paddingX+'px';
+                //help.style.bottom=paddingY+'px';
+                if (diag)
+                {
+                diag.innerHTML = '';
+                    //diag.innerHTML = '<div>'+viewport.getAttribute('content')+'</div>';
+                    //diag.innerHTML += '<div>inner:'+window.innerWidth+','+window.innerHeight+'</div>';
+                    //diag.innerHTML += '<div>screen:'+screen.availWidth+','+screen.availHeight+'</div>';
+                    //diag.innerHTML+='<div>padding: '+paddingX+','+paddingY+'</div>';
+                    //diag.style.display='none';
+                    //diag.innerHTML+='<div>offset:'+window.pageXOffset+','+window.pageYOffset+'</div>';
+                    //diag.innerHTML+='<div>scroll:'+window.scrollX+','+window.scrollY+'</div>';
+                    //diag.innerHTML+='<div>offset:'+window.screenX+','+window.screenY+'</div>';
+                    diag.style.display='none';
+                }
+                
+                if (window.innerWidth > 1200)
+                {
+                    if (diag){diag.innerHTML+='<div>4: '+window.innerWidth+'</div>';}
+                    help.style.fontSize='3em';
+                }
+                else if (window.innerWidth > 760)
+                {
+                    if (diag){diag.innerHTML+='<div>3: '+window.innerWidth+'</div>';}
+                    help.style.fontSize='2em';
+                }
+                else if (window.innerWidth>540)
+                {
+                    if (diag){diag.innerHTML+='<div>2: '+window.innerWidth+'</div>';}
+                    help.style.fontSize='1.5em';
+                } else if (window.innerWidth>440) {
+                    if (diag){diag.innerHTML+='<div>1: '+window.innerWidth+'</div>';}
+                    help.style.fontSize='1em';
+                } else if (window.innerWidth>360) {
+                    if (diag){diag.innerHTML+='<div>1: '+window.innerWidth+'</div>';}
+                    help.style.fontSize='0.8em';
+                } else if (window.innerWidth>240) {
+                    if (diag){diag.innerHTML+='<div>1: '+window.innerWidth+'</div>';}
+                    help.style.fontSize='0.5em';
+                } else if (window.innerWidth>170) {
+                    if (diag){diag.innerHTML+='<div>1: '+window.innerWidth+'</div>';}
+                    help.style.fontSize='0.35em';
+                } else {
+                    if (diag){diag.innerHTML+='<div>0: '+window.innerWidth+'</div>';}
+                    help.style.fontSize='0.2em';
+                }
+                
+                if (width < height) {
+                    // show an alert if the screen is not letterbox format
+                    document.getElementById('rotate-alert').style.display='inline-block';
+                } else {
+                    document.getElementById('rotate-alert').style.display='none';
+                }
+            }
+            updateHelpDialogDimensions();
 //            xhr.addEventListener("progress", updateProgress);
 //            xhr.addEventListener("load", transferComplete);
 //            xhr.addEventListener("error", transferFailed);
@@ -188,6 +261,7 @@
             _drawZoom = cfg.drawZoom;
             _baseApiUrl = cfg.baseApiUrl;
             _inviteCode = cfg.inviteCode;
+            _refreshTime = cfg.refreshTime;
 
             _brickInUse = null;
             _lc = null;
@@ -478,6 +552,8 @@
             }
 
             function checkWallStaleness() {
+                updateHelpDialogDimensions();
+                
                 if (xhr.readyState == 0 || xhr.readyState == 4) {
                     xhr.open('HEAD', _baseApiUrl + '/v2/wall/' + _inviteCode + '/0/0/' + wallETag);
                     xhr.setRequestHeader('If-None-Match', wallETag);
@@ -489,18 +565,20 @@
                             }
                             updateWall();
                         }
-                        setTimeout(checkWallStaleness, 10000);
+                        setTimeout(checkWallStaleness, _refreshTime);
                     }
                     xhr.send();
                 } else {
-                    setTimeout(checkWallStaleness, 10000);
+                    setTimeout(checkWallStaleness, _refreshTime);
                 }
             }
 
             function updateWall(updatedBrickElement) {
                 if (!_brickInUse) {
+                    
                     document.getElementById('progress').style.display = 'none';
                     setViewScale();
+                    updateHelpDialogDimensions();
                     xhr.open('GET',_baseApiUrl + '/v2/wall/' + _inviteCode + '/0/0');
                     xhr.setRequestHeader('Content-Type', 'application/json');
                     xhr.onload = function() {
@@ -563,9 +641,10 @@
                             //document.body.style.minWidth = '1600px';
                             //document.body.style.minHeight = '900px';
                             setViewScale();
+                            updateHelpDialogDimensions();
                             if (updatedBrickElement)
                                 updatedBrickElement.scrollIntoView();
-                            setTimeout(checkWallStaleness, 10000);
+                            setTimeout(checkWallStaleness, _refreshTime);
                         }
                     };
                     xhr.send();

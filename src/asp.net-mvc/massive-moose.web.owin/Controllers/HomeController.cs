@@ -12,6 +12,8 @@ using massive_moose.services.viewmodels;
 using NHibernate;
 using NHibernate.Criterion;
 using Newtonsoft.Json;
+using System.IO;
+using System.Text;
 
 namespace massive_moose.web.owin.Controllers
 {
@@ -102,5 +104,20 @@ namespace massive_moose.web.owin.Controllers
             Response.Cookies.Set(new HttpCookie("massivemoose", JsonConvert.SerializeObject(cookie)));
             return new EmptyResult();
         }
+        
+        [HttpGet]
+        public ActionResult Log()
+        {
+            var logFilePath = System.Web.Hosting.HostingEnvironment.MapPath("~/app_data/log.txt");
+            if (System.IO.File.Exists(logFilePath))
+            {
+                using (var file = System.IO.File.Open(logFilePath, System.IO.FileMode.Open, System.IO.FileAccess.Read, FileShare.Read))
+                using (System.IO.StreamReader reader = new StreamReader(file))
+                {
+                    return Content(reader.ReadToEnd());
+                }
+            }
+            return HttpNotFound();
+}
     }
 }
