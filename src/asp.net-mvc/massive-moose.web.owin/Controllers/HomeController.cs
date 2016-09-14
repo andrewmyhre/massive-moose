@@ -118,6 +118,12 @@ namespace massive_moose.web.owin.Controllers
                 }
             }
             return HttpNotFound();
-}
+        }
+
+        [HttpGet]
+        public ActionResult Draw()
+        {
+            return View();
+        }
     }
 }

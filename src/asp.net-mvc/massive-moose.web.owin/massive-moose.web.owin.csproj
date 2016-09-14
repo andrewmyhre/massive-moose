@@ -291,6 +291,7 @@
     <Content Include="Scripts\colorPicker.data.js" />
     <Content Include="Scripts\colorPicker.js" />
     <Content Include="Scripts\colors.js" />
+    <Content Include="Scripts\draw.js" />
     <Content Include="Scripts\html.js" />
     <Content Include="Scripts\jquery-3.1.0.js" />
     <Content Include="Scripts\jquery-3.1.0.min.js" />
@@ -414,6 +415,7 @@
     <Content Include="Views\Home\Help.cshtml" />
     <Content Include="Views\Legal\PrivacyPolicy.cshtml" />
     <Content Include="Views\Legal\TermsOfUse.cshtml" />
+    <Content Include="Views\Home\Draw.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

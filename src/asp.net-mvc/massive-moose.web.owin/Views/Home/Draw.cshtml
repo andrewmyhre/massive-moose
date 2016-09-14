@@ -1,0 +1,17 @@
+﻿@{
+    Layout = "~/Views/Shared/_Wall.cshtml";
+}
+
+
+<div id="drawSpace"></div>
+
+@section scripts {
+    <script type="text/javascript" src="/Scripts/draw.js"></script>
+    <script type="text/javascript">
+        MassiveMoose().initialize(document.getElementById('drawSpace'),
+        {
+            width: 1600,
+            height:900
+        });
+    </script>
+}
