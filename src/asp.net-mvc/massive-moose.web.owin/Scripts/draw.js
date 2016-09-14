@@ -61,8 +61,8 @@ var MassiveMoose = (function () {
 
             this.debugElement = document.createElement('div');
 
-            this.canvas.width = this.width = 300;
-            this.canvas.height = this.height = 160;
+            this.canvas.width = this.width = opts.width;
+            this.canvas.height = this.height = opts.height;
 
             this.lineWidth = 10;
             this.foreColor = { r: 0, g: 0, b: 180 };
