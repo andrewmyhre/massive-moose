@@ -61,7 +61,7 @@ var MassiveMoose = (function () {
             this.canvas.height = this.height = opts.height;
 
             this.lineWidth = 10;
-            this.lineColor = { r: 0, g: 0, b: 180 };
+            this.foreColor = { r: 0, g: 0, b: 180 };
 
             if (containerEl) {
                 this.bindToElement(containerEl);
