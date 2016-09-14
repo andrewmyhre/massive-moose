@@ -92,6 +92,34 @@ var MassiveMoose = (function () {
                 var moose = this.moose;
                 moose.mouseOut = true;
             };
+            this.canvas.addEventListener('touchmove', function (e) {
+                e.preventDefault();
+                var moose = this.moose;
+                var touches = e.changedTouches;
+                if (touches.length === 1) {
+                    var currentPoint = { x: touches[0].pageX, y: touches[0].pageX };
+                    moose.tools[0].onPointerDrag(moose, currentPoint);
+                }
+            });
+            this.canvas.addEventListener('touchend', function (e) {
+                e.preventDefault();
+                var moose = this.moose;
+                moose.isDrawing = false;
+            });
+            this.canvas.addEventListener('touchstart', function (e) {
+                if (e.target.tagName.toLowerCase() !== 'canvas') {
+                    return;
+                }
+                var moose = this.moose;
+                e.preventDefault();
+                var touches = e.changedTouches;
+                if (e.touches.length === 1) {
+                    moose.isDrawing = true;
+                    document.addEventListener('touchmove', touchMoveListener);
+                    document.addEventListener('touchend', touchEndListener);
+                    return document.addEventListener('touchcancel', touchEndListener);
+                }
+            });
         },
 
         bindToElement: function(containerEl) {
