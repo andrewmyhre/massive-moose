@@ -104,19 +104,19 @@ var MassiveMoose = (function () {
             });
             this.hammertime.get('pinch').set({ enable: true, direction: Hammer.DIRECTION_ALL });
             this.hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL });
-            hammertime.on('pinchstart', function (ev) {
-                debug('pinchstart:'+ev);
+            this.hammertime.on('pinchstart', function (ev) {
+                debug('pinchstart:' + ev);
             });
-            hammertime.on('pinchmove', function (ev) {
+            this.hammertime.on('pinchmove', function (ev) {
                 debug('pinchmove:' + ev);
             });
-            hammertime.on('pinchin', function (ev) {
+            this.hammertime.on('pinchin', function (ev) {
                 debug('pinchin:' + ev);
             });
-            hammertime.on('pinchout', function (ev) {
+            this.hammertime.on('pinchout', function (ev) {
                 debug('pinchout:' + ev);
             });
-            hammertime.on('pinchend', function (ev) {
+            this.hammertime.on('pinchend', function (ev) {
                 debug('pinchend:' + ev);
             });
         },
