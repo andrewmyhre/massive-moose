@@ -73,6 +73,8 @@ var MassiveMoose = (function () {
             this.mouseOut = true;
             this.scale = 1;
 
+            this.isPinching = false;
+
             this.canvas = document.createElement('canvas');
             this.canvas.style['background-color'] = 'white';
             this.canvas.moose = this;
@@ -95,6 +97,28 @@ var MassiveMoose = (function () {
             }
 
             this.bindEvents();
+
+            this.hammertime = new Hammer(this.canvas);
+            this.hammertime.on('pan', function (ev) {
+                debug(ev);
+            });
+            this.hammertime.get('pinch').set({ enable: true, direction: Hammer.DIRECTION_ALL });
+            this.hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL });
+            hammertime.on('pinchstart', function (ev) {
+                debug('pinchstart:'+ev);
+            });
+            hammertime.on('pinchmove', function (ev) {
+                debug('pinchmove:' + ev);
+            });
+            hammertime.on('pinchin', function (ev) {
+                debug('pinchin:' + ev);
+            });
+            hammertime.on('pinchout', function (ev) {
+                debug('pinchout:' + ev);
+            });
+            hammertime.on('pinchend', function (ev) {
+                debug('pinchend:' + ev);
+            });
         },
         tools: [
             {
@@ -552,7 +576,7 @@ var MassiveMoose = (function () {
                         //moose.debug('touch move');
                         //alert('touch move at ' + touches[0].pageX + ',' + touches[0].pageY);
                         moose.tools[0].onPointerDrag(moose, currentPoint);
-                    } else if (touches.length > 1) {
+                    } /*else if (touches.length > 1) {
                         var p1 = touches[0];
                         var p2 = touches[1];
                         var zoomScale = Math.sqrt(Math.pow(p2
@@ -563,7 +587,7 @@ var MassiveMoose = (function () {
                         
                         newScale = moose.scale * (zoomScale / 100);
                         moose.zoom(newScale, moose.scale);
-                    }
+                    }*/
                 });
             this.canvas.addEventListener('touchend',
                 function(e) {

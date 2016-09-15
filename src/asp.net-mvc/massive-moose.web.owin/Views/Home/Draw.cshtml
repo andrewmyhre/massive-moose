@@ -3,12 +3,14 @@
 }
 
 @section stylesheets{
-<link href="~/Content/draw.css" rel="stylesheet" />
+    <link href="~/Content/draw.css" rel="stylesheet" />
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
 }
 
 <div id="drawSpace"></div>
 
 @section scripts {
+    <script type="text/javascript" src="/Scripts/hammer.min.js"></script>
     <script type="text/javascript" src="/Scripts/draw.js"></script>
     <script type="text/javascript">
         MassiveMoose().initialize(document.getElementById('drawSpace'),
