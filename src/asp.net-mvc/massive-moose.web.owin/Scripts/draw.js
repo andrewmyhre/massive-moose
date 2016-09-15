@@ -363,6 +363,7 @@ var MassiveMoose = (function () {
         zoom: function(newScale, oldScale) {
             this.ctx.clearRect(0, 0, this.width / this.scale, this.height/this.scale);
             this.ctx.scale(newScale / oldScale, newScale / oldScale);
+            debug(newScale);
             this.redraw();
         },
         redraw: function () {
