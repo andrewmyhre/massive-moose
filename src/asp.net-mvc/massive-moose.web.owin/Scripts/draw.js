@@ -56,235 +56,8 @@ function rgbToHsl(r, g, b) {
 }
 
 var MassiveMoose = (function () {
-        return {
-            tools: [
-                {
-                    name: 'sprayPaint1',
-                    onPointerDrag: function(moose, pt) {
-                        var dist = distanceBetween(moose.lastPoint, pt);
-                        var angle = angleBetween(moose.lastPoint, pt);
-
-                        var fc = moose.foreColor;
-
-                        for (var i = 0; i < dist; i += moose.toolSize / 4) {
-
-                            x = moose.lastPoint.x + (Math.sin(angle) * i);
-                            y = moose.lastPoint.y + (Math.cos(angle) * i);
-
-                            var radgrad = moose.ctx
-                                .createRadialGradient(x, y, moose.toolSize / 2, x, y, moose.toolSize);
-
-                            var centerColor ={h:fc.h,s:fc.s,l:fc.l,a:fc.a};
-                            var midColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
-                            var edgeColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
-                            centerColor.a = 1;
-                            midColor.a = 0.5;
-                            edgeColor.a=0;
-
-                            radgrad.addColorStop(0, toHslaString(centerColor));
-                            radgrad.addColorStop(0.5, toHslaString(midColor));
-                            radgrad.addColorStop(1, toHslaString(edgeColor));
-
-                            moose.ctx.fillStyle = radgrad;
-                            moose.ctx.fillRect(x - moose.toolSize,
-                                y - moose.toolSize,
-                                moose.toolSize * 2,
-                                moose.toolSize * 2);
-                        }
-                        moose.lastPoint = pt;
-                    }
-                }
-            ],
-            toolbarItems: [
-                {
-                    name: 'moveToolbar',
-                    showWhenCollapsed: true,
-                    position: 'top',
-                    initialize: function(moose) {
-                        var $this = this;
-                        var el = document.createElement('button');
-                        el.innerHTML = 'move';
-                        el.onclick = function(e) {
-                            if ($this.position == 'top') {
-                                moose.toolbar.style.setProperty('top', '');
-                                moose.toolbar.style.setProperty('bottom', '0px')
-                                $this.position = 'bottom';
-                            } else if ($this.position = 'bottom') {
-                                moose.toolbar.style.setProperty('top', '0px');
-                                moose.toolbar.style.setProperty('bottom', '')
-                                $this.position = 'top';
-
-                            }
-                        }
-                        this.el = el;
-                        return el;
-                    }
-                },
-                {
-                    name: 'toggleToolbarSize',
-                    showWhenCollapsed: true,
-                    collapsed: false,
-                    initialize: function(moose) {
-                        var $this = this;
-                        var el = document.createElement('button');
-                        el.innerHTML = 'collapse';
-                        el.onclick = function(e) {
-
-                            for (var i = 0; i < moose.toolbarItems.length; i++) {
-                                var ti = moose.toolbarItems[i];
-                                if ($this.collapsed) {
-                                    ti.el.style.setProperty("display", "inline-block", "important");
-                                } else if (!ti.showWhenCollapsed) {
-                                    ti.el.style.display = 'none';
-                                }
-                            }
-                            $this.collapsed = !$this.collapsed;
-                        }
-
-                        this.el = el;
-                        return el;
-                    }
-                },
-                {
-                    name: 'pickColor',
-                    showWhenCollapsed: false,
-                    opened: false,
-                    initialize: function(moose) {
-                        var $this = this;
-                        var el = document.createElement('button');
-                        var fc = moose.foreColor;
-                        el.style.backgroundColor = toHslaString(fc);
-                        el.onclick = function(e) {
-                            if (!$this.opened) {
-                                $this.picker.style.display = 'block';
-                                $this.picker.style.position = 'absolute';
-                                $this.picker.style.top = '50px';
-                                $this.picker.style.left = '0px';
-                                $this.opened = true;
-                            } else {
-                                $this.picker.style.display = 'none';
-                                $this.opened = false;
-                            }
-                        }
-                        el.innerHTML = '&nbsp';
-                        this.el = el;
-
-                        var colorPicker = document.createElement('div');
-                        colorPicker.style.display = 'none';
-                        colorPicker.style.width = '100%';
-                        colorPicker.style.height = '100%';
-                        colorPicker.style.position = 'absolute';
-                        colorPicker.style.top = '0';
-                        colorPicker.style.left = '1';
-                        colorPicker.style['z-index'] = 1;
-                        var step = 50;
-                        for (var py = 0; py < 10; py++) {
-                            var row = document.createElement('div');
-                            row.style.width = '100%';
-                            row.style.height = '10%';
-                            for (var px = 0; px < 10; px++) {
-                                var cel = document.createElement('button');
-                                cel.style.width = '10%';
-                                cel.style.height = '100%';
-                                cel.style.margin = 'auto auto auto auto';
-                                var col = null;
-                                if (moose.pallette[px] && moose.pallette[px][py])
-                                    col = moose.pallette[px][py];
-                                else
-                                    col = { h: 200, s: 1, l: 1, a: 1 };
-                                cel.style.backgroundColor = toHslaString(col);
-                                cel.style.display = 'inline-block';
-                                row.appendChild(cel);
-                                cel.onclick = function(e) {
-                                    moose.setForeColor(fromRgbString(this.style.backgroundColor));
-                                    $this.el.style.backgroundColor = this.style.backgroundColor;
-                                    $this.picker.style.display = 'none';
-                                    $this.opened = false;
-                                };
-                            }
-                            colorPicker.appendChild(row);
-                        }
-
-                        $this.picker = colorPicker;
-                        moose.containerEl.appendChild($this.picker);
-
-                        return el;
-                    }
-                },
-                {
-                    name: 'toolSize',
-                    showWhenCollapsed: false,
-                    initialize: function(moose) {
-                        var container = document.createElement('span');
-                        var lbl = document.createElement('label');
-                        lbl.attributes['for'] = 'toolSize';
-                        lbl.innerHTML = 'Size:' + moose.toolSize;
-                        lbl.style['margin-right'] = '1em';
-
-                        var el = document.createElement('input');
-                        el.type = 'range';
-                        el.name = 'toolSize';
-                        el.value = moose.toolSize;
-                        el.attributes['min'] = '0';
-                        el.attributes['max'] = '200';
-                        el.attributes['step'] = '1';
-                        el.defaultValue = moose.toolSize;
-                        el.oninput = el.onchange = function(e) {
-                            moose.toolSize = el.value;
-                            lbl.innerHTML = 'Size:' + moose.toolSize;
-                        };
-                        el.style.width = '100px';
-                        el.style.setProperty("display", "inline-block", "important");
-                        el.style['position'] = 'relative';
-                        el.style['top'] = '5px';
-
-                        container.appendChild(lbl);
-                        container.appendChild(el);
-                        this.el = container;
-
-                        return container;
-                    }
-                },
-                {
-                    name: 'cancel',
-                    initialize: function(moose) {
-                        var el = document.createElement('button');
-                        el.innerHTML = 'cancel';
-                        this.el = el;
-                        return el;
-                    }
-                },
-                {
-                    name: 'save',
-                    initialize: function(moose) {
-                        var el = document.createElement('button');
-                        el.innerHTML = 'save';
-                        el.onclick = function(e) {
-                            var imageData = moose.canvas.toDataURL('image/png');
-                            console.log(imageData);
-                        };
-                        this.el = el;
-                        return el;
-                    }
-                }
-            ],
-            pallette: [
-                [{ h: 0, s: 1, l: 0, a: 1 }, { h: 0, s: 1, l: 0.1, a: 1 }, { h: 0, s: 1, l: 0.2, a: 1 }, { h: 0, s: 1, l: 0.3, a: 1 }, { h: 0, s: 1, l: 0.4, a: 1 }, { h: 0, s: 1, l: 0.5, a: 1 }, { h: 0, s: 1, l: 0.6, a: 1 }, { h: 0, s: 1, l: 0.7, a: 1 }, { h: 0, s: 1, l: 0.8, a: 1 }, { h: 0, s: 1, l: 0.9, a: 1 }, ],
-                [{ h: 36, s: 1, l: 0, a: 1 }, { h: 36, s: 1, l: 0.1, a: 1 }, { h: 36, s: 1, l: 0.2, a: 1 }, { h: 36, s: 1, l: 0.3, a: 1 }, { h: 36, s: 1, l: 0.4, a: 1 }, { h: 36, s: 1, l: 0.5, a: 1 }, { h: 36, s: 1, l: 0.6, a: 1 }, { h: 36, s: 1, l: 0.7, a: 1 }, { h: 36, s: 1, l: 0.8, a: 1 }, { h: 36, s: 1, l: 0.9, a: 1 }, ],
-                [{ h: 72, s: 1, l: 0, a: 1 }, { h: 72, s: 1, l: 0.1, a: 1 }, { h: 72, s: 1, l: 0.2, a: 1 }, { h: 72, s: 1, l: 0.3, a: 1 }, { h: 72, s: 1, l: 0.4, a: 1 }, { h: 72, s: 1, l: 0.5, a: 1 }, { h: 72, s: 1, l: 0.6, a: 1 }, { h: 72, s: 1, l: 0.7, a: 1 }, { h: 72, s: 1, l: 0.8, a: 1 }, { h: 72, s: 1, l: 0.9, a: 1 }, ],
-                [{ h: 108, s: 1, l: 0, a: 1 }, { h: 108, s: 1, l: 0.1, a: 1 }, { h: 108, s: 1, l: 0.2, a: 1 }, { h: 108, s: 1, l: 0.3, a: 1 }, { h: 108, s: 1, l: 0.4, a: 1 }, { h: 108, s: 1, l: 0.5, a: 1 }, { h: 108, s: 1, l: 0.6, a: 1 }, { h: 108, s: 1, l: 0.7, a: 1 }, { h: 108, s: 1, l: 0.8, a: 1 }, { h: 108, s: 1, l: 0.9, a: 1 }, ],
-                [{ h: 144, s: 1, l: 0, a: 1 }, { h: 144, s: 1, l: 0.1, a: 1 }, { h: 144, s: 1, l: 0.2, a: 1 }, { h: 144, s: 1, l: 0.3, a: 1 }, { h: 144, s: 1, l: 0.4, a: 1 }, { h: 144, s: 1, l: 0.5, a: 1 }, { h: 144, s: 1, l: 0.6, a: 1 }, { h: 144, s: 1, l: 0.7, a: 1 }, { h: 144, s: 1, l: 0.8, a: 1 }, { h: 144, s: 1, l: 0.9, a: 1 }, ],
-                [{ h: 180, s: 1, l: 0, a: 1 }, { h: 180, s: 1, l: 0.1, a: 1 }, { h: 180, s: 1, l: 0.2, a: 1 }, { h: 180, s: 1, l: 0.3, a: 1 }, { h: 180, s: 1, l: 0.4, a: 1 }, { h: 180, s: 1, l: 0.5, a: 1 }, { h: 180, s: 1, l: 0.6, a: 1 }, { h: 180, s: 1, l: 0.7, a: 1 }, { h: 180, s: 1, l: 0.8, a: 1 }, { h: 180, s: 1, l: 0.9, a: 1 }, ],
-                [{ h: 216, s: 1, l: 0, a: 1 }, { h: 216, s: 1, l: 0.1, a: 1 }, { h: 216, s: 1, l: 0.2, a: 1 }, { h: 216, s: 1, l: 0.3, a: 1 }, { h: 216, s: 1, l: 0.4, a: 1 }, { h: 216, s: 1, l: 0.5, a: 1 }, { h: 216, s: 1, l: 0.6, a: 1 }, { h: 216, s: 1, l: 0.7, a: 1 }, { h: 216, s: 1, l: 0.8, a: 1 }, { h: 216, s: 1, l: 0.9, a: 1 }, ],
-                [{ h: 252, s: 1, l: 0, a: 1 }, { h: 252, s: 1, l: 0.1, a: 1 }, { h: 252, s: 1, l: 0.2, a: 1 }, { h: 252, s: 1, l: 0.3, a: 1 }, { h: 252, s: 1, l: 0.4, a: 1 }, { h: 252, s: 1, l: 0.5, a: 1 }, { h: 252, s: 1, l: 0.6, a: 1 }, { h: 252, s: 1, l: 0.7, a: 1 }, { h: 252, s: 1, l: 0.8, a: 1 }, { h: 252, s: 1, l: 0.9, a: 1 }, ],
-                [{ h: 288, s: 1, l: 0, a: 1 }, { h: 288, s: 1, l: 0.1, a: 1 }, { h: 288, s: 1, l: 0.2, a: 1 }, { h: 288, s: 1, l: 0.3, a: 1 }, { h: 288, s: 1, l: 0.4, a: 1 }, { h: 288, s: 1, l: 0.5, a: 1 }, { h: 288, s: 1, l: 0.6, a: 1 }, { h: 288, s: 1, l: 0.7, a: 1 }, { h: 288, s: 1, l: 0.8, a: 1 }, { h: 288, s: 1, l: 0.9, a: 1 }, ],
-                [{ h: 324, s: 1, l: 0, a: 1 }, { h: 324, s: 1, l: 0.1, a: 1 }, { h: 324, s: 1, l: 0.2, a: 1 }, { h: 324, s: 1, l: 0.3, a: 1 }, { h: 324, s: 1, l: 0.4, a: 1 }, { h: 324, s: 1, l: 0.5, a: 1 }, { h: 324, s: 1, l: 0.6, a: 1 }, { h: 324, s: 1, l: 0.7, a: 1 }, { h: 324, s: 1, l: 0.8, a: 1 }, { h: 324, s: 1, l: 0.9, a: 1 }, ],
-                [{ h: 360, s: 1, l: 0, a: 1 }, { h: 360, s: 1, l: 0.1, a: 1 }, { h: 360, s: 1, l: 0.2, a: 1 }, { h: 360, s: 1, l: 0.3, a: 1 }, { h: 360, s: 1, l: 0.4, a: 1 }, { h: 360, s: 1, l: 0.5, a: 1 }, { h: 360, s: 1, l: 0.6, a: 1 }, { h: 360, s: 1, l: 0.7, a: 1 }, { h: 360, s: 1, l: 0.8, a: 1 }, { h: 360, s: 1, l: 0.9, a: 1 }, ]
-            ],
-        debug: function (log) {
-            this.debugElement.innerHTML = log;
-        },
-        initialize: function (arg1, arg2) {
+    return {
+        initialize: function(arg1, arg2) {
             var containerEl, opts;
             opts = null;
             containerEl = null;
@@ -305,14 +78,14 @@ var MassiveMoose = (function () {
             this.canvas.moose = this;
             this.ctx = this.canvas.getContext('2d');
             this.ctx.lineJoin = this.ctx.lineCap = 'round';
-
-
+            this.currentShape = null;
+            this.shapes = [];
 
             this.canvas.width = this.width = opts.width;
             this.canvas.height = this.height = opts.height;
 
             this.toolSize = 10;
-            this.foreColor = { h:100,s:1,l:0.5,a:1 };
+            this.foreColor = { h: 100, s: 1, l: 0.5, a: 1 };
 
             this.debugElement = this.createDebugElement();
 
@@ -322,12 +95,389 @@ var MassiveMoose = (function () {
             }
 
             this.bindEvents();
+        },
+        tools: [
+            {
+                name: 'sprayPaint1',
+                onPointerStart: function(moose,pt) {
+                    pt.x /= moose.scale;
+                    pt.y /= moose.scale;
+                    moose.isDrawing = true;
+                    moose.lastPoint = pt;
+                },
+                onPointerDrag: function (moose, pt) {
+                    pt.x /= moose.scale;
+                    pt.y /= moose.scale;
+                    var dist = distanceBetween(moose.lastPoint, pt);
+                    var angle = angleBetween(moose.lastPoint, pt);
 
+                    var fc = moose.foreColor;
+
+                    if (!moose.currentShape) {
+                        moose.currentShape = {
+                            foreColor: fc,
+                            toolSize:moose.toolSize,
+                            points:[]
+                        }
+                    }
+
+                    for (var i = 0; i < dist; i += moose.toolSize / 4) {
+
+                        x = moose.lastPoint.x + (Math.sin(angle) * i);
+                        y = moose.lastPoint.y + (Math.cos(angle) * i);
+
+                        var radgrad = moose.ctx
+                            .createRadialGradient(x, y, moose.toolSize / 2, x, y, moose.toolSize);
+
+                        var centerColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                        var midColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                        var edgeColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                        centerColor.a = 1;
+                        midColor.a = 0.5;
+                        edgeColor.a = 0;
+
+                        radgrad.addColorStop(0, toHslaString(centerColor));
+                        radgrad.addColorStop(0.5, toHslaString(midColor));
+                        radgrad.addColorStop(1, toHslaString(edgeColor));
+
+                        moose.ctx.fillStyle = radgrad;
+                        moose.ctx.fillRect(x - moose.toolSize,
+                            y - moose.toolSize,
+                            moose.toolSize * 2,
+                            moose.toolSize * 2);
+                    }
+                    moose.lastPoint = pt;
+                    moose.currentShape.points.push(pt);
+                },
+                onPointerStop: function(moose) {
+                    moose.shapes.push(moose.currentShape);
+                    moose.currentShape = null;
+                    console.log(moose.shapes[moose.shapes.length - 1]);
+                }
+            }
+        ],
+        toolbarItems: [
+            {
+                name: 'moveToolbar',
+                showWhenCollapsed: true,
+                position: 'top',
+                initialize: function(moose) {
+                    var $this = this;
+                    var el = document.createElement('button');
+                    el.innerHTML = 'move';
+                    el.onclick = function(e) {
+                        if ($this.position == 'top') {
+                            moose.toolbar.style.setProperty('top', '');
+                            moose.toolbar.style.setProperty('bottom', '0px')
+                            $this.position = 'bottom';
+                        } else if ($this.position = 'bottom') {
+                            moose.toolbar.style.setProperty('top', '0px');
+                            moose.toolbar.style.setProperty('bottom', '')
+                            $this.position = 'top';
+
+                        }
+                    }
+                    this.el = el;
+                    return el;
+                }
+            },
+            {
+                name: 'toggleToolbarSize',
+                showWhenCollapsed: true,
+                collapsed: false,
+                initialize: function(moose) {
+                    var $this = this;
+                    var el = document.createElement('button');
+                    el.innerHTML = 'collapse';
+                    el.onclick = function(e) {
+
+                        for (var i = 0; i < moose.toolbarItems.length; i++) {
+                            var ti = moose.toolbarItems[i];
+                            if ($this.collapsed) {
+                                ti.el.style.setProperty("display", "inline-block", "important");
+                            } else if (!ti.showWhenCollapsed) {
+                                ti.el.style.display = 'none';
+                            }
+                        }
+                        $this.collapsed = !$this.collapsed;
+                    }
+
+                    this.el = el;
+                    return el;
+                }
+            },
+            {
+                name: 'pickColor',
+                showWhenCollapsed: false,
+                opened: false,
+                initialize: function(moose) {
+                    var $this = this;
+                    var el = document.createElement('button');
+                    var fc = moose.foreColor;
+                    el.style.backgroundColor = toHslaString(fc);
+                    el.onclick = function(e) {
+                        if (!$this.opened) {
+                            $this.picker.style.display = 'block';
+                            $this.picker.style.position = 'absolute';
+                            $this.picker.style.top = '50px';
+                            $this.picker.style.left = '0px';
+                            $this.opened = true;
+                        } else {
+                            $this.picker.style.display = 'none';
+                            $this.opened = false;
+                        }
+                    }
+                    el.innerHTML = '&nbsp';
+                    this.el = el;
+
+                    var colorPicker = document.createElement('div');
+                    colorPicker.style.display = 'none';
+                    colorPicker.style.width = '100%';
+                    colorPicker.style.height = '100%';
+                    colorPicker.style.position = 'absolute';
+                    colorPicker.style.top = '0';
+                    colorPicker.style.left = '1';
+                    colorPicker.style['z-index'] = 1;
+                    var step = 50;
+                    for (var py = 0; py < 10; py++) {
+                        var row = document.createElement('div');
+                        row.style.width = '100%';
+                        row.style.height = '10%';
+                        for (var px = 0; px < 10; px++) {
+                            var cel = document.createElement('button');
+                            cel.style.width = '10%';
+                            cel.style.height = '100%';
+                            cel.style.margin = 'auto auto auto auto';
+                            var col = null;
+                            if (moose.pallette[px] && moose.pallette[px][py])
+                                col = moose.pallette[px][py];
+                            else
+                                col = { h: 200, s: 1, l: 1, a: 1 };
+                            cel.style.backgroundColor = toHslaString(col);
+                            cel.style.display = 'inline-block';
+                            row.appendChild(cel);
+                            cel.onclick = function(e) {
+                                moose.setForeColor(fromRgbString(this.style.backgroundColor));
+                                $this.el.style.backgroundColor = this.style.backgroundColor;
+                                $this.picker.style.display = 'none';
+                                $this.opened = false;
+                            };
+                        }
+                        colorPicker.appendChild(row);
+                    }
+
+                    $this.picker = colorPicker;
+                    moose.containerEl.appendChild($this.picker);
+
+                    return el;
+                }
+            },
+            {
+                name: 'toolSize',
+                showWhenCollapsed: false,
+                initialize: function(moose) {
+                    var container = document.createElement('span');
+                    var lbl = document.createElement('label');
+                    lbl.attributes['for'] = 'toolSize';
+                    lbl.innerHTML = 'Size:' + moose.toolSize;
+                    lbl.style['margin-right'] = '1em';
+
+                    var el = document.createElement('input');
+                    el.type = 'range';
+                    el.name = 'toolSize';
+                    el.value = moose.toolSize;
+                    el.attributes['min'] = '0';
+                    el.attributes['max'] = '200';
+                    el.attributes['step'] = '1';
+                    el.defaultValue = moose.toolSize;
+                    el.oninput = el.onchange = function(e) {
+                        moose.toolSize = el.value;
+                        lbl.innerHTML = 'Size:' + moose.toolSize;
+                    };
+                    el.style.width = '100px';
+                    el.style.setProperty("display", "inline-block", "important");
+                    el.style['position'] = 'relative';
+                    el.style['top'] = '5px';
+
+                    container.appendChild(lbl);
+                    container.appendChild(el);
+                    this.el = container;
+
+                    return container;
+                }
+            },
+            {
+                name: 'cancel',
+                initialize: function(moose) {
+                    var el = document.createElement('button');
+                    el.innerHTML = 'cancel';
+                    this.el = el;
+                    return el;
+                }
+            },
+            {
+                name: 'save',
+                initialize: function(moose) {
+                    var el = document.createElement('button');
+                    el.innerHTML = 'save';
+                    el.onclick = function(e) {
+                        var imageData = moose.canvas.toDataURL('image/png');
+                        console.log(imageData);
+                    };
+                    this.el = el;
+                    return el;
+                }
+            },
+            {
+                name: 'zoom-in',
+                initialize: function(moose) {
+                    var el = document.createElement('button');
+                    el.innerHTML = 'zoom in';
+                    el.onclick = function (e) {
+                        var newScale = moose.scale * 2;
+                        moose.zoom(newScale, moose.scale);
+                        moose.scale = newScale;
+                    };
+                    this.el = el;
+                    return el;
+                }
+            },
+            {
+                name: 'zoom-out',
+                initialize: function (moose) {
+                    var el = document.createElement('button');
+                    el.innerHTML = 'zoom out';
+                    el.onclick = function (e) {
+                        var newScale = moose.scale / 2;
+                        if (newScale < 1)
+                            newScale = 1;
+                        if (newScale == moose.scale) return;
+                        moose.zoom(newScale, moose.scale);
+                        moose.scale = newScale;
+                    };
+                    this.el = el;
+                    return el;
+                }
+            }
+        ],
+        zoom: function(newScale, oldScale) {
+            this.ctx.clearRect(0, 0, this.width / this.scale, this.height/this.scale);
+            this.ctx.scale(newScale / oldScale, newScale / oldScale);
+            this.redraw();
+        },
+        redraw: function () {
+            for (var s = 0; s < this.shapes.length; s++) {
+                var shape = this.shapes[s];
+            var lastPoint = shape.points[0];
+            for (var p = 0; p < shape.points.length; p++) {
+                var pt = shape.points[p];
+                var dist = distanceBetween(lastPoint, pt);
+                var angle = angleBetween(lastPoint, pt);
+                var fc = shape.foreColor;
+                for (var i = 0; i < dist; i += shape.toolSize / 4) {
+
+                    x = lastPoint.x + (Math.sin(angle) * i);
+                    y = lastPoint.y + (Math.cos(angle) * i);
+
+                    var radgrad = this.ctx
+                        .createRadialGradient(x, y, shape.toolSize / 2, x, y, shape.toolSize);
+
+                    var centerColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                    var midColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                    var edgeColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                    centerColor.a = 1;
+                    midColor.a = 0.5;
+                    edgeColor.a = 0;
+
+                    radgrad.addColorStop(0, toHslaString(centerColor));
+                    radgrad.addColorStop(0.5, toHslaString(midColor));
+                    radgrad.addColorStop(1, toHslaString(edgeColor));
+
+                    this.ctx.fillStyle = radgrad;
+                    this.ctx.fillRect(x - shape.toolSize,
+                        y - shape.toolSize,
+                        shape.toolSize * 2,
+                        shape.toolSize * 2);
+                }
+                lastPoint = pt;
+            }
+        }  
+        },
+        pallette: [
+            [
+                { h: 0, s: 1, l: 0, a: 1 }, { h: 0, s: 1, l: 0.1, a: 1 }, { h: 0, s: 1, l: 0.2, a: 1 },
+                { h: 0, s: 1, l: 0.3, a: 1 }, { h: 0, s: 1, l: 0.4, a: 1 }, { h: 0, s: 1, l: 0.5, a: 1 },
+                { h: 0, s: 1, l: 0.6, a: 1 }, { h: 0, s: 1, l: 0.7, a: 1 }, { h: 0, s: 1, l: 0.8, a: 1 },
+                { h: 0, s: 1, l: 0.9, a: 1 },
+            ],
+            [
+                { h: 36, s: 1, l: 0, a: 1 }, { h: 36, s: 1, l: 0.1, a: 1 }, { h: 36, s: 1, l: 0.2, a: 1 },
+                { h: 36, s: 1, l: 0.3, a: 1 }, { h: 36, s: 1, l: 0.4, a: 1 }, { h: 36, s: 1, l: 0.5, a: 1 },
+                { h: 36, s: 1, l: 0.6, a: 1 }, { h: 36, s: 1, l: 0.7, a: 1 }, { h: 36, s: 1, l: 0.8, a: 1 },
+                { h: 36, s: 1, l: 0.9, a: 1 },
+            ],
+            [
+                { h: 72, s: 1, l: 0, a: 1 }, { h: 72, s: 1, l: 0.1, a: 1 }, { h: 72, s: 1, l: 0.2, a: 1 },
+                { h: 72, s: 1, l: 0.3, a: 1 }, { h: 72, s: 1, l: 0.4, a: 1 }, { h: 72, s: 1, l: 0.5, a: 1 },
+                { h: 72, s: 1, l: 0.6, a: 1 }, { h: 72, s: 1, l: 0.7, a: 1 }, { h: 72, s: 1, l: 0.8, a: 1 },
+                { h: 72, s: 1, l: 0.9, a: 1 },
+            ],
+            [
+                { h: 108, s: 1, l: 0, a: 1 }, { h: 108, s: 1, l: 0.1, a: 1 }, { h: 108, s: 1, l: 0.2, a: 1 },
+                { h: 108, s: 1, l: 0.3, a: 1 }, { h: 108, s: 1, l: 0.4, a: 1 }, { h: 108, s: 1, l: 0.5, a: 1 },
+                { h: 108, s: 1, l: 0.6, a: 1 }, { h: 108, s: 1, l: 0.7, a: 1 }, { h: 108, s: 1, l: 0.8, a: 1 },
+                { h: 108, s: 1, l: 0.9, a: 1 },
+            ],
+            [
+                { h: 144, s: 1, l: 0, a: 1 }, { h: 144, s: 1, l: 0.1, a: 1 }, { h: 144, s: 1, l: 0.2, a: 1 },
+                { h: 144, s: 1, l: 0.3, a: 1 }, { h: 144, s: 1, l: 0.4, a: 1 }, { h: 144, s: 1, l: 0.5, a: 1 },
+                { h: 144, s: 1, l: 0.6, a: 1 }, { h: 144, s: 1, l: 0.7, a: 1 }, { h: 144, s: 1, l: 0.8, a: 1 },
+                { h: 144, s: 1, l: 0.9, a: 1 },
+            ],
+            [
+                { h: 180, s: 1, l: 0, a: 1 }, { h: 180, s: 1, l: 0.1, a: 1 }, { h: 180, s: 1, l: 0.2, a: 1 },
+                { h: 180, s: 1, l: 0.3, a: 1 }, { h: 180, s: 1, l: 0.4, a: 1 }, { h: 180, s: 1, l: 0.5, a: 1 },
+                { h: 180, s: 1, l: 0.6, a: 1 }, { h: 180, s: 1, l: 0.7, a: 1 }, { h: 180, s: 1, l: 0.8, a: 1 },
+                { h: 180, s: 1, l: 0.9, a: 1 },
+            ],
+            [
+                { h: 216, s: 1, l: 0, a: 1 }, { h: 216, s: 1, l: 0.1, a: 1 }, { h: 216, s: 1, l: 0.2, a: 1 },
+                { h: 216, s: 1, l: 0.3, a: 1 }, { h: 216, s: 1, l: 0.4, a: 1 }, { h: 216, s: 1, l: 0.5, a: 1 },
+                { h: 216, s: 1, l: 0.6, a: 1 }, { h: 216, s: 1, l: 0.7, a: 1 }, { h: 216, s: 1, l: 0.8, a: 1 },
+                { h: 216, s: 1, l: 0.9, a: 1 },
+            ],
+            [
+                { h: 252, s: 1, l: 0, a: 1 }, { h: 252, s: 1, l: 0.1, a: 1 }, { h: 252, s: 1, l: 0.2, a: 1 },
+                { h: 252, s: 1, l: 0.3, a: 1 }, { h: 252, s: 1, l: 0.4, a: 1 }, { h: 252, s: 1, l: 0.5, a: 1 },
+                { h: 252, s: 1, l: 0.6, a: 1 }, { h: 252, s: 1, l: 0.7, a: 1 }, { h: 252, s: 1, l: 0.8, a: 1 },
+                { h: 252, s: 1, l: 0.9, a: 1 },
+            ],
+            [
+                { h: 288, s: 1, l: 0, a: 1 }, { h: 288, s: 1, l: 0.1, a: 1 }, { h: 288, s: 1, l: 0.2, a: 1 },
+                { h: 288, s: 1, l: 0.3, a: 1 }, { h: 288, s: 1, l: 0.4, a: 1 }, { h: 288, s: 1, l: 0.5, a: 1 },
+                { h: 288, s: 1, l: 0.6, a: 1 }, { h: 288, s: 1, l: 0.7, a: 1 }, { h: 288, s: 1, l: 0.8, a: 1 },
+                { h: 288, s: 1, l: 0.9, a: 1 },
+            ],
+            [
+                { h: 324, s: 1, l: 0, a: 1 }, { h: 324, s: 1, l: 0.1, a: 1 }, { h: 324, s: 1, l: 0.2, a: 1 },
+                { h: 324, s: 1, l: 0.3, a: 1 }, { h: 324, s: 1, l: 0.4, a: 1 }, { h: 324, s: 1, l: 0.5, a: 1 },
+                { h: 324, s: 1, l: 0.6, a: 1 }, { h: 324, s: 1, l: 0.7, a: 1 }, { h: 324, s: 1, l: 0.8, a: 1 },
+                { h: 324, s: 1, l: 0.9, a: 1 },
+            ],
+            [
+                { h: 360, s: 1, l: 0, a: 1 }, { h: 360, s: 1, l: 0.1, a: 1 }, { h: 360, s: 1, l: 0.2, a: 1 },
+                { h: 360, s: 1, l: 0.3, a: 1 }, { h: 360, s: 1, l: 0.4, a: 1 }, { h: 360, s: 1, l: 0.5, a: 1 },
+                { h: 360, s: 1, l: 0.6, a: 1 }, { h: 360, s: 1, l: 0.7, a: 1 }, { h: 360, s: 1, l: 0.8, a: 1 },
+                { h: 360, s: 1, l: 0.9, a: 1 },
+            ]
+        ],
+        debug: function(log) {
+            this.debugElement.innerHTML = log;
         },
         setForeColor: function(col) {
             this.foreColor = col;
         },
-        bindToElement: function (containerEl) {
+        bindToElement: function(containerEl) {
             var ref1, repaintAll;
             if (this.containerEl) {
                 console.warn("Trying to bind to a DOM element more than once is unsupported.");
@@ -341,7 +491,7 @@ var MassiveMoose = (function () {
             this.isBound = true;
         },
         createDebugElement: function() {
-            var d=document.createElement('div');
+            var d = document.createElement('div');
             d.style.position = 'absolute';
             d.style.top = '0px';
             d.style.left = '0px';
@@ -365,15 +515,15 @@ var MassiveMoose = (function () {
             return t;
         },
         bindEvents: function() {
-            this.canvas.onmousedown = function (e) {
+            this.canvas.onmousedown = function(e) {
                 var moose = this.moose;
-                moose.isDrawing = true;
-                moose.lastPoint = { x: e.clientX, y: e.clientY };
+                var point = { x: e.clientX, y: e.clientY };
+                moose.tools[0].onPointerStart(moose,point);
             }
-            this.canvas.onmousemove = function (e) {
+            this.canvas.onmousemove = function(e) {
                 var moose = this.moose;
                 if (moose.mouseOut) {
-                    moose.lastPoint = { x: e.clientX, y: e.clientY };
+                    moose.lastPoint = { x: e.clientX /= moose.scale, y: e.clientY /= moose.scale };
                     moose.mouseOut = false;
                 }
                 if (!moose.isDrawing) return;
@@ -381,54 +531,74 @@ var MassiveMoose = (function () {
                 moose.tools[0].onPointerDrag(moose, currentPoint);
             }
 
-            this.canvas.onmouseup = function () {
+            this.canvas.onmouseup = function() {
                 var moose = this.moose;
                 moose.isDrawing = false;
+                moose.tools[0].onPointerStop(moose);
             };
-            this.canvas.onmouseout = function () {
+            this.canvas.onmouseout = function() {
                 var moose = this.moose;
                 moose.mouseOut = true;
             };
-            this.canvas.addEventListener('touchmove', function (e) {
-                e.preventDefault();
+            this.canvas.addEventListener('touchmove',
+                function(e) {
+                    e.preventDefault();
 
-                var moose = this.moose;
-                var touches = e.changedTouches;
-                if (touches.length === 1) {
-                    var currentPoint = { x: touches[0].pageX, y: touches[0].pageY };
-                    moose.debug('touch move');
-                    //alert('touch move at ' + touches[0].pageX + ',' + touches[0].pageY);
-                    moose.tools[0].onPointerDrag(moose, currentPoint);
-                } else if (touches.length > 1) {
-                    var p1 = touches[0];
-                    var p2 = touches[1];
-                    var zoomScale = Math.sqrt(Math.pow(p2.pageX - p1.pageX, 2) + Math.pow(p2.pageY - p1.pageY, 2)); //euclidian distance
-                    moose.debug('zoom: ' + zoomScale);
-                    this.scale *= (zoomScale / 100);
-                    moose.ctx.scale(this.scale, this.scale);
-                }
-            });
-            this.canvas.addEventListener('touchend', function (e) {
-                e.preventDefault();
-                var moose = this.moose;
-                moose.isDrawing = false;
-            });
-            this.canvas.addEventListener('touchstart', function (e) {
-                if (e.target.tagName.toLowerCase() !== 'canvas') {
-                    return;
-                }
+                    var moose = this.moose;
+                    var touches = e.changedTouches;
+                    if (touches.length === 1) {
+                        var currentPoint = { x: touches[0].pageX, y: touches[0].pageY };
+                        moose.debug('touch move');
+                        //alert('touch move at ' + touches[0].pageX + ',' + touches[0].pageY);
+                        moose.tools[0].onPointerDrag(moose, currentPoint);
+                    } else if (touches.length > 1) {
+                        var p1 = touches[0];
+                        var p2 = touches[1];
+                        var zoomScale = Math.sqrt(Math.pow(p2
+                                .pageX -
+                                p1.pageX,
+                                2) +
+                            Math.pow(p2.pageY - p1.pageY, 2)); //euclidian distance
+                        moose.debug('zoom: ' + zoomScale);
+                        newScale =  moose.scale * (zoomScale / 100);
+                        moose.zoom(newScale, moose.scale);
+                    }
+                });
+            this.canvas.addEventListener('touchend',
+                function(e) {
+                    e.preventDefault();
+                    var moose = this.moose;
+                    moose.isDrawing = false;
+                    moose.tools[0].onPointerStop(moose);
+                });
+            this.canvas.addEventListener('touchstart',
+                function(e) {
+                    if (e.target.tagName.toLowerCase() !== 'canvas') {
+                        return;
+                    }
 
-                var moose = this.moose;
-                e.preventDefault();
-                var touches = e.changedTouches;
-                if (e.touches.length === 1) {
-                    moose.isDrawing = true;
-                    moose.lastPoint = { x: e.touches[0].pageX, y: e.touches[0].pageY };
-                    document.addEventListener('touchmove', touchMoveListener);
-                    document.addEventListener('touchend', touchEndListener);
-                    return document.addEventListener('touchcancel', touchEndListener);
-                }
-            });
+                    var moose = this.moose;
+                    e.preventDefault();
+                    var touches = e.changedTouches;
+                    if (e.touches.length === 1) {
+                        moose.isDrawing = true;
+                        moose.lastPoint = { x: e.touches[0].pageX, y: e.touches[0].pageY };
+                        moose.tools[0].onPointerStart(moose, point);
+                        document.addEventListener('touchmove', touchMoveListener);
+                        document.addEventListener('touchend', touchEndListener);
+                        return document.addEventListener('touchcancel', touchEndListener);
+                    }
+                });
+
+            var Shape;
+            Shape = function() {
+                return this;
+            };
+            Shape.prototype.helloWorld=function() {
+                console.log('hello world');
+            };
+
         }
-    }
+
+}
 });
