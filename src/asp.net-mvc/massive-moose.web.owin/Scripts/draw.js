@@ -155,15 +155,15 @@ var MassiveMoose = (function () {
                         var fc = moose.foreColor;
                         el.style.backgroundColor = toHslaString(fc);
                         el.onclick = function(e) {
-                            if (!this.opened) {
+                            if (!$this.opened) {
                                 $this.picker.style.display = 'block';
                                 $this.picker.style.position = 'absolute';
                                 $this.picker.style.top = '50px';
                                 $this.picker.style.left = '0px';
-                                this.opened = true;
+                                $this.opened = true;
                             } else {
                                 $this.picker.style.display = 'none';
-                                this.opened = false;
+                                $this.opened = false;
                             }
                         }
                         el.innerHTML = '&nbsp';
@@ -171,14 +171,21 @@ var MassiveMoose = (function () {
 
                         var colorPicker = document.createElement('div');
                         colorPicker.style.display = 'none';
+                        colorPicker.style.width = '100%';
+                        colorPicker.style.height = '100%';
+                        colorPicker.style.position = 'absolute';
+                        colorPicker.style.top = '0';
+                        colorPicker.style.left = '1';
+                        colorPicker.style['z-index'] = 1;
                         var step = 50;
                         for (var py = 0; py < 10; py++) {
                             var row = document.createElement('div');
                             row.style.width = '100%';
-                            for (var px = 0; px < 24; px++) {
+                            row.style.height = '10%';
+                            for (var px = 0; px < 10; px++) {
                                 var cel = document.createElement('button');
-                                cel.style.width = '30px';
-                                cel.style.height = '30px';
+                                cel.style.width = '10%';
+                                cel.style.height = '100%';
                                 cel.style.margin = 'auto auto auto auto';
                                 var col = null;
                                 if (moose.pallette[px] && moose.pallette[px][py])
@@ -191,6 +198,8 @@ var MassiveMoose = (function () {
                                 cel.onclick = function(e) {
                                     moose.setForeColor(fromRgbString(this.style.backgroundColor));
                                     $this.el.style.backgroundColor = this.style.backgroundColor;
+                                    $this.picker.style.display = 'none';
+                                    $this.opened = false;
                                 };
                             }
                             colorPicker.appendChild(row);
