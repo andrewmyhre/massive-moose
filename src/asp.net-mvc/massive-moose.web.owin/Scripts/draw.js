@@ -363,7 +363,7 @@ var MassiveMoose = (function () {
         zoom: function(newScale, oldScale) {
             this.ctx.clearRect(0, 0, this.width / this.scale, this.height/this.scale);
             this.ctx.scale(newScale / oldScale, newScale / oldScale);
-            debug(newScale);
+            this.debug(newScale);
             this.redraw();
         },
         redraw: function () {
@@ -560,8 +560,8 @@ var MassiveMoose = (function () {
                                 p1.pageX,
                                 2) +
                             Math.pow(p2.pageY - p1.pageY, 2)); //euclidian distance
-                        //moose.debug('zoom: ' + zoomScale);
-                        newScale =  moose.scale * (zoomScale / 100);
+                        
+                        newScale = moose.scale * (zoomScale / 100);
                         moose.zoom(newScale, moose.scale);
                     }
                 });
