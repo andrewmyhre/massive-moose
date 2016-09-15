@@ -298,6 +298,7 @@ var MassiveMoose = (function () {
             this.isDrawing = false;
             this.lastPoint = null;
             this.mouseOut = true;
+            this.scale = 1;
 
             this.canvas = document.createElement('canvas');
             this.canvas.style['background-color'] = 'white';
@@ -403,6 +404,8 @@ var MassiveMoose = (function () {
                     var p2 = touches[1];
                     var zoomScale = Math.sqrt(Math.pow(p2.pageX - p1.pageX, 2) + Math.pow(p2.pageY - p1.pageY, 2)); //euclidian distance
                     moose.debug('zoom: ' + zoomScale);
+                    this.scale *= (zoomScale / 100);
+                    moose.ctx.scale(this.scale, this.scale);
                 }
             });
             this.canvas.addEventListener('touchend', function (e) {
