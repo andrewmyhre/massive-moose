@@ -241,6 +241,7 @@ var MassiveMoose = (function () {
                     initialize: function(moose) {
                         var el = document.createElement('button');
                         el.innerHTML = 'cancel';
+                        this.el = el;
                         return el;
                     }
                 },
@@ -253,6 +254,7 @@ var MassiveMoose = (function () {
                             var imageData = moose.canvas.toDataURL('image/png');
                             console.log(imageData);
                         };
+                        this.el = el;
                         return el;
                     }
                 }
