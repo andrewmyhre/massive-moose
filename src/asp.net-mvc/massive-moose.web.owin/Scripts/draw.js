@@ -4,37 +4,272 @@
 function angleBetween(point1, point2) {
     return Math.atan2(point2.x - point1.x, point2.y - point1.y);
 }
+function toHslaString(hsla) {
+    return 'hsla(' + hsla.h + ',' + (hsla.s * 100) + '%,' + (hsla.l * 100) + '%,'+hsla.a+')'
+}
+function fromHslaString(input) {
+    input = input.substr(input.indexOf('(') + 1);
+    input = input.substring(0, input.length - 1);
+    var s = input.split(',');
+    var col = {
+        h: parseInt(s[0].trim()),
+        s: parseFloat(s[1].substr(0, s[1].indexOf('%')).trim()) / 100,
+        l: parseFloat(s[2].substr(0, s[2].indexOf('%')).trim()) / 100,
+        a: parseFloat(s[3].trim())
+    };
+}
+
+function fromRgbString(input) {
+    input = input.substr(input.indexOf('(') + 1);
+    input = input.substring(0, input.length - 1);
+    var s = input.split(',');
+
+
+    var col = {
+        r: parseInt(s[0].trim()),
+        g: parseInt(s[1].trim()),
+        b: parseInt(s[2].trim()),
+        a: 255
+    };
+    return rgbToHsl(col.r, col.g, col.b);
+}
+
+function rgbToHsl(r, g, b) {
+    r /= 255, g /= 255, b /= 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var h, s, l = (max + min) / 2;
+
+    if (max == min) {
+        h = s = 0; // achromatic
+    } else {
+        var d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h *= 60;
+    }
+
+    return {h:h,s:s,l:l,a:1};
+}
 
 var MassiveMoose = (function () {
-    return {
-        tools: [{
-            onPointerDrag: function (moose, pt) {
-                var dist = distanceBetween(moose.lastPoint, pt);
-                var angle = angleBetween(moose.lastPoint, pt);
+        return {
+            tools: [
+                {
+                    name: 'sprayPaint1',
+                    onPointerDrag: function(moose, pt) {
+                        var dist = distanceBetween(moose.lastPoint, pt);
+                        var angle = angleBetween(moose.lastPoint, pt);
 
-                var fc = moose.foreColor;
+                        var fc = moose.foreColor;
 
-                for (var i = 0; i < dist; i += moose.lineWidth / 4) {
+                        for (var i = 0; i < dist; i += moose.toolSize / 4) {
 
-                    x = moose.lastPoint.x + (Math.sin(angle) * i);
-                    y = moose.lastPoint.y + (Math.cos(angle) * i);
+                            x = moose.lastPoint.x + (Math.sin(angle) * i);
+                            y = moose.lastPoint.y + (Math.cos(angle) * i);
 
-                    var radgrad = moose.ctx.createRadialGradient(x, y, moose.lineWidth / 2, x, y, moose.lineWidth);
+                            var radgrad = moose.ctx
+                                .createRadialGradient(x, y, moose.toolSize / 2, x, y, moose.toolSize);
 
-                    var centerColor = 'rgba(' + fc.r + ',' + fc.g + ',' + fc.b + ',1)';
-                    var midColor = 'rgba(' + fc.r + ',' + fc.g + ',' + fc.b + ',0.5)';
-                    var edgeColor = 'rgba(' + fc.r + ',' + fc.g + ',' + fc.b + ',0)';
+                            var centerColor ={h:fc.h,s:fc.s,l:fc.l,a:fc.a};
+                            var midColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                            var edgeColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                            centerColor.a = 1;
+                            midColor.a = 0.5;
+                            edgeColor.a=0;
 
-                    radgrad.addColorStop(0, centerColor);
-                    radgrad.addColorStop(0.5, midColor);
-                    radgrad.addColorStop(1, edgeColor);
+                            radgrad.addColorStop(0, toHslaString(centerColor));
+                            radgrad.addColorStop(0.5, toHslaString(midColor));
+                            radgrad.addColorStop(1, toHslaString(edgeColor));
 
-                    moose.ctx.fillStyle = radgrad;
-                    moose.ctx.fillRect(x - moose.lineWidth, y - moose.lineWidth, moose.lineWidth * 2, moose.lineWidth * 2);
+                            moose.ctx.fillStyle = radgrad;
+                            moose.ctx.fillRect(x - moose.toolSize,
+                                y - moose.toolSize,
+                                moose.toolSize * 2,
+                                moose.toolSize * 2);
+                        }
+                        moose.lastPoint = pt;
+                    }
                 }
-                moose.lastPoint = pt;
-            }
-        }],
+            ],
+            toolbarItems: [
+                {
+                    name: 'moveToolbar',
+                    showWhenCollapsed: true,
+                    position: 'top',
+                    initialize: function(moose) {
+                        var $this = this;
+                        var el = document.createElement('button');
+                        el.innerHTML = 'move';
+                        el.onclick = function(e) {
+                            if ($this.position == 'top') {
+                                moose.toolbar.style.setProperty('top', '');
+                                moose.toolbar.style.setProperty('bottom', '0px')
+                                $this.position = 'bottom';
+                            } else if ($this.position = 'bottom') {
+                                moose.toolbar.style.setProperty('top', '0px');
+                                moose.toolbar.style.setProperty('bottom', '')
+                                $this.position = 'top';
+
+                            }
+                        }
+                        this.el = el;
+                        return el;
+                    }
+                },
+                {
+                    name: 'toggleToolbarSize',
+                    showWhenCollapsed: true,
+                    collapsed: false,
+                    initialize: function(moose) {
+                        var $this = this;
+                        var el = document.createElement('button');
+                        el.innerHTML = 'collapse';
+                        el.onclick = function(e) {
+
+                            for (var i = 0; i < moose.toolbarItems.length; i++) {
+                                var ti = moose.toolbarItems[i];
+                                if ($this.collapsed) {
+                                    ti.el.style.setProperty("display", "inline-block", "important");
+                                } else if (!ti.showWhenCollapsed) {
+                                    ti.el.style.display = 'none';
+                                }
+                            }
+                            $this.collapsed = !$this.collapsed;
+                        }
+
+                        this.el = el;
+                        return el;
+                    }
+                },
+                {
+                    name: 'pickColor',
+                    showWhenCollapsed: false,
+                    opened: false,
+                    initialize: function(moose) {
+                        var $this = this;
+                        var el = document.createElement('button');
+                        var fc = moose.foreColor;
+                        el.style.backgroundColor = toHslaString(fc);
+                        el.onclick = function(e) {
+                            if (!this.opened) {
+                                $this.picker.style.display = 'block';
+                                $this.picker.style.position = 'absolute';
+                                $this.picker.style.top = '50px';
+                                $this.picker.style.left = '0px';
+                                this.opened = true;
+                            } else {
+                                $this.picker.style.display = 'none';
+                                this.opened = false;
+                            }
+                        }
+                        el.innerHTML = '&nbsp';
+                        this.el = el;
+
+                        var colorPicker = document.createElement('div');
+                        colorPicker.style.display = 'none';
+                        var step = 50;
+                        for (var py = 0; py < 10; py++) {
+                            var row = document.createElement('div');
+                            row.style.width = '100%';
+                            for (var px = 0; px < 24; px++) {
+                                var cel = document.createElement('button');
+                                cel.style.width = '30px';
+                                cel.style.height = '30px';
+                                cel.style.margin = 'auto auto auto auto';
+                                var col = null;
+                                if (moose.pallette[px] && moose.pallette[px][py])
+                                    col = moose.pallette[px][py];
+                                else
+                                    col = { h: 200, s: 1, l: 1, a: 1 };
+                                cel.style.backgroundColor = toHslaString(col);
+                                cel.style.display = 'inline-block';
+                                row.appendChild(cel);
+                                cel.onclick = function(e) {
+                                    moose.setForeColor(fromRgbString(this.style.backgroundColor));
+                                    $this.el.style.backgroundColor = this.style.backgroundColor;
+                                };
+                            }
+                            colorPicker.appendChild(row);
+                        }
+
+                        $this.picker = colorPicker;
+                        moose.containerEl.appendChild($this.picker);
+
+                        return el;
+                    }
+                },
+                {
+                    name: 'toolSize',
+                    showWhenCollapsed: false,
+                    initialize: function(moose) {
+                        var container = document.createElement('span');
+                        var lbl = document.createElement('label');
+                        lbl.attributes['for'] = 'toolSize';
+                        lbl.innerHTML = 'Size:' + moose.toolSize;
+                        lbl.style['margin-right'] = '1em';
+
+                        var el = document.createElement('input');
+                        el.type = 'range';
+                        el.name = 'toolSize';
+                        el.value = moose.toolSize;
+                        el.attributes['min'] = '0';
+                        el.attributes['max'] = '200';
+                        el.attributes['step'] = '1';
+                        el.defaultValue = moose.toolSize;
+                        el.oninput = el.onchange = function(e) {
+                            moose.toolSize = el.value;
+                            lbl.innerHTML = 'Size:' + moose.toolSize;
+                        };
+                        el.style.width = '100px';
+                        el.style.setProperty("display", "inline-block", "important");
+                        el.style['position'] = 'relative';
+                        el.style['top'] = '5px';
+
+                        container.appendChild(lbl);
+                        container.appendChild(el);
+                        this.el = container;
+
+                        return container;
+                    }
+                },
+                {
+                    name: 'cancel',
+                    initialize: function(moose) {
+                        var el = document.createElement('button');
+                        el.innerHTML = 'cancel';
+                        return el;
+                    }
+                },
+                {
+                    name: 'save',
+                    initialize: function(moose) {
+                        var el = document.createElement('button');
+                        el.innerHTML = 'save';
+                        el.onclick = function(e) {
+                            var imageData = moose.canvas.toDataURL('image/png');
+                            console.log(imageData);
+                        };
+                        return el;
+                    }
+                }
+            ],
+            pallette: [
+                [{ h: 0, s: 1, l: 0, a: 1 }, { h: 0, s: 1, l: 0.1, a: 1 }, { h: 0, s: 1, l: 0.2, a: 1 }, { h: 0, s: 1, l: 0.3, a: 1 }, { h: 0, s: 1, l: 0.4, a: 1 }, { h: 0, s: 1, l: 0.5, a: 1 }, { h: 0, s: 1, l: 0.6, a: 1 }, { h: 0, s: 1, l: 0.7, a: 1 }, { h: 0, s: 1, l: 0.8, a: 1 }, { h: 0, s: 1, l: 0.9, a: 1 }, ],
+                [{ h: 36, s: 1, l: 0, a: 1 }, { h: 36, s: 1, l: 0.1, a: 1 }, { h: 36, s: 1, l: 0.2, a: 1 }, { h: 36, s: 1, l: 0.3, a: 1 }, { h: 36, s: 1, l: 0.4, a: 1 }, { h: 36, s: 1, l: 0.5, a: 1 }, { h: 36, s: 1, l: 0.6, a: 1 }, { h: 36, s: 1, l: 0.7, a: 1 }, { h: 36, s: 1, l: 0.8, a: 1 }, { h: 36, s: 1, l: 0.9, a: 1 }, ],
+                [{ h: 72, s: 1, l: 0, a: 1 }, { h: 72, s: 1, l: 0.1, a: 1 }, { h: 72, s: 1, l: 0.2, a: 1 }, { h: 72, s: 1, l: 0.3, a: 1 }, { h: 72, s: 1, l: 0.4, a: 1 }, { h: 72, s: 1, l: 0.5, a: 1 }, { h: 72, s: 1, l: 0.6, a: 1 }, { h: 72, s: 1, l: 0.7, a: 1 }, { h: 72, s: 1, l: 0.8, a: 1 }, { h: 72, s: 1, l: 0.9, a: 1 }, ],
+                [{ h: 108, s: 1, l: 0, a: 1 }, { h: 108, s: 1, l: 0.1, a: 1 }, { h: 108, s: 1, l: 0.2, a: 1 }, { h: 108, s: 1, l: 0.3, a: 1 }, { h: 108, s: 1, l: 0.4, a: 1 }, { h: 108, s: 1, l: 0.5, a: 1 }, { h: 108, s: 1, l: 0.6, a: 1 }, { h: 108, s: 1, l: 0.7, a: 1 }, { h: 108, s: 1, l: 0.8, a: 1 }, { h: 108, s: 1, l: 0.9, a: 1 }, ],
+                [{ h: 144, s: 1, l: 0, a: 1 }, { h: 144, s: 1, l: 0.1, a: 1 }, { h: 144, s: 1, l: 0.2, a: 1 }, { h: 144, s: 1, l: 0.3, a: 1 }, { h: 144, s: 1, l: 0.4, a: 1 }, { h: 144, s: 1, l: 0.5, a: 1 }, { h: 144, s: 1, l: 0.6, a: 1 }, { h: 144, s: 1, l: 0.7, a: 1 }, { h: 144, s: 1, l: 0.8, a: 1 }, { h: 144, s: 1, l: 0.9, a: 1 }, ],
+                [{ h: 180, s: 1, l: 0, a: 1 }, { h: 180, s: 1, l: 0.1, a: 1 }, { h: 180, s: 1, l: 0.2, a: 1 }, { h: 180, s: 1, l: 0.3, a: 1 }, { h: 180, s: 1, l: 0.4, a: 1 }, { h: 180, s: 1, l: 0.5, a: 1 }, { h: 180, s: 1, l: 0.6, a: 1 }, { h: 180, s: 1, l: 0.7, a: 1 }, { h: 180, s: 1, l: 0.8, a: 1 }, { h: 180, s: 1, l: 0.9, a: 1 }, ],
+                [{ h: 216, s: 1, l: 0, a: 1 }, { h: 216, s: 1, l: 0.1, a: 1 }, { h: 216, s: 1, l: 0.2, a: 1 }, { h: 216, s: 1, l: 0.3, a: 1 }, { h: 216, s: 1, l: 0.4, a: 1 }, { h: 216, s: 1, l: 0.5, a: 1 }, { h: 216, s: 1, l: 0.6, a: 1 }, { h: 216, s: 1, l: 0.7, a: 1 }, { h: 216, s: 1, l: 0.8, a: 1 }, { h: 216, s: 1, l: 0.9, a: 1 }, ],
+                [{ h: 252, s: 1, l: 0, a: 1 }, { h: 252, s: 1, l: 0.1, a: 1 }, { h: 252, s: 1, l: 0.2, a: 1 }, { h: 252, s: 1, l: 0.3, a: 1 }, { h: 252, s: 1, l: 0.4, a: 1 }, { h: 252, s: 1, l: 0.5, a: 1 }, { h: 252, s: 1, l: 0.6, a: 1 }, { h: 252, s: 1, l: 0.7, a: 1 }, { h: 252, s: 1, l: 0.8, a: 1 }, { h: 252, s: 1, l: 0.9, a: 1 }, ],
+                [{ h: 288, s: 1, l: 0, a: 1 }, { h: 288, s: 1, l: 0.1, a: 1 }, { h: 288, s: 1, l: 0.2, a: 1 }, { h: 288, s: 1, l: 0.3, a: 1 }, { h: 288, s: 1, l: 0.4, a: 1 }, { h: 288, s: 1, l: 0.5, a: 1 }, { h: 288, s: 1, l: 0.6, a: 1 }, { h: 288, s: 1, l: 0.7, a: 1 }, { h: 288, s: 1, l: 0.8, a: 1 }, { h: 288, s: 1, l: 0.9, a: 1 }, ],
+                [{ h: 324, s: 1, l: 0, a: 1 }, { h: 324, s: 1, l: 0.1, a: 1 }, { h: 324, s: 1, l: 0.2, a: 1 }, { h: 324, s: 1, l: 0.3, a: 1 }, { h: 324, s: 1, l: 0.4, a: 1 }, { h: 324, s: 1, l: 0.5, a: 1 }, { h: 324, s: 1, l: 0.6, a: 1 }, { h: 324, s: 1, l: 0.7, a: 1 }, { h: 324, s: 1, l: 0.8, a: 1 }, { h: 324, s: 1, l: 0.9, a: 1 }, ],
+                [{ h: 360, s: 1, l: 0, a: 1 }, { h: 360, s: 1, l: 0.1, a: 1 }, { h: 360, s: 1, l: 0.2, a: 1 }, { h: 360, s: 1, l: 0.3, a: 1 }, { h: 360, s: 1, l: 0.4, a: 1 }, { h: 360, s: 1, l: 0.5, a: 1 }, { h: 360, s: 1, l: 0.6, a: 1 }, { h: 360, s: 1, l: 0.7, a: 1 }, { h: 360, s: 1, l: 0.8, a: 1 }, { h: 360, s: 1, l: 0.9, a: 1 }, ]
+            ],
         debug: function (log) {
             this.debugElement.innerHTML = log;
         },
@@ -59,19 +294,65 @@ var MassiveMoose = (function () {
             this.ctx = this.canvas.getContext('2d');
             this.ctx.lineJoin = this.ctx.lineCap = 'round';
 
-            this.debugElement = document.createElement('div');
+
 
             this.canvas.width = this.width = opts.width;
             this.canvas.height = this.height = opts.height;
 
-            this.lineWidth = 10;
-            this.foreColor = { r: 0, g: 0, b: 180 };
+            this.toolSize = 10;
+            this.foreColor = { h:100,s:1,l:0.5,a:1 };
+
+            this.debugElement = this.createDebugElement();
 
             if (containerEl) {
                 this.bindToElement(containerEl);
+                this.containerEl.appendChild(this.createToolbar());
             }
 
+            this.bindEvents();
 
+        },
+        setForeColor: function(col) {
+            this.foreColor = col;
+        },
+        bindToElement: function (containerEl) {
+            var ref1, repaintAll;
+            if (this.containerEl) {
+                console.warn("Trying to bind to a DOM element more than once is unsupported.");
+                return;
+            }
+            this.containerEl = containerEl;
+            this.containerEl.appendChild(this.canvas);
+            this.containerEl.style['background-color'] = "#aaaaaa"
+            this.containerEl.style['overflow'] = 'hidden';
+            this.containerEl.appendChild(this.debugElement);
+            this.isBound = true;
+        },
+        createDebugElement: function() {
+            var d=document.createElement('div');
+            d.style.position = 'absolute';
+            d.style.top = '0px';
+            d.style.left = '0px';
+            d.style.height = '0px';
+            return d;
+        },
+        createToolbar: function() {
+            var t = document.createElement('div');
+            t.className = 'toolbar';
+            t.attributes['id'] = 'toolbar';
+            t.style.setProperty('top', '0px');
+            t.style.setProperty('left', '0px');
+
+            for (var i = 0; i < this.toolbarItems.length; i++) {
+                var ti = this.toolbarItems[i];
+                var el = ti.initialize(this);
+                el.className += 'toolbar-item';
+                t.appendChild(el);
+            }
+
+            return t;
+        },
+        bindEvents: function() {
             this.canvas.onmousedown = function (e) {
                 var moose = this.moose;
                 moose.isDrawing = true;
@@ -106,6 +387,11 @@ var MassiveMoose = (function () {
                     moose.debug('touch move');
                     //alert('touch move at ' + touches[0].pageX + ',' + touches[0].pageY);
                     moose.tools[0].onPointerDrag(moose, currentPoint);
+                } else if (touches.length > 1) {
+                    var p1 = touches[0];
+                    var p2 = touches[1];
+                    var zoomScale = Math.sqrt(Math.pow(p2.pageX - p1.pageX, 2) + Math.pow(p2.pageY - p1.pageY, 2)); //euclidian distance
+                    moose.debug('zoom: ' + zoomScale);
                 }
             });
             this.canvas.addEventListener('touchend', function (e) {
@@ -129,19 +415,6 @@ var MassiveMoose = (function () {
                     return document.addEventListener('touchcancel', touchEndListener);
                 }
             });
-        },
-
-        bindToElement: function (containerEl) {
-            var ref1, repaintAll;
-            if (this.containerEl) {
-                console.warn("Trying to bind to a DOM element more than once is unsupported.");
-                return;
-            }
-            this.containerEl = containerEl;
-            this.containerEl.appendChild(this.canvas);
-            this.containerEl.style['background-color'] = "#aaaaaa"
-            this.containerEl.parentElement.appendChild(this.debugElement);
-            this.isBound = true;
         }
     }
 });

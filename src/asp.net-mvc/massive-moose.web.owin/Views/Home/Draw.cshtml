@@ -2,6 +2,9 @@
     Layout = "~/Views/Shared/_Wall.cshtml";
 }
 
+@section stylesheets{
+<link href="~/Content/draw.css" rel="stylesheet" />
+}
 
 <div id="drawSpace"></div>
 
@@ -10,8 +13,8 @@
     <script type="text/javascript">
         MassiveMoose().initialize(document.getElementById('drawSpace'),
         {
-            width: screen.availWidth,
-            height:screen.availHeight
+            width: window.innerWidth,
+            height:window.innerHeight
         });
     </script>
 }
