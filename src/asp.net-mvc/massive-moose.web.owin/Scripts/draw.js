@@ -549,7 +549,7 @@ var MassiveMoose = (function () {
                     var touches = e.changedTouches;
                     if (touches.length === 1) {
                         var currentPoint = { x: touches[0].pageX, y: touches[0].pageY };
-                        moose.debug('touch move');
+                        //moose.debug('touch move');
                         //alert('touch move at ' + touches[0].pageX + ',' + touches[0].pageY);
                         moose.tools[0].onPointerDrag(moose, currentPoint);
                     } else if (touches.length > 1) {
@@ -560,7 +560,7 @@ var MassiveMoose = (function () {
                                 p1.pageX,
                                 2) +
                             Math.pow(p2.pageY - p1.pageY, 2)); //euclidian distance
-                        moose.debug('zoom: ' + zoomScale);
+                        //moose.debug('zoom: ' + zoomScale);
                         newScale =  moose.scale * (zoomScale / 100);
                         moose.zoom(newScale, moose.scale);
                     }
