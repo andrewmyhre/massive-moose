@@ -349,8 +349,6 @@ var MassiveMoose = (function () {
                     el.innerHTML = 'zoom out';
                     el.onclick = function (e) {
                         var newScale = moose.scale / 2;
-                        if (newScale < 1)
-                            newScale = 1;
                         if (newScale == moose.scale) return;
                         moose.zoom(newScale, moose.scale);
                         moose.scale = newScale;
