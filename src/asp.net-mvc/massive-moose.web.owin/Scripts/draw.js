@@ -561,7 +561,7 @@ var MassiveMoose = (function () {
                                 2) +
                             Math.pow(p2.pageY - p1.pageY, 2)); //euclidian distance
                         
-                        newScale = moose.scale * (zoomScale / 100);
+                        newScale = moose.scale * (zoomScale / 10000);
                         moose.zoom(newScale, moose.scale);
                     }
                 });
