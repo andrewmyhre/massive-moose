@@ -421,7 +421,7 @@ var MassiveMoose = (function () {
             this.disableToolbar();
             if (this.onExportImage) {
                 try {
-                    this.onExportImage(this.canvas.toDataURL('image/png'));
+                    this.onExportImage(this.canvas.toDataURL('image/png'), JSON.stringify(this.shapes));
                     return;
                 } catch (ex) {
                     this.debug(ex.message);

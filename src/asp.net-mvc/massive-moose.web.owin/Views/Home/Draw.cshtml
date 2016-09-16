@@ -13,13 +13,20 @@
     <script type="text/javascript" src="/Scripts/hammer.min.js"></script>
     <script type="text/javascript" src="/Scripts/draw.js"></script>
     <script type="text/javascript">
+        var _baseApiUrl = 'http://local.api.massivemoose.com';
+        var sessionToken = '12345';
         var mm = MassiveMoose();
         mm.initialize(document.getElementById('drawSpace'),
-            {
-                width: window.innerWidth,
-                height: window.innerHeight,
-                onExportImage: function() { alert('export'); mm.enableToolbar(); },
-                onCanceled: function () { alert('canceled'); mm.enableToolbar(); }
-            });
+        {
+            width: window.innerWidth,
+            height: window.innerHeight,
+            onExportImage: function(imageData,json) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', _baseApiUrl + '/v1/save/' + sessionToken, true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.send('{"snapshotJson":"' + escape(json) + '","imageData":"' + imageData + '"}');
+            },
+            onCanceled: function () { alert('canceled'); mm.enableToolbar(); }
+        });
     </script>
 }
