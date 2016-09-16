@@ -1,13 +1,15 @@
-﻿function distanceBetween(point1, point2) {
+﻿var utils = {};
+
+utils.distanceBetween=function (point1, point2) {
     return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
 }
-function angleBetween(point1, point2) {
+utils.angleBetween=function (point1, point2) {
     return Math.atan2(point2.x - point1.x, point2.y - point1.y);
 }
-function toHslaString(hsla) {
-    return 'hsla(' + hsla.h + ',' + (hsla.s * 100) + '%,' + (hsla.l * 100) + '%,'+hsla.a+')'
+utils.toHslaString=function (hsla) {
+    return 'hsla(' + hsla.h + ',' + (hsla.s * 100) + '%,' + (hsla.l * 100) + '%,' + hsla.a + ')'
 }
-function fromHslaString(input) {
+utils.fromHslaString=function (input) {
     input = input.substr(input.indexOf('(') + 1);
     input = input.substring(0, input.length - 1);
     var s = input.split(',');
@@ -19,7 +21,7 @@ function fromHslaString(input) {
     };
 }
 
-function fromRgbString(input) {
+utils.fromRgbString=function (input) {
     input = input.substr(input.indexOf('(') + 1);
     input = input.substring(0, input.length - 1);
     var s = input.split(',');
@@ -31,10 +33,10 @@ function fromRgbString(input) {
         b: parseInt(s[2].trim()),
         a: 255
     };
-    return rgbToHsl(col.r, col.g, col.b);
+    return utils.rgbToHsl(col.r, col.g, col.b);
 }
 
-function rgbToHsl(r, g, b) {
+utils.rgbToHsl = function (r, g, b) {
     r /= 255, g /= 255, b /= 255;
     var max = Math.max(r, g, b), min = Math.min(r, g, b);
     var h, s, l = (max + min) / 2;
@@ -52,12 +54,20 @@ function rgbToHsl(r, g, b) {
         h *= 60;
     }
 
-    return {h:h,s:s,l:l,a:1};
+    return { h: h, s: s, l: l, a: 1 };
 }
+
+var math = {};
+math.scalePositionScalar = function (val, viewportSize, oldScale, newScale) {
+    var newSize, oldSize;
+    oldSize = viewportSize * oldScale;
+    newSize = viewportSize * newScale;
+    return val + (oldSize - newSize) / 2;
+};
 
 var MassiveMoose = (function () {
     return {
-        initialize: function(arg1, arg2) {
+        initialize: function (arg1, arg2) {
             var containerEl, opts;
             opts = null;
             containerEl = null;
@@ -67,11 +77,20 @@ var MassiveMoose = (function () {
             } else {
                 opts = arg1;
             }
+
+            this.onExportImage = opts.onExportImage;
+            this.onCanceled = opts.onCanceled;
+
             this.opts = opts || {};
             this.isDrawing = false;
             this.lastPoint = null;
             this.mouseOut = true;
-            this.scale = 1;
+            this.scale = 1.0;
+            this.scaleAtPinchStart = 1.0;
+            this.offsetAtPinchStart = { x: 0, y: 0 };
+            this.offset = { x: 0, y: 0 };
+            this.zoomEnabled = false;
+            document.body.style.backgroundColor = '#ff0000';
 
             this.isPinching = false;
 
@@ -85,6 +104,7 @@ var MassiveMoose = (function () {
 
             this.canvas.width = this.width = opts.width;
             this.canvas.height = this.height = opts.height;
+            this.position = { x: 0, y: 0 };
 
             this.toolSize = 10;
             this.foreColor = { h: 100, s: 1, l: 0.5, a: 1 };
@@ -98,32 +118,14 @@ var MassiveMoose = (function () {
 
             this.bindEvents();
 
-            this.hammertime = new Hammer(this.canvas);
-            this.hammertime.on('pan', function (ev) {
-                debug(ev);
-            });
-            this.hammertime.get('pinch').set({ enable: true, direction: Hammer.DIRECTION_ALL });
-            this.hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL });
-            this.hammertime.on('pinchstart', function (ev) {
-                debug('pinchstart:' + ev);
-            });
-            this.hammertime.on('pinchmove', function (ev) {
-                debug('pinchmove:' + ev);
-            });
-            this.hammertime.on('pinchin', function (ev) {
-                debug('pinchin:' + ev);
-            });
-            this.hammertime.on('pinchout', function (ev) {
-                debug('pinchout:' + ev);
-            });
-            this.hammertime.on('pinchend', function (ev) {
-                debug('pinchend:' + ev);
-            });
+            if (this.zoomEnabled) {
+                this.bindHammerTime(this);
+            }
         },
         tools: [
             {
                 name: 'sprayPaint1',
-                onPointerStart: function(moose,pt) {
+                onPointerStart: function (moose, pt) {
                     pt.x /= moose.scale;
                     pt.y /= moose.scale;
                     moose.isDrawing = true;
@@ -132,18 +134,12 @@ var MassiveMoose = (function () {
                 onPointerDrag: function (moose, pt) {
                     pt.x /= moose.scale;
                     pt.y /= moose.scale;
-                    var dist = distanceBetween(moose.lastPoint, pt);
-                    var angle = angleBetween(moose.lastPoint, pt);
+                    var dist = utils.distanceBetween(moose.lastPoint, pt);
+                    var angle = utils.angleBetween(moose.lastPoint, pt);
 
                     var fc = moose.foreColor;
 
-                    if (!moose.currentShape) {
-                        moose.currentShape = {
-                            foreColor: fc,
-                            toolSize:moose.toolSize,
-                            points:[]
-                        }
-                    }
+
 
                     for (var i = 0; i < dist; i += moose.toolSize / 4) {
 
@@ -160,9 +156,9 @@ var MassiveMoose = (function () {
                         midColor.a = 0.5;
                         edgeColor.a = 0;
 
-                        radgrad.addColorStop(0, toHslaString(centerColor));
-                        radgrad.addColorStop(0.5, toHslaString(midColor));
-                        radgrad.addColorStop(1, toHslaString(edgeColor));
+                        radgrad.addColorStop(0, utils.toHslaString(centerColor));
+                        radgrad.addColorStop(0.5, utils.toHslaString(midColor));
+                        radgrad.addColorStop(1, utils.toHslaString(edgeColor));
 
                         moose.ctx.fillStyle = radgrad;
                         moose.ctx.fillRect(x - moose.toolSize,
@@ -171,9 +167,17 @@ var MassiveMoose = (function () {
                             moose.toolSize * 2);
                     }
                     moose.lastPoint = pt;
+                    if (!moose.currentShape) {
+                        moose.currentShape = {
+                            foreColor: fc,
+                            toolSize: moose.toolSize,
+                            points: []
+                        }
+                    }
                     moose.currentShape.points.push(pt);
+
                 },
-                onPointerStop: function(moose) {
+                onPointerStop: function (moose) {
                     moose.shapes.push(moose.currentShape);
                     moose.currentShape = null;
                     console.log(moose.shapes[moose.shapes.length - 1]);
@@ -182,41 +186,19 @@ var MassiveMoose = (function () {
         ],
         toolbarItems: [
             {
-                name: 'moveToolbar',
-                showWhenCollapsed: true,
-                position: 'top',
-                initialize: function(moose) {
-                    var $this = this;
-                    var el = document.createElement('button');
-                    el.innerHTML = 'move';
-                    el.onclick = function(e) {
-                        if ($this.position == 'top') {
-                            moose.toolbar.style.setProperty('top', '');
-                            moose.toolbar.style.setProperty('bottom', '0px')
-                            $this.position = 'bottom';
-                        } else if ($this.position = 'bottom') {
-                            moose.toolbar.style.setProperty('top', '0px');
-                            moose.toolbar.style.setProperty('bottom', '')
-                            $this.position = 'top';
-
-                        }
-                    }
-                    this.el = el;
-                    return el;
-                }
-            },
-            {
                 name: 'toggleToolbarSize',
+                enabled: true,
                 showWhenCollapsed: true,
                 collapsed: false,
-                initialize: function(moose) {
+                initialize: function (moose) {
                     var $this = this;
                     var el = document.createElement('button');
-                    el.innerHTML = 'collapse';
-                    el.onclick = function(e) {
+                    el.innerHTML = '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
+                    el.onclick = function (e) {
 
                         for (var i = 0; i < moose.toolbarItems.length; i++) {
                             var ti = moose.toolbarItems[i];
+                            if (!ti.enabled) continue;
                             if ($this.collapsed) {
                                 ti.el.style.setProperty("display", "inline-block", "important");
                             } else if (!ti.showWhenCollapsed) {
@@ -224,6 +206,11 @@ var MassiveMoose = (function () {
                             }
                         }
                         $this.collapsed = !$this.collapsed;
+                        if ($this.collapsed) {
+                            $this.el.innerHTML = '<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>';
+                        } else {
+                            $this.el.innerHTML = '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
+                        }
                     }
 
                     this.el = el;
@@ -231,15 +218,43 @@ var MassiveMoose = (function () {
                 }
             },
             {
+                name: 'moveToolbar',
+                enabled: true,
+                showWhenCollapsed: true,
+                position: 'top',
+                initialize: function (moose, toolbarElement) {
+                    var $this = this;
+                    $this.toolbarElement = toolbarElement;
+                    var el = document.createElement('button');
+                    el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
+                    el.onclick = function (e) {
+                        if ($this.position == 'top') {
+                            $this.toolbarElement.style.setProperty('top', '');
+                            $this.toolbarElement.style.setProperty('bottom', '0px')
+                            $this.position = 'bottom';
+                            $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-top"></span>';
+                        } else if ($this.position = 'bottom') {
+                            $this.toolbarElement.style.setProperty('top', '0px');
+                            $this.toolbarElement.style.setProperty('bottom', '')
+                            $this.position = 'top';
+                            $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
+                        }
+                    }
+                    this.el = el;
+                    return el;
+                }
+            },
+            {
                 name: 'pickColor',
+                enabled: true,
                 showWhenCollapsed: false,
                 opened: false,
-                initialize: function(moose) {
+                initialize: function (moose) {
                     var $this = this;
                     var el = document.createElement('button');
                     var fc = moose.foreColor;
-                    el.style.backgroundColor = toHslaString(fc);
-                    el.onclick = function(e) {
+                    el.style.backgroundColor = utils.toHslaString(fc);
+                    el.onclick = function (e) {
                         if (!$this.opened) {
                             $this.picker.style.display = 'block';
                             $this.picker.style.position = 'absolute';
@@ -277,11 +292,11 @@ var MassiveMoose = (function () {
                                 col = moose.pallette[px][py];
                             else
                                 col = { h: 200, s: 1, l: 1, a: 1 };
-                            cel.style.backgroundColor = toHslaString(col);
+                            cel.style.backgroundColor = utils.toHslaString(col);
                             cel.style.display = 'inline-block';
                             row.appendChild(cel);
-                            cel.onclick = function(e) {
-                                moose.setForeColor(fromRgbString(this.style.backgroundColor));
+                            cel.onclick = function (e) {
+                                moose.setForeColor(utils.fromRgbString(this.style.backgroundColor));
                                 $this.el.style.backgroundColor = this.style.backgroundColor;
                                 $this.picker.style.display = 'none';
                                 $this.opened = false;
@@ -298,8 +313,9 @@ var MassiveMoose = (function () {
             },
             {
                 name: 'toolSize',
+                enabled: true,
                 showWhenCollapsed: false,
-                initialize: function(moose) {
+                initialize: function (moose) {
                     var container = document.createElement('span');
                     var lbl = document.createElement('label');
                     lbl.attributes['for'] = 'toolSize';
@@ -314,7 +330,7 @@ var MassiveMoose = (function () {
                     el.attributes['max'] = '200';
                     el.attributes['step'] = '1';
                     el.defaultValue = moose.toolSize;
-                    el.oninput = el.onchange = function(e) {
+                    el.oninput = el.onchange = function (e) {
                         moose.toolSize = el.value;
                         lbl.innerHTML = 'Size:' + moose.toolSize;
                     };
@@ -332,21 +348,22 @@ var MassiveMoose = (function () {
             },
             {
                 name: 'cancel',
-                initialize: function(moose) {
+                enabled: true,
+                initialize: function (moose) {
                     var el = document.createElement('button');
-                    el.innerHTML = 'cancel';
+                    el.innerHTML = '<span class="glyphicon glyphicon-remove"></span>';
                     this.el = el;
                     return el;
                 }
             },
             {
                 name: 'save',
-                initialize: function(moose) {
+                enabled:true,
+                initialize: function (moose) {
                     var el = document.createElement('button');
-                    el.innerHTML = 'save';
-                    el.onclick = function(e) {
-                        var imageData = moose.canvas.toDataURL('image/png');
-                        console.log(imageData);
+                    el.innerHTML = '<span class="glyphicon glyphicon-floppy-disk"></span>';
+                    el.onclick = function (e) {
+                        moose.onSave();
                     };
                     this.el = el;
                     return el;
@@ -354,12 +371,13 @@ var MassiveMoose = (function () {
             },
             {
                 name: 'zoom-in',
-                initialize: function(moose) {
+                enabled:this.zoomEnabled,
+                initialize: function (moose) {
                     var el = document.createElement('button');
                     el.innerHTML = 'zoom in';
                     el.onclick = function (e) {
                         var newScale = moose.scale * 2;
-                        moose.zoom(newScale, moose.scale);
+                        moose.zoom(newScale, moose.scale, 0.5, 0.5);
                         moose.scale = newScale;
                     };
                     this.el = el;
@@ -368,13 +386,14 @@ var MassiveMoose = (function () {
             },
             {
                 name: 'zoom-out',
+                enabled: this.zoomEnabled,
                 initialize: function (moose) {
                     var el = document.createElement('button');
                     el.innerHTML = 'zoom out';
                     el.onclick = function (e) {
                         var newScale = moose.scale / 2;
                         if (newScale == moose.scale) return;
-                        moose.zoom(newScale, moose.scale);
+                        moose.zoom(newScale, moose.scale, 0.5, 0.5);
                         moose.scale = newScale;
                     };
                     this.el = el;
@@ -382,51 +401,131 @@ var MassiveMoose = (function () {
                 }
             }
         ],
-        zoom: function (newScale, oldScale) {
+        disableToolbar: function() {
+            for (var i = 0; i < this.toolbarItems.length; i++) {
+                var ti = this.toolbarItems[i];
+                if (!ti.enabled) continue;
+
+                ti.el.disabled = true;
+            }
+        },
+        enableToolbar: function() {
+            for (var i = 0; i < this.toolbarItems.length; i++) {
+                var ti = this.toolbarItems[i];
+                if (!ti.enabled) continue;
+
+                ti.el.disabled = false;
+            }
+        },
+        onSave: function () {
+            this.disableToolbar();
+            if (this.onExportImage) {
+                try {
+                    this.onExportImage(this.canvas.toDataURL('image/png'));
+                    return;
+                } catch (ex) {
+                    this.debug(ex.message);
+                }
+            }
+            this.enableToolbar();
+        },
+        onCancel: function() {
+            disableToolbar();
+            if (this.onCanceled) {
+                try {
+                    this.onCanceled();
+                    return;
+                } catch (ex) {
+                    this.debug(ex.message);
+                }
+            }
+            this.enableToolbar();
+        },
+        zoom: function (newScale, oldScale, centerX, centerY) {
             if (newScale < 1) newScale = 1;
-            if (oldScale > 32) newScale = 32;
-            this.ctx.clearRect(0, 0, this.width / this.scale, this.height/this.scale);
+            if (newScale > 32) newScale = 32;
+
+            var oldScale;
+            oldScale = this.scale;
+
+            var actualWidth = this.width * this.scale;
+            var actualHeight = this.height * this.scale;
+            var newActualWidth = this.width * newScale;
+            var newActualHeight = this.height * newScale;
+
+            var canvasPointX = this.position.x + this.width * centerX * this.scale;
+            var canvasPointY = this.position.y + this.height * centerY * this.scale;
+            var newCanvasPointX = canvasPointX * (newScale / oldScale);
+            var newCanvasPointY = canvasPointY * (newScale / oldScale);
+            var deltaX = newCanvasPointX - canvasPointX;
+            var deltaY = newCanvasPointY - canvasPointY;
+
+            if (this.position.x + deltaX < 0)
+                deltaX = this.position.x;
+            else if (this.position.x + deltaX + window.innerWidth > newActualWidth)
+                deltaX = newActualWidth - window.innerWidth - this.position.x;
+
+            if (this.position.y + deltaY < 0)
+                deltaY = this.position.Y;
+            else if (this.position.y + deltaY + window.innerHeight > newActualHeight)
+                deltaY = newActualHeight - window.innerHeight - this.position.y;
+
+            this.debug('scale:' + newScale
+                + ', t(x,y):' + canvasPointX + ',' + canvasPointY
+                + ', t\'(x,y):' + newCanvasPointX + ',' + newCanvasPointY
+                + ', d(x,y):' + deltaX + ',' + deltaY);
+
+            this.scale = newScale;
+
+            //this.keepPanInImageBounds();
             this.ctx.scale(newScale / oldScale, newScale / oldScale);
-            this.debug(newScale);
+            this.ctx.translate(-deltaX, -deltaY);
+            this.position.x += deltaX;
+            this.position.y += deltaY;
+            //this.debug(newScale);
+
+            //this.debug('pos:'+x+','+y);
             this.redraw();
         },
         redraw: function () {
+            this.ctx.clearRect(this.position.x, this.position.y, this.width, this.height);
             for (var s = 0; s < this.shapes.length; s++) {
                 var shape = this.shapes[s];
-            var lastPoint = shape.points[0];
-            for (var p = 0; p < shape.points.length; p++) {
-                var pt = shape.points[p];
-                var dist = distanceBetween(lastPoint, pt);
-                var angle = angleBetween(lastPoint, pt);
-                var fc = shape.foreColor;
-                for (var i = 0; i < dist; i += shape.toolSize / 4) {
+                if (!shape) continue;
+                var lastPoint = shape.points[0];
+                for (var p = 0; p < shape.points.length; p++) {
+                    var pt = shape.points[p];
+                    var dist = utils.distanceBetween(lastPoint, pt);
+                    var angle = utils.angleBetween(lastPoint, pt);
+                    var fc = shape.foreColor;
+                    for (var i = 0; i < dist; i += shape.toolSize / 4) {
 
-                    x = lastPoint.x + (Math.sin(angle) * i);
-                    y = lastPoint.y + (Math.cos(angle) * i);
+                        x = lastPoint.x + (Math.sin(angle) * i);
+                        y = lastPoint.y + (Math.cos(angle) * i);
 
-                    var radgrad = this.ctx
-                        .createRadialGradient(x, y, shape.toolSize / 2, x, y, shape.toolSize);
+                        var radgrad = this.ctx
+                            .createRadialGradient(x, y, shape.toolSize / 2, x, y, shape.toolSize);
 
-                    var centerColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
-                    var midColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
-                    var edgeColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
-                    centerColor.a = 1;
-                    midColor.a = 0.5;
-                    edgeColor.a = 0;
+                        var centerColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                        var midColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                        var edgeColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                        centerColor.a = 1;
+                        midColor.a = 0.5;
+                        edgeColor.a = 0;
 
-                    radgrad.addColorStop(0, toHslaString(centerColor));
-                    radgrad.addColorStop(0.5, toHslaString(midColor));
-                    radgrad.addColorStop(1, toHslaString(edgeColor));
+                        radgrad.addColorStop(0, utils.toHslaString(centerColor));
+                        radgrad.addColorStop(0.5, utils.toHslaString(midColor));
+                        radgrad.addColorStop(1, utils.toHslaString(edgeColor));
 
-                    this.ctx.fillStyle = radgrad;
-                    this.ctx.fillRect(x - shape.toolSize,
-                        y - shape.toolSize,
-                        shape.toolSize * 2,
-                        shape.toolSize * 2);
+                        this.ctx.fillStyle = radgrad;
+                        this.ctx.fillRect(x - shape.toolSize,
+                            y - shape.toolSize,
+                            shape.toolSize * 2,
+                            shape.toolSize * 2);
+                    }
+                    lastPoint = pt;
                 }
-                lastPoint = pt;
             }
-        }  
         },
         pallette: [
             [
@@ -496,13 +595,13 @@ var MassiveMoose = (function () {
                 { h: 360, s: 1, l: 0.9, a: 1 },
             ]
         ],
-        debug: function(log) {
+        debug: function (log) {
             this.debugElement.innerHTML = log;
         },
-        setForeColor: function(col) {
+        setForeColor: function (col) {
             this.foreColor = col;
         },
-        bindToElement: function(containerEl) {
+        bindToElement: function (containerEl) {
             var ref1, repaintAll;
             if (this.containerEl) {
                 console.warn("Trying to bind to a DOM element more than once is unsupported.");
@@ -515,37 +614,47 @@ var MassiveMoose = (function () {
             this.containerEl.appendChild(this.debugElement);
             this.isBound = true;
         },
-        createDebugElement: function() {
+        createDebugElement: function () {
             var d = document.createElement('div');
             d.style.position = 'absolute';
             d.style.top = '0px';
             d.style.left = '0px';
             d.style.height = '0px';
+            d.style['z-index'] = 2;
             return d;
         },
-        createToolbar: function() {
+        createToolbar: function () {
             var t = document.createElement('div');
             t.className = 'toolbar';
             t.attributes['id'] = 'toolbar';
             t.style.setProperty('top', '0px');
             t.style.setProperty('left', '0px');
+            t.style.backgroundColor = '#fff';
+            t.style['z-index'] = 1;
 
             for (var i = 0; i < this.toolbarItems.length; i++) {
                 var ti = this.toolbarItems[i];
-                var el = ti.initialize(this);
+                if (!ti.enabled) continue;
+                var el = ti.initialize(this, t);
                 el.className += 'toolbar-item';
                 t.appendChild(el);
             }
 
             return t;
         },
-        bindEvents: function() {
-            this.canvas.onmousedown = function(e) {
+        bindEvents: function () {
+            this.canvas.onmousedown = function (e) {
                 var moose = this.moose;
                 var point = { x: e.clientX, y: e.clientY };
-                moose.tools[0].onPointerStart(moose,point);
+                if (e.shiftKey) {
+                    moose.zoom(moose.scale * 1.2, moose.scale, point.x / window.innerWidth, point.y / window.innerHeight);
+                } else if (e.ctrlKey) {
+                    moose.zoom(moose.scale * 0.8, moose.scale, point.x / window.innerWidth, point.y / window.innerHeight);
+                } else {
+                    moose.tools[0].onPointerStart(moose, point);
+                }
             }
-            this.canvas.onmousemove = function(e) {
+            this.canvas.onmousemove = function (e) {
                 var moose = this.moose;
                 if (moose.mouseOut) {
                     moose.lastPoint = { x: e.clientX /= moose.scale, y: e.clientY /= moose.scale };
@@ -556,48 +665,37 @@ var MassiveMoose = (function () {
                 moose.tools[0].onPointerDrag(moose, currentPoint);
             }
 
-            this.canvas.onmouseup = function() {
+            this.canvas.onmouseup = function () {
                 var moose = this.moose;
                 moose.isDrawing = false;
                 moose.tools[0].onPointerStop(moose);
             };
-            this.canvas.onmouseout = function() {
+            this.canvas.onmouseout = function () {
                 var moose = this.moose;
                 moose.mouseOut = true;
             };
             this.canvas.addEventListener('touchmove',
-                function(e) {
+                function (e) {
                     e.preventDefault();
 
                     var moose = this.moose;
                     var touches = e.changedTouches;
                     if (touches.length === 1) {
-                        var currentPoint = { x: touches[0].pageX, y: touches[0].pageY };
+                        var currentPoint = { x: touches[0].pageX * moose.scale + moose.position.x, y: touches[0].pageY * moose.scale + moose.position.y };
                         //moose.debug('touch move');
                         //alert('touch move at ' + touches[0].pageX + ',' + touches[0].pageY);
                         moose.tools[0].onPointerDrag(moose, currentPoint);
-                    } /*else if (touches.length > 1) {
-                        var p1 = touches[0];
-                        var p2 = touches[1];
-                        var zoomScale = Math.sqrt(Math.pow(p2
-                                .pageX -
-                                p1.pageX,
-                                2) +
-                            Math.pow(p2.pageY - p1.pageY, 2)); //euclidian distance
-                        
-                        newScale = moose.scale * (zoomScale / 100);
-                        moose.zoom(newScale, moose.scale);
-                    }*/
+                    }
                 });
             this.canvas.addEventListener('touchend',
-                function(e) {
+                function (e) {
                     e.preventDefault();
                     var moose = this.moose;
                     moose.isDrawing = false;
                     moose.tools[0].onPointerStop(moose);
                 });
             this.canvas.addEventListener('touchstart',
-                function(e) {
+                function (e) {
                     if (e.target.tagName.toLowerCase() !== 'canvas') {
                         return;
                     }
@@ -607,7 +705,7 @@ var MassiveMoose = (function () {
                     var touches = e.changedTouches;
                     if (e.touches.length === 1) {
                         moose.isDrawing = true;
-                        moose.lastPoint = { x: e.touches[0].pageX, y: e.touches[0].pageY };
+                        moose.lastPoint = { x: touches[0].pageX * moose.scale + moose.position.x, y: touches[0].pageY * moose.scale + moose.position.y };
                         moose.tools[0].onPointerStart(moose, point);
                         document.addEventListener('touchmove', touchMoveListener);
                         document.addEventListener('touchend', touchEndListener);
@@ -616,14 +714,48 @@ var MassiveMoose = (function () {
                 });
 
             var Shape;
-            Shape = function() {
+            Shape = function () {
                 return this;
             };
-            Shape.prototype.helloWorld=function() {
+            Shape.prototype.helloWorld = function () {
                 console.log('hello world');
             };
 
+        },
+        bindHammerTime:function(moose) {
+            moose.hammertime = new Hammer(this.canvas);
+            moose.hammertime.moose = moose;
+            moose.hammertime.on('pan',
+                    function(ev) {
+                        var moose = ev.target.moose;
+                    });
+            moose.hammertime.get('pinch').set({ enable: true, direction: Hammer.DIRECTION_ALL });
+            moose.hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL });
+            moose.hammertime.on('pinchstart',
+                    function(ev) {
+                        var moose = ev.target.moose;
+                        moose.scaleAtPinchStart = moose.scale
+                        moose.offsetAtPinchStart = moose.offset;
+                    });
+            moose.hammertime.on('pinchmove',
+                    function(ev) {
+                        try {
+                            var moose = ev.target.moose;
+                            var newScale = moose.scaleAtPinchStart * (ev.scale);
+                            moose.zoom(newScale, moose.scale, ev.center.x, ev.center.y);
+                        } catch (ex) {
+                            moose.debug(ex.message);
+                        }
+                    });
+            moose.hammertime.on('pinchend',
+                    function(ev) {
+                        var moose = ev.target.moose;
+                    });
+            moose.hammertime.on("panleft panright tap press",
+                    function(ev) {
+                        var moose = ev.target.moose;
+                    });
         }
 
-}
+    }
 });
