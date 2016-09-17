@@ -54,14 +54,18 @@
                         $this.xhr.send();
                     };
                 document.getElementById('noHelpThanks1').onclick = function() {
+try {
                     $this.xhr.open('POST', '/Home/DontHelpMe');
                     $this.xhr.send();
                     document.getElementById('help').style.display = 'none';
+} catch (ex){ $this.debug(ex.message); }
                 };
                 document.getElementById('help-close').onclick = function() {
+try {
                     $this.xhr.open('POST', '/Home/DontHelpMe');
                     $this.xhr.send();
                     document.getElementById('help').style.display = 'none';
+} catch (ex){ $this.debug(ex.message); }
                 };
                 document.getElementById('moreHelp2')
                     .onclick = function() {
