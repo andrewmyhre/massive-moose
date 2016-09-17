@@ -13,6 +13,7 @@
             this.wallETag = '0';
             this.xhrWaitHandle = null;
             this.xhr = new XMLHttpRequest();
+            this.updateXhr = new XMLHttpRequest();
             this.xhr.onreadystatechange = function(evt) {
 
             }
@@ -183,13 +184,13 @@
             var $this = wall;
             $this.updateHelpDialogDimensions();
 
-            if ($this.xhr.readyState == 0 || $this.xhr.readyState == 4) {
-                $this.xhr.open('HEAD', $this._baseApiUrl + '/v2/wall/' + $this._inviteCode + '/0/0/' + $this.wallETag);
-                $this.xhr.setRequestHeader('If-None-Match', $this.wallETag);
-                $this.xhr.onload = function () {
-                    if ($this.xhr.status == 200) {
+            if ($this.updateXhr.readyState == 0 || $this.updateXhr.readyState == 4) {
+                $this.updateXhr.open('HEAD', $this._baseApiUrl + '/v2/wall/' + $this._inviteCode + '/0/0/' + $this.wallETag);
+                $this.updateXhr.setRequestHeader('If-None-Match', $this.wallETag);
+                $this.updateXhr.onload = function () {
+                    if ($this.updateXhr.status == 200) {
                         console.log('wall has an update')
-                        $this.wallETag = $this.xhr.getResponseHeader('ETag');
+                        $this.wallETag = $this.updateXhr.getResponseHeader('ETag');
                         if ($this.wallETag) {
                             $this.wallETag = $this.wallETag.replace("\"", "").replace("\"", "")
                         }
@@ -198,7 +199,7 @@
                     }
                     setTimeout($this.checkWallStaleness, $this._refreshTime, $this);
                 }
-                $this.xhr.send();
+                $this.updateXhr.send();
             } else {
                 setTimeout($this.checkWallStaleness, $this._refreshTime, $this);
             }
@@ -208,9 +209,9 @@
                 $this = this;
                 this.setViewScale();
                 this.updateHelpDialogDimensions();
-                this.xhr.open('GET', this._baseApiUrl + '/v2/wall/' + this._inviteCode + '/0/0');
-                this.xhr.setRequestHeader('Content-Type', 'application/json');
-                this.xhr.onload = function () {
+                this.updateXhr.open('GET', this._baseApiUrl + '/v2/wall/' + this._inviteCode + '/0/0');
+                this.updateXhr.setRequestHeader('Content-Type', 'application/json');
+                this.updateXhr.onload = function () {
                     if (this.status === 200) {
                         var data = JSON.parse(this.responseText);
                         $this.containerEl.style.display = 'block';
@@ -270,7 +271,7 @@
                         setTimeout($this.checkWallStaleness, $this._refreshTime, $this);
                     }
                 };
-                this.xhr.send();
+                this.updateXhr.send();
             } else {
 
             }
