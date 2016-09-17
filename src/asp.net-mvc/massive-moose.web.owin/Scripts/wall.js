@@ -311,7 +311,7 @@
 
                     // wait a second before updating to give Azure a chance to propagate the thumbnail image
                     setTimeout(function () {
-                        $this.updateWall(brickElement);
+                        $this.updateWall($this._brickInUse.element);
                     },
                         5000);
                 }
