@@ -7,6 +7,7 @@
 @section stylesheets
 {
     <link href="/content/literallycanvas.css" rel="stylesheet">
+    <link href="/content/draw.css" rel="stylesheet">
     <link href="/content/Wall.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width,initial-scale=@System.Configuration.ConfigurationManager.AppSettings["ViewportScale"]"/>
     <style>
@@ -23,18 +24,25 @@
 @section scripts
 {
     <!-- dependency: React.js -->
-    <script src="/scripts/screenfull.js"></script>
-    <script src="/scripts/literallycanvas/literallycanvas-core.min.js"></script>
-    <script src="/scripts/mm.js"></script>
-    
-<script type="text/javascript" src="/Scripts/colors.js"></script>
-<script type="text/javascript" src="/Scripts/colorPicker.data.js"></script>
-<script type="text/javascript" src="/Scripts/colorPicker.js"></script>
-    <script src="/scripts/jsColor.js"></script>
-    
+    <script type="text/javascript" src="/Scripts/hammer.min.js"></script>
+    <script src="/scripts/wall.js"></script>
+    <script src="/scripts/draw.js"></script>
     
     <script type="text/javascript">
-        MassiveMoose.initialize(
+        var draw = Draw();
+        draw.initialize(document.getElementById('drawSpace'),
+        {
+            width: window.innerWidth,
+            height: window.innerHeight,
+            onExportImage: function(sessionData,imageData,json) {
+                sessionData.wallInstance.endSession(sessionData, imageData, json);
+            },
+            onCanceled: function() {
+                sessionData.wallInstance.cancelSession(sessionData);
+            }
+        });
+
+        Wall.initialize(document.getElementById('wall'),
             {
                 baseApiUrl: '@System.Configuration.ConfigurationManager.AppSettings["MMApi"]',
                 drawZoom: @System.Configuration.ConfigurationManager.AppSettings["DrawZoom"],
@@ -44,30 +52,11 @@
                 inviteCode: '@Model.InviteCode',
                 toolbarShowDelay: 300,
                 firstTime: '@(!Model.DontHelpMe)',
-                refreshTime: @System.Configuration.ConfigurationManager.AppSettings["WallRefreshTime"]
+                refreshTime: @System.Configuration.ConfigurationManager.AppSettings["WallRefreshTime"],
+                drawingApp: draw,
+                startDrawing: function(data){draw.startDrawing(data);}
             }
         );
-    </script>
-    <script type="text/javascript">
-        var primaryPicker=jsColorPicker('input.color',
-        {
-            customBG: '#222',
-            readOnly: true,
-            // patch: false,
-            init: function(elm, colors) { // colors is a different instance (not connected to colorPicker)
-                elm.style.backgroundColor = elm.value;
-                elm.style.color = colors.rgbaMixCustom.luminance > 0.22 ? '#222' : '#ddd';
-            },
-            actionCallback: function(event, type) {
-                if (type === 'changeXYValue') { // overwriting right after repaint...
-                    
-                    _lc.setColor('primary', document.getElementById('primaryColor').value);
-                    _lc.setColor('secondary', document.getElementById('secondaryColor').value);
-                }
-            },
-            size: 5,
-            scale:2
-        });
     </script>
 }
 
@@ -121,116 +110,7 @@
         }
     </table>
 </div>
-<div id="drawSpace"></div>
-<div id="tools-wrapper" class="text-left" style="display: none">
-    <div id="tools" class="container-fluid">
-        <div class="row">
-            <div class="col-xs-12 col-sm-1 col-md-1 col-lg-2">
-                <button href="#" id="toolbar-dock" class="btn btn-default"><span class="glyphicon glyphicon-chevron-down"></span></button>
-                <button href="#" id="toolbar-size" class="btn btn-default"><span class="glyphicon glyphicon-minus"></span></button>
-            </div>
-            <div class="col-xs-12 col-sm-11 col-md-11 col-lg-10">
-                <div id="tools-inner" class="row">
-                    <div class="col-xs-12 col-md-4 tool-group">
-                        <button id="zoom-out" class="tool btn btn-sm btn-default"><span class="glyphicon glyphicon-zoom-out"></span></button>
-                        <button id="zoom-in" class="tool btn btn-sm btn-default"><span class="glyphicon glyphicon-zoom-in"></span></button>
-                        <button id="undo" class="tool btn btn-sm btn-default"><span class="glyphicon glyphicon-chevron-left"></span></button>
-                        <button id="redo" class="tool btn btn-sm btn-default"><span class="glyphicon glyphicon-chevron-right"></span></button>
-                        <button id="cancel-button" class="tool btn btn-sm btn-primary"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
-                        <button id="save-button" class="tool btn btn-sm btn-primary"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></button>
-                    </div>
-                    <div class="col-xs-12 col-md-4 tool-group">
-                        <button id="tool-pencil" class="tool btn btn-sm btn-default" style="background-image: url('/content/img/pencil.png')">&nbsp;</button>
-                        <button id="tool-eraser" class="tool btn btn-sm btn-default" style="background-image: url('/content/img/eraser.png')">&nbsp;</button>
-                        <button id="tool-line" class="tool btn btn-sm btn-default" style="background-image: url('/content/img/line.png')">&nbsp;</button>
-                        <button id="tool-rectangle" class="tool btn btn-sm btn-default" style="background-image: url('/content/img/rectangle.png')">&nbsp;</button>
-                        <button id="tool-ellipse" class="tool btn btn-sm btn-default" style="background-image: url('/content/img/ellipse.png')">&nbsp;</button>
-                        <button id="tool-polygon" class="tool btn btn-sm btn-default" style="background-image: url('/content/img/polygon.png')">&nbsp;</button>
-                        <button id="tool-text" class="tool btn btn-sm btn-default" style="background-image: url('/content/img/text.png')">&nbsp;</button>
-                        <button id="tool-pan" class="tool btn btn-sm btn-default" style="background-image: url('/content/img/pan.png')">&nbsp;</button>
-                    </div>
-                    <div id="drawTools" class="col-xs-12 col-md-4 tool-group">
-                        <input name="primaryColor" id="primaryColor" class="color tool btn btn-sm" readonly data-colormode="hsl" value="#000000" />
-                        <input name="secondaryColor" id="secondaryColor" class="color tool btn btn-sm" readonly data-colormode="hsl" value="#FFFFFF" />
-                        <a id="stroke-1" class="tool btn btn-sm btn-default" style="padding:0">
-                            <svg version="1.1"><circle cx="16" cy="16" r="0.5"></circle></svg>
-                        </a>
-                        <a id="stroke-2" class="tool btn btn-sm btn-default" style="padding:0">
-                            <svg version="1.1"><circle cx="16" cy="16" r="1"></circle></svg>
-                        </a>
-                        <a id="stroke-3" class="tool btn btn-sm btn-default" style="padding:0">
-                            <svg version="1.1"><circle cx="16" cy="16" r="2.5"></circle></svg>
-                        </a>
-                        <a id="stroke-4" class="tool btn btn-sm btn-default" style="padding:0">
-                            <svg version="1.1"><circle cx="16" cy="16" r="5"></circle></svg>
-                        </a>
-                        <a id="stroke-5" class="tool btn btn-sm btn-default" style="padding:0">
-                            <svg version="1.1"><circle cx="16" cy="16" r="10"></circle></svg>
-                        </a>
-                        <a id="stroke-6" class="tool btn btn-sm btn-default" style="padding:0">
-                            <svg  version="1.1"><circle cx="16" cy="16" r="15"></circle></svg>
-                        </a>
-                    </div>
-                    <div id="textTools" class="col-xs-12 col-md-4 tool-group">
-                        <input type="checkbox" name="font-bold" id="font-bold" value="bold" />
-                        <input type="checkbox" name="font-italic" id="font-italic" value="italic" />
-                        <select name="font-size" id="font-size">
-                            @{
-                                var fontSizes = new[] { 9, 10, 12, 14, 18, 24, 36, 48, 64, 72, 96, 144, 288 };
-                            }
-                            @for (int i=0;i<fontSizes.Length;i++)
-                            {
-                                <option value="@i">@(fontSizes[i] + "px")</option>
-                            }
-                        </select>
-                        <select name="font-face" id="font-face">
-                            <optgroup label="Sans Serif">
-                                <option value="Arial">Arial</option>
-                                <option value="Arial Black">Arial Black</option>
-                                <option value="Arial Narrow">Arial Narrow</option>
-                                <option value="Gill Sans">Gill Sans</option>
-                                <option value="Helvetica">Helvetica</option>
-                                <option value="Impact">Impact</option>
-                                <option value="Tahoma">Tahoma</option>
-                                <option value="Trebuchet MS">Trebuchet MS</option>
-                                <option value="Verdana">Verdana</option>
-                            </optgroup>
-                            <optgroup label="Serif">
-                                <option value="Baskerville">Baskerville</option>
-                                <option value="Garamond">Garamond</option>
-                                <option value="Georgia">Georgia</option>
-                                <option value="Hoefler Text">Hoefler Text</option>
-                                <option value="Lucida Bright">Lucida Bright</option>
-                                <option value="Palatino">Palatino</option>
-                                <option value="Times New Roman">Times New Roman</option>
-                            </optgroup>
-                            <optgroup label="Monospace">
-                                <option value="Consolas/Monaco">Consolas/Monaco</option>
-                                <option value="Courier New">Courier New</option>
-                                <option value="Lucida Sans Typewriter">Lucida Sans Typewriter</option>
-                            </optgroup>
-                            <optgroup label="Other">
-                                <option value="Copperplate">Copperplate</option>
-                                <option value="Papyrus">Papyrus</option>
-                                <option value="Script">Script</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div id="alert" class="alert alert-danger col-xs-12" style="display: none" role="alert">
-                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                <span class="sr-only">Error:</span>
-                <span id="alert-message">Sorry! There was a problem saving the image... try again? :/</span>
-            </div>
-            <div id="progress" class="text-center col-xs-12" style="display: none" role="alert">
-                <div id="progress-indicator"></div>
-                <div>Just a sec...</div>
-            </div>
-
-        </div>
-    </div>
-</div>
+<div id="drawSpace" style="display:none"></div>
 
 
 @if (!Model.DontHelpMe)

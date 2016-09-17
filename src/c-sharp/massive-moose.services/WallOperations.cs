@@ -94,7 +94,16 @@ namespace massive_moose.services
                     System.IO.MemoryStream myResult = new System.IO.MemoryStream();
                     newImage.Save(myResult, System.Drawing.Imaging.ImageFormat.Png);
 
-                    drawingSession.Closed = true;
+                    using (
+                        var fout =
+                            System.IO.File.Open(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                                "app_data","image.png"), System.IO.FileMode.Create, System.IO.FileAccess.Write, System.IO.FileShare.None))
+                    {
+                        fout.Write(imageData, 0, imageData.Length);
+                        fout.Flush();
+                    }
+
+                        drawingSession.Closed = true;
 
                     byte[] thumbnailImageData = myResult.ToArray();
                     _fileStorage.Store(thumbnailImagePath, thumbnailImageData, true);
@@ -140,10 +149,11 @@ namespace massive_moose.services
                     wallHistoryItem.ClientIp = clientIp;
                     wallHistoryItem.DrawingSession = drawingSession;
 
-                    GetLatestWallSnapshotAndUpdateCache(0,0, drawingSession.Wall.InviteCode, session);
+                    GetLatestWallSnapshotAndUpdateCache(0, 0, drawingSession.Wall.InviteCode, session);
 
                     session.Save(wallHistoryItem);
                     tx.Commit();
+
 
                 }
                 catch (Exception ex)

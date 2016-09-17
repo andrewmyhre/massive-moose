@@ -65,7 +65,7 @@ math.scalePositionScalar = function (val, viewportSize, oldScale, newScale) {
     return val + (oldSize - newSize) / 2;
 };
 
-var MassiveMoose = (function () {
+var Draw = (function () {
     return {
         initialize: function (arg1, arg2) {
             var containerEl, opts;
@@ -121,6 +121,58 @@ var MassiveMoose = (function () {
             if (this.zoomEnabled) {
                 this.bindHammerTime(this);
             }
+        },
+        bindToElement: function (containerEl) {
+            var ref1, repaintAll;
+            if (this.containerEl) {
+                console.warn("Trying to bind to a DOM element more than once is unsupported.");
+                return;
+            }
+            this.containerEl = containerEl;
+            this.containerEl.appendChild(this.canvas);
+            this.containerEl.style['background-color'] = "#aaaaaa"
+            this.containerEl.style['overflow'] = 'hidden';
+            this.containerEl.style['position'] = 'absolute';
+            this.containerEl.style['top'] = '0px';
+            this.containerEl.style['left'] = '0px';
+            this.containerEl.appendChild(this.debugElement);
+            this.isBound = true;
+        },
+        startDrawing: function (data) {
+            this.sessionData = data;
+            this.containerEl.style.display = 'block';
+            this.enableToolbar();
+            this.shapes = [];
+            this.redraw();
+        },
+        close: function() {
+            this.containerEl.style.display = 'none';
+        },
+        onSave: function () {
+            this.disableToolbar();
+            if (this.onExportImage) {
+                try {
+                    this.onExportImage(this.sessionData, this.canvas.toDataURL('image/png'), JSON.stringify(this.shapes));
+                    this.close();
+                    return;
+                } catch (ex) {
+                    this.debug(ex.message);
+                }
+            }
+            this.enableToolbar();
+        },
+        onCancel: function () {
+            disableToolbar();
+            if (this.onCanceled) {
+                try {
+                    this.onCanceled();
+                    this.close();
+                    return;
+                } catch (ex) {
+                    this.debug(ex.message);
+                }
+            }
+            this.enableToolbar();
         },
         tools: [
             {
@@ -417,30 +469,6 @@ var MassiveMoose = (function () {
                 ti.el.disabled = false;
             }
         },
-        onSave: function () {
-            this.disableToolbar();
-            if (this.onExportImage) {
-                try {
-                    this.onExportImage(this.canvas.toDataURL('image/png'), JSON.stringify(this.shapes));
-                    return;
-                } catch (ex) {
-                    this.debug(ex.message);
-                }
-            }
-            this.enableToolbar();
-        },
-        onCancel: function() {
-            disableToolbar();
-            if (this.onCanceled) {
-                try {
-                    this.onCanceled();
-                    return;
-                } catch (ex) {
-                    this.debug(ex.message);
-                }
-            }
-            this.enableToolbar();
-        },
         zoom: function (newScale, oldScale, centerX, centerY) {
             if (newScale < 1) newScale = 1;
             if (newScale > 32) newScale = 32;
@@ -600,19 +628,6 @@ var MassiveMoose = (function () {
         },
         setForeColor: function (col) {
             this.foreColor = col;
-        },
-        bindToElement: function (containerEl) {
-            var ref1, repaintAll;
-            if (this.containerEl) {
-                console.warn("Trying to bind to a DOM element more than once is unsupported.");
-                return;
-            }
-            this.containerEl = containerEl;
-            this.containerEl.appendChild(this.canvas);
-            this.containerEl.style['background-color'] = "#aaaaaa"
-            this.containerEl.style['overflow'] = 'hidden';
-            this.containerEl.appendChild(this.debugElement);
-            this.isBound = true;
         },
         createDebugElement: function () {
             var d = document.createElement('div');
