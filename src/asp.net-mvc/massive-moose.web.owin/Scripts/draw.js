@@ -162,10 +162,10 @@ var Draw = (function () {
             this.enableToolbar();
         },
         onCancel: function () {
-            disableToolbar();
+            this.disableToolbar();
             if (this.onCanceled) {
                 try {
-                    this.onCanceled();
+                    this.onCanceled(this.sessionData);
                     this.close();
                     return;
                 } catch (ex) {
@@ -405,6 +405,9 @@ var Draw = (function () {
                     var el = document.createElement('button');
                     el.innerHTML = '<span class="glyphicon glyphicon-remove"></span>';
                     this.el = el;
+                    el.onclick = function(e) {
+                        moose.onCancel();
+                    };
                     return el;
                 }
             },

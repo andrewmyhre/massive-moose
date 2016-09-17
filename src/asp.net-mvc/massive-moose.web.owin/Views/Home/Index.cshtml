@@ -37,7 +37,7 @@
             onExportImage: function(sessionData,imageData,json) {
                 sessionData.wallInstance.endSession(sessionData, imageData, json);
             },
-            onCanceled: function() {
+            onCanceled: function(sessionData) {
                 sessionData.wallInstance.cancelSession(sessionData);
             }
         });

@@ -240,16 +240,8 @@
                                     brick.y +
                                     '?d=' +
                                     brick.d;
-                                if (brick.c == 1) {
-                                    
-                                    console.log('brick ' + x + ',' + y + ' has content at ' + brickImageUrl);
-                                }
 
                                 if (brick.c == 1 && ($this._wall && $this._wall[x][y])) {
-                                    if (brickView.getAttribute('data-updated') == '0') {
-                                        console.log('new brick ' + x + ', ' + y);
-                                    }
-
                                     // TODO: only update source image if the brick.D value is different to the data-updated attribute on the element
                                     if (brick.d != brickView.getAttribute('data-updated')) {
                                         brickView.style.backgroundImage = 'url("' + brickImageUrl + '")';
@@ -328,7 +320,8 @@
         },
         cancelSession: function () {
             var $this = this;
-            xhr.open('POST', _baseApiUrl + '/v1/release/' + _brickInUse.sessionToken);
+            var xhr = this.xhr;
+            xhr.open('POST', this._baseApiUrl + '/v1/release/' + this._brickInUse.sessionToken);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send();
             xhr.onload = function() {
