@@ -54,18 +54,10 @@
                         $this.xhr.send();
                     };
                 document.getElementById('noHelpThanks1').onclick = function() {
-try {
-                    //$this.xhr.open('POST', '/Home/DontHelpMe');
-                    //$this.xhr.send();
-                    document.getElementById('help').style.display = 'none';
-} catch (ex){ alert(ex.message); }
+                    $this.setDontHelpMe();
                 };
                 document.getElementById('help-close').onclick = function() {
-try {
-                    //$this.xhr.open('POST', '/Home/DontHelpMe');
-                    //$this.xhr.send();
-                    document.getElementById('help').style.display = 'none';
-} catch (ex){ alert(ex.message); }
+                    $this.setDontHelpMe();
                 };
                 document.getElementById('moreHelp2')
                     .onclick = function() {
@@ -80,19 +72,24 @@ try {
                         $this.xhr.send();
                     };
                 document.getElementById('noHelpThanks2').onclick = function() {
-                    SetDontHelpMe();
+                    $this.setDontHelpMe();
                     document.getElementById('help').style.display = 'none';
                 };
                 document.getElementById('noHelpThanks3').onclick = function() {
-                    SetDontHelpMe();
+                    $this.setDontHelpMe();
                     document.getElementById('help').style.display = 'none';
                 };
                 document.getElementById('help-close').onclick = function() {
-                    SetDontHelpMe();
+                    $this.setDontHelpMe();
                     document.getElementById('help').style.display = 'none';
                 };
             }
 
+        },
+        setDontHelpMe:function() {
+            this.xhr.open('POST', '/Home/DontHelpMe');
+            this.xhr.send();
+            document.getElementById('help').style.display = 'none';
         },
         bindBricks: function () {
             var $wall = this;
