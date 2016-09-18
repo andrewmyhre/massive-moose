@@ -55,15 +55,15 @@
                     };
                 document.getElementById('noHelpThanks1').onclick = function() {
 try {
-                    $this.xhr.open('POST', '/Home/DontHelpMe');
-                    $this.xhr.send();
+                    //$this.xhr.open('POST', '/Home/DontHelpMe');
+                    //$this.xhr.send();
                     document.getElementById('help').style.display = 'none';
 } catch (ex){ alert(ex.message); }
                 };
                 document.getElementById('help-close').onclick = function() {
 try {
-                    $this.xhr.open('POST', '/Home/DontHelpMe');
-                    $this.xhr.send();
+                    //$this.xhr.open('POST', '/Home/DontHelpMe');
+                    //$this.xhr.send();
                     document.getElementById('help').style.display = 'none';
 } catch (ex){ alert(ex.message); }
                 };
