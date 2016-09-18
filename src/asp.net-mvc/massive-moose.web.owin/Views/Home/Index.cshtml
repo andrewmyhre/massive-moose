@@ -32,8 +32,8 @@
         var draw = Draw();
         draw.initialize(document.getElementById('drawSpace'),
         {
-            width: screen.availWidth,
-            height: screen.availHeight,
+            width: '100%',
+            height: '100%',
             onExportImage: function(sessionData,imageData,json) {
                 sessionData.wallInstance.endSession(sessionData, imageData, json);
             },
