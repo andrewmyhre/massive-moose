@@ -223,11 +223,12 @@ var Draw = (function () {
             tools: [
                 {
                     name: 'sprayPaint1',
+                    iconHtml:'<img src="/content/tool_paint.png" />',
                     getToolbarElement: function(isSelected, onSelected) {
                         var $this = this;
                         var el = document.createElement('button');
                         this.el = el;
-                        el.innerHTML = 'paint';
+                        el.innerHTML = this.iconHtml;
                         if (isSelected) {
                             el.style.border = '1px solid red';
                         } else {
@@ -295,6 +296,7 @@ var Draw = (function () {
                 },
                 {
                     name: 'ink',
+                    iconHtml: '<img src="/content/tool_ink.png" />',
                     getToolbarElement: function (isSelected, onSelected) {
                         var $this = this;
                         var el = document.createElement('button');
@@ -303,7 +305,7 @@ var Draw = (function () {
                         this.sizeChangeWait = utils.getRandomInt(2, 5);
                         this.blotWait = utils.getRandomInt(100, 300);
                         this.actualInkSize = 1;
-                        el.innerHTML = 'ink';
+                        el.innerHTML = this.iconHtml;
                         if (isSelected) {
                             el.style.border = '1px solid red';
                         } else {
@@ -460,7 +462,7 @@ var Draw = (function () {
                         if (!this.popup) {
                             this.popup = document.createElement('div');
                         }
-                        el.innerHTML = '<span class="glyphicon glyphicon-pencil"></span>';
+                        el.innerHTML = moose.tools[0].iconHtml;
                         this.popup.style.position = 'absolute';
                         this.popup.style['z-index'] = 103;
                         this.popup.style.width = '200px';
@@ -480,8 +482,10 @@ var Draw = (function () {
                                             moose.selectedTool = tool;
                                             console.log('selected tool ' + tool.name);
                                             $popup.style.display = 'none';
+                                            el.innerHTML = tool.iconHtml;
                                     });
                                 $popup.appendChild(toolSelector);
+                                
                             }
                             $popup.style.display = 'block';
                         };

@@ -269,6 +269,8 @@
     <Content Include="Content\rolling.css" />
     <Content Include="Content\Seamless_Brick_Wall_Texture.jpg" />
     <Content Include="Content\Tiled_bricks.jpg" />
+    <Content Include="Content\tool_ink.png" />
+    <Content Include="Content\tool_paint.png" />
     <Content Include="Content\twitter-logo.png" />
     <Content Include="Content\Wall.css" />
     <Content Include="Content\backgrounds\white-brick.jpg" />
