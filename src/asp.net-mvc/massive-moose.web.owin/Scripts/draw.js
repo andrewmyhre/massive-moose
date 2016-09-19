@@ -135,8 +135,8 @@ var Draw = (function () {
             this.containerEl.style['position'] = 'absolute';
             this.containerEl.style['top'] = '0px';
             this.containerEl.style['left'] = '0px';
-            this.containerEl.style['width'] = this.width;
-            this.containerEl.style['height'] = this.height;
+            this.containerEl.style['width'] = this.width+'px';
+            this.containerEl.style['height'] = this.height + 'px';
             this.containerEl.appendChild(this.debugElement);
             this.isBound = true;
         },

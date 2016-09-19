@@ -6,7 +6,6 @@
 
 @section stylesheets
 {
-    <link href="/content/literallycanvas.css" rel="stylesheet">
     <link href="/content/draw.css" rel="stylesheet">
     <link href="/content/Wall.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width,initial-scale=@System.Configuration.ConfigurationManager.AppSettings["ViewportScale"]"/>
@@ -32,8 +31,8 @@
         var draw = Draw();
         draw.initialize(document.getElementById('drawSpace'),
         {
-            width: '100%',
-            height: '100%',
+            width: '1600',
+            height: '900',
             onExportImage: function(sessionData,imageData,json) {
                 sessionData.wallInstance.endSession(sessionData, imageData, json);
             },
