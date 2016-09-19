@@ -1,15 +1,15 @@
 ﻿var utils = {};
 
-utils.distanceBetween=function (point1, point2) {
+utils.distanceBetween = function (point1, point2) {
     return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
 }
-utils.angleBetween=function (point1, point2) {
+utils.angleBetween = function (point1, point2) {
     return Math.atan2(point2.x - point1.x, point2.y - point1.y);
 }
-utils.toHslaString=function (hsla) {
+utils.toHslaString = function (hsla) {
     return 'hsla(' + hsla.h + ',' + (hsla.s * 100) + '%,' + (hsla.l * 100) + '%,' + hsla.a + ')'
 }
-utils.fromHslaString=function (input) {
+utils.fromHslaString = function (input) {
     input = input.substr(input.indexOf('(') + 1);
     input = input.substring(0, input.length - 1);
     var s = input.split(',');
@@ -21,7 +21,7 @@ utils.fromHslaString=function (input) {
     };
 }
 
-utils.fromRgbString=function (input) {
+utils.fromRgbString = function (input) {
     input = input.substr(input.indexOf('(') + 1);
     input = input.substring(0, input.length - 1);
     var s = input.split(',');
@@ -81,6 +81,7 @@ var Draw = (function () {
             this.onExportImage = opts.onExportImage;
             this.onCanceled = opts.onCanceled;
 
+            this.viewportScale = 1;
             this.opts = opts || {};
             this.isDrawing = false;
             this.lastPoint = null;
@@ -95,6 +96,7 @@ var Draw = (function () {
             this.isPinching = false;
 
             this.canvas = document.createElement('canvas');
+            this.buffer = document.createElement('canvas');
             this.canvas.style['background-color'] = 'white';
             this.canvas.moose = this;
             this.ctx = this.canvas.getContext('2d');
@@ -102,9 +104,12 @@ var Draw = (function () {
             this.currentShape = null;
             this.shapes = [];
 
-            this.canvas.style.width = this.width = opts.width;
-            this.canvas.style.height = this.height = opts.height;
+            this.canvas.width = this.buffer.width = this.width = opts.width;
+            this.canvas.height = this.buffer.height = this.height = opts.height;
             this.position = { x: 0, y: 0 };
+
+            this.buffer.moose = this;
+            this.buffer.lineJoin = this.buffer.lineCap = 'round';
 
             this.toolSize = 10;
             this.foreColor = { h: 100, s: 1, l: 0.5, a: 1 };
@@ -135,26 +140,56 @@ var Draw = (function () {
             this.containerEl.style['position'] = 'absolute';
             this.containerEl.style['top'] = '0px';
             this.containerEl.style['left'] = '0px';
-            this.containerEl.style['width'] = this.width+'px';
-            this.containerEl.style['height'] = this.height + 'px';
+            this.containerEl.style['width'] = this.width;
+            this.containerEl.style['height'] = this.height;
             this.containerEl.appendChild(this.debugElement);
+
             this.isBound = true;
         },
         startDrawing: function (data) {
+            var viewport = document.querySelector("meta[name=viewport]");
+            var scalex = 1600 / screen.availWidth;
+            var scaley = 900 / screen.availHeight;
+            this.scale = scalex;
+            console.log(this.scale);
+            if (scalex * screen.availHeight > 900) {
+                this.scale = scaley;
+                console.log(this.scale);
+            }
+            if (this.scale < 1) {
+                this.scale = 1;
+                console.log(this.scale);
+            }
+            this.canvas.width = 1600;
+            this.canvas.height = 900;
+            this.ctx.scale(1 / this.scale, 1 / this.scale);
             this.sessionData = data;
             this.containerEl.style.display = 'block';
             this.enableToolbar();
-            this.shapes = [];
+
+            var snapshot = JSON.parse(data.data.snapshotJson);
+
+            if (snapshot && snapshot.length) {
+                for (var i = 0; i < snapshot.length; i++) {
+                    try {
+                        this.shapes.push(snapshot[i]);
+                    } catch (ex) {
+
+                    }
+                }
+            }
             this.redraw();
         },
-        close: function() {
+        close: function () {
             this.containerEl.style.display = 'none';
+            this.shapes = [];
         },
         onSave: function () {
             this.disableToolbar();
             if (this.onExportImage) {
                 try {
-                    this.onExportImage(this.sessionData, this.canvas.toDataURL('image/png'), JSON.stringify(this.shapes));
+                    this.updateBuffer();
+                    this.onExportImage(this.sessionData, this.buffer.toDataURL('image/png'), JSON.stringify(this.shapes));
                     this.close();
                     return;
                 } catch (ex) {
@@ -180,14 +215,10 @@ var Draw = (function () {
             {
                 name: 'sprayPaint1',
                 onPointerStart: function (moose, pt) {
-                    pt.x /= moose.scale;
-                    pt.y /= moose.scale;
                     moose.isDrawing = true;
                     moose.lastPoint = pt;
                 },
                 onPointerDrag: function (moose, pt) {
-                    pt.x /= moose.scale;
-                    pt.y /= moose.scale;
                     var dist = utils.distanceBetween(moose.lastPoint, pt);
                     var angle = utils.angleBetween(moose.lastPoint, pt);
 
@@ -232,6 +263,7 @@ var Draw = (function () {
 
                 },
                 onPointerStop: function (moose) {
+                    if (!moose.shapes) moose.shapes = [];
                     moose.shapes.push(moose.currentShape);
                     moose.currentShape = null;
                     console.log(moose.shapes[moose.shapes.length - 1]);
@@ -312,8 +344,11 @@ var Draw = (function () {
                         if (!$this.opened) {
                             $this.picker.style.display = 'block';
                             $this.picker.style.position = 'absolute';
-                            $this.picker.style.top = '50px';
+                            $this.picker.style.top = '0px';
                             $this.picker.style.left = '0px';
+                            $this.picker.style.width = (screen.availWidth / moose.viewportScale) + 'px';
+                            $this.picker.style.height = (screen.availHeight / moose.viewportScale) + 'px';
+                            $this.picker.style['z-index'] = 102;
                             $this.opened = true;
                         } else {
                             $this.picker.style.display = 'none';
@@ -325,8 +360,6 @@ var Draw = (function () {
 
                     var colorPicker = document.createElement('div');
                     colorPicker.style.display = 'none';
-                    colorPicker.style.width = '100%';
-                    colorPicker.style.height = '100%';
                     colorPicker.style.position = 'absolute';
                     colorPicker.style.top = '0';
                     colorPicker.style.left = '1';
@@ -341,6 +374,7 @@ var Draw = (function () {
                             cel.style.width = '10%';
                             cel.style.height = '100%';
                             cel.style.margin = 'auto auto auto auto';
+                            cel.style.border = '0';
                             var col = null;
                             if (moose.pallette[px] && moose.pallette[px][py])
                                 col = moose.pallette[px][py];
@@ -388,7 +422,7 @@ var Draw = (function () {
                         moose.toolSize = el.value;
                         lbl.innerHTML = 'Size:' + moose.toolSize;
                     };
-                    el.style.width = '100px';
+                    el.style.width = '200px';
                     el.style.setProperty("display", "inline-block", "important");
                     el.style['position'] = 'relative';
                     el.style['top'] = '5px';
@@ -401,13 +435,59 @@ var Draw = (function () {
                 }
             },
             {
+                name: 'fullscreen',
+                enabled: true,
+                initialize: function (moose) {
+                    var el = document.createElement('button');
+                    this.el = el;
+                    el.innerHTML = '<span class="glyphicon glyphicon-fullscreen"></span>';
+                    el.onclick = function (e) {
+                        if (
+                              document.fullscreenEnabled ||
+                              document.webkitFullscreenEnabled ||
+                              document.mozFullScreenEnabled ||
+                              document.msFullscreenEnabled
+                          ) {
+
+                            if (
+                                  document.fullscreenElement ||
+                                  document.webkitFullscreenElement ||
+                                  document.mozFullScreenElement ||
+                                  document.msFullscreenElement
+                              ) {
+                                if (document.exitFullscreen) {
+                                    document.exitFullscreen();
+                                } else if (document.webkitExitFullscreen) {
+                                    document.webkitExitFullscreen();
+                                } else if (document.mozCancelFullScreen) {
+                                    document.mozCancelFullScreen();
+                                } else if (document.msExitFullscreen) {
+                                    document.msExitFullscreen();
+                                }
+                            } else {
+                                if (moose.containerEl.requestFullscreen) {
+                                    moose.containerEl.requestFullscreen();
+                                } else if (moose.containerEl.webkitRequestFullscreen) {
+                                    moose.containerEl.webkitRequestFullscreen();
+                                } else if (moose.containerEl.mozRequestFullScreen) {
+                                    moose.containerEl.mozRequestFullScreen();
+                                } else if (moose.containerEl.msRequestFullscreen) {
+                                    moose.containerEl.msRequestFullscreen();
+                                }
+                            }
+                        }
+                    };
+                    return el;
+                }
+            },
+            {
                 name: 'cancel',
                 enabled: true,
                 initialize: function (moose) {
                     var el = document.createElement('button');
                     el.innerHTML = '<span class="glyphicon glyphicon-remove"></span>';
                     this.el = el;
-                    el.onclick = function(e) {
+                    el.onclick = function (e) {
                         moose.onCancel();
                     };
                     return el;
@@ -415,7 +495,7 @@ var Draw = (function () {
             },
             {
                 name: 'save',
-                enabled:true,
+                enabled: true,
                 initialize: function (moose) {
                     var el = document.createElement('button');
                     el.innerHTML = '<span class="glyphicon glyphicon-floppy-disk"></span>';
@@ -428,7 +508,7 @@ var Draw = (function () {
             },
             {
                 name: 'zoom-in',
-                enabled:this.zoomEnabled,
+                enabled: this.zoomEnabled,
                 initialize: function (moose) {
                     var el = document.createElement('button');
                     el.innerHTML = 'zoom in';
@@ -458,7 +538,7 @@ var Draw = (function () {
                 }
             }
         ],
-        disableToolbar: function() {
+        disableToolbar: function () {
             for (var i = 0; i < this.toolbarItems.length; i++) {
                 var ti = this.toolbarItems[i];
                 if (!ti.enabled) continue;
@@ -466,7 +546,7 @@ var Draw = (function () {
                 ti.el.disabled = true;
             }
         },
-        enableToolbar: function() {
+        enableToolbar: function () {
             for (var i = 0; i < this.toolbarItems.length; i++) {
                 var ti = this.toolbarItems[i];
                 if (!ti.enabled) continue;
@@ -520,8 +600,10 @@ var Draw = (function () {
             //this.debug('pos:'+x+','+y);
             this.redraw();
         },
-        redraw: function () {
-            this.ctx.clearRect(this.position.x, this.position.y, this.width, this.height);
+        drawShapesToCanvas: function (canvas) {
+            var ctx = canvas.getContext('2d');
+
+            if (!this.shapes) this.shapes = [];
             for (var s = 0; s < this.shapes.length; s++) {
                 var shape = this.shapes[s];
                 if (!shape) continue;
@@ -536,7 +618,7 @@ var Draw = (function () {
                         x = lastPoint.x + (Math.sin(angle) * i);
                         y = lastPoint.y + (Math.cos(angle) * i);
 
-                        var radgrad = this.ctx
+                        var radgrad = ctx
                             .createRadialGradient(x, y, shape.toolSize / 2, x, y, shape.toolSize);
 
                         var centerColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
@@ -550,8 +632,8 @@ var Draw = (function () {
                         radgrad.addColorStop(0.5, utils.toHslaString(midColor));
                         radgrad.addColorStop(1, utils.toHslaString(edgeColor));
 
-                        this.ctx.fillStyle = radgrad;
-                        this.ctx.fillRect(x - shape.toolSize,
+                        ctx.fillStyle = radgrad;
+                        ctx.fillRect(x - shape.toolSize,
                             y - shape.toolSize,
                             shape.toolSize * 2,
                             shape.toolSize * 2);
@@ -559,6 +641,20 @@ var Draw = (function () {
                     lastPoint = pt;
                 }
             }
+        },
+        updateBuffer: function () {
+            var bufferCtx = this.buffer.getContext('2d');
+            bufferCtx.clearRect(0, 0, this.width, this.height);
+            this.drawShapesToCanvas(this.buffer);
+        },
+        redraw: function () {
+            this.ctx.clearRect(this.position.x, this.position.y, this.width, this.height);
+            if (!this.shapes) this.shapes = [];
+            this.drawShapesToCanvas(this.canvas);
+
+            var bufferCtx = this.buffer.getContext('2d');
+            bufferCtx.clearRect(0, 0, this.width, this.height);
+            this.drawShapesToCanvas(this.buffer);
         },
         pallette: [
             [
@@ -650,6 +746,7 @@ var Draw = (function () {
             t.style.setProperty('top', '0px');
             t.style.setProperty('left', '0px');
             t.style.backgroundColor = '#fff';
+            //t.style['font-size'] = '5em';
             t.style['z-index'] = 1;
 
             for (var i = 0; i < this.toolbarItems.length; i++) {
@@ -671,6 +768,8 @@ var Draw = (function () {
                 } else if (e.ctrlKey) {
                     moose.zoom(moose.scale * 0.8, moose.scale, point.x / window.innerWidth, point.y / window.innerHeight);
                 } else {
+                    point.x *= moose.scale;
+                    point.y *= moose.scale;
                     moose.tools[0].onPointerStart(moose, point);
                 }
             }
@@ -682,6 +781,8 @@ var Draw = (function () {
                 }
                 if (!moose.isDrawing) return;
                 var currentPoint = { x: e.clientX, y: e.clientY };
+                currentPoint.x *= moose.scale;
+                currentPoint.y *= moose.scale;
                 moose.tools[0].onPointerDrag(moose, currentPoint);
             }
 
@@ -742,23 +843,23 @@ var Draw = (function () {
             };
 
         },
-        bindHammerTime:function(moose) {
+        bindHammerTime: function (moose) {
             moose.hammertime = new Hammer(this.canvas);
             moose.hammertime.moose = moose;
             moose.hammertime.on('pan',
-                    function(ev) {
+                    function (ev) {
                         var moose = ev.target.moose;
                     });
             moose.hammertime.get('pinch').set({ enable: true, direction: Hammer.DIRECTION_ALL });
             moose.hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL });
             moose.hammertime.on('pinchstart',
-                    function(ev) {
+                    function (ev) {
                         var moose = ev.target.moose;
                         moose.scaleAtPinchStart = moose.scale
                         moose.offsetAtPinchStart = moose.offset;
                     });
             moose.hammertime.on('pinchmove',
-                    function(ev) {
+                    function (ev) {
                         try {
                             var moose = ev.target.moose;
                             var newScale = moose.scaleAtPinchStart * (ev.scale);
@@ -768,11 +869,11 @@ var Draw = (function () {
                         }
                     });
             moose.hammertime.on('pinchend',
-                    function(ev) {
+                    function (ev) {
                         var moose = ev.target.moose;
                     });
             moose.hammertime.on("panleft panright tap press",
-                    function(ev) {
+                    function (ev) {
                         var moose = ev.target.moose;
                     });
         }
