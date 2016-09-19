@@ -306,12 +306,13 @@
                 if (xhr.status == 200) {
                     $this.updateBrickBackground($this._brickInUse.element);
 
+                    var brick = $this._brickInUse;
                     $this._brickInUse = null;
                     $this.containerEl.style.display = 'block';
 
                     // wait a second before updating to give Azure a chance to propagate the thumbnail image
                     setTimeout(function () {
-                        $this.updateWall($this._brickInUse.element);
+                        $this.updateWall(brick.element);
                     },
                         5000);
                 }

@@ -186,8 +186,10 @@ var Draw = (function () {
                     }
                 }
                 this.redraw();
+                this.isDrawing = false;
             },
-            close: function() {
+            close: function () {
+                this.isDrawing = false;
                 this.containerEl.style.display = 'none';
                 this.shapes = [];
             },
@@ -244,7 +246,7 @@ var Draw = (function () {
                         moose.isDrawing = true;
                         moose.lastPoint = pt;
                     },
-                    onPointerDrag: function(moose, pt) {
+                    onPointerDrag: function(moose, pt, data) {
                         var dist = utils.distanceBetween(moose.lastPoint, pt);
                         var angle = utils.angleBetween(moose.lastPoint, pt);
 
@@ -301,10 +303,6 @@ var Draw = (function () {
                         var $this = this;
                         var el = document.createElement('button');
                         this.el = el;
-                        this.sizeVariation = (Math.random() * 1) + 0.5;
-                        this.sizeChangeWait = utils.getRandomInt(2, 5);
-                        this.blotWait = utils.getRandomInt(100, 300);
-                        this.actualInkSize = 1;
                         el.innerHTML = this.iconHtml;
                         if (isSelected) {
                             el.style.border = '1px solid red';
@@ -320,6 +318,12 @@ var Draw = (function () {
                     onPointerStart: function (moose, pt) {
                         moose.isDrawing = true;
                         moose.lastPoint = pt;
+
+                        this.sizeVariation = pt.sizeVariation || (Math.random() * 1) + 0.5;
+                        this.sizeChangeWait = pt.sizeChangeWait || utils.getRandomInt(2, 5);
+                        this.blotWait = pt.blotWait || utils.getRandomInt(100, 300);
+                        this.actualInkSize = pt.actualInkSize || 1;
+
                     },
                     onPointerDrag: function (moose, pt) {
                         var dist = utils.distanceBetween(moose.lastPoint, pt);
@@ -329,18 +333,23 @@ var Draw = (function () {
                         this.sizeChangeWait--;
                         this.blotWait--;
                         
-                        if (this.sizeChangeWait<=0) {
-                            this.sizeVariation = Math.random() + 0.5;
-                            this.sizeChangeWait = utils.getRandomInt(3, 8);
+                        if (this.sizeChangeWait <= 0) {
+                            this.sizeVariation = pt.sizeVariation || Math.random() + 0.5;
+                            this.sizeChangeWait = pt.sizeChangeWait || utils.getRandomInt(3, 8);
                         }
+
                         if (this.blotWait <= 0) {
-                            this.sizeVariation = this.sizeVariation * (2 + Math.random() * 2);
-                            this.blotWait = utils.getRandomInt(100, 300);
+                            this.sizeVariation = pt.sizeVariation || this.sizeVariation * (2 + Math.random() * 2);
+                            this.blotWait = this.blotWait || utils.getRandomInt(100, 300);
                             console.log('blot: ' + this.sizeVariation);
                         }
 
                         var toolSize = moose.toolSize * this.sizeVariation;
-                        this.actualInkSize += (toolSize - this.actualInkSize) / (this.sizeChangeWait/2);
+                        if (pt.actualInkSize)
+                            this.actualInkSize = pt.actualInkSize;
+                        else 
+                            this.actualInkSize += (toolSize - this.actualInkSize) / (this.sizeChangeWait / 2);
+
                         for (var i = 0; i < dist; i += this.actualInkSize / 4) {
 
                             x = moose.lastPoint.x + (Math.sin(angle) * i);
@@ -367,15 +376,27 @@ var Draw = (function () {
                                 this.actualInkSize * 2,
                                 this.actualInkSize * 2);
                         }
+
+                        var pointData=
+                        {
+                            x: pt.x,
+                            y: pt.y,
+                            sizeChangeWait: this.sizeChangeWait,
+                            blotWait: this.blotWait,
+                            sizeVariation: this.sizeVariation,
+                            actualInkSize: this.actualInkSize
+                        };
+
                         moose.lastPoint = pt;
                         if (!moose.currentShape) {
                             moose.currentShape = {
                                 foreColor: fc,
                                 toolSize: moose.toolSize,
-                                points: []
+                                points: [],
+                                toolName: moose.selectedTool.name
                             }
                         }
-                        moose.currentShape.points.push(pt);
+                        moose.currentShape.points.push(pointData);
 
                     },
                     onPointerStop: function (moose) {
@@ -773,36 +794,19 @@ var Draw = (function () {
                 var shape = this.shapes[s];
                 if (!shape) continue;
                 var lastPoint = shape.points[0];
-                for (var p = 0; p < shape.points.length; p++) {
+                var tool = this.tools[0];
+                if (shape.toolName == 'ink') {
+                    tool = this.tools[1];
+                } else {
+                    tool = this.tools[0];
+                }
+                this.foreColor = shape.foreColor;
+                tool.onPointerStart(this, lastPoint);
+                if (shape.points.length <= 0) continue;
+
+                for (var p = 1; p < shape.points.length; p++) {
                     var pt = shape.points[p];
-                    var dist = utils.distanceBetween(lastPoint, pt);
-                    var angle = utils.angleBetween(lastPoint, pt);
-                    var fc = shape.foreColor;
-                    for (var i = 0; i < dist; i += shape.toolSize / 4) {
-
-                        x = lastPoint.x + (Math.sin(angle) * i);
-                        y = lastPoint.y + (Math.cos(angle) * i);
-
-                        var radgrad = ctx
-                            .createRadialGradient(x, y, shape.toolSize / 2, x, y, shape.toolSize);
-
-                        var centerColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
-                        var midColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
-                        var edgeColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
-                        centerColor.a = 1;
-                        midColor.a = 0.5;
-                        edgeColor.a = 0;
-
-                        radgrad.addColorStop(0, utils.toHslaString(centerColor));
-                        radgrad.addColorStop(0.5, utils.toHslaString(midColor));
-                        radgrad.addColorStop(1, utils.toHslaString(edgeColor));
-
-                        ctx.fillStyle = radgrad;
-                        ctx.fillRect(x - shape.toolSize,
-                            y - shape.toolSize,
-                            shape.toolSize * 2,
-                            shape.toolSize * 2);
-                    }
+                    tool.onPointerDrag(this, pt);
                     lastPoint = pt;
                 }
             }
@@ -924,6 +928,18 @@ var Draw = (function () {
 
             return t;
         },
+        startDrawingShape: function(point) {
+            this.isDrawing = true;
+            this.lastPoint = point;
+            var tool = this.selectedTool || this.tools[0];
+            this.currentShape = {
+                foreColor: this.foreColor,
+                toolSize: this.toolSize,
+                points: [],
+                toolName: tool.name
+            }
+            tool.onPointerStart(this, point);
+        },
         bindEvents: function () {
             this.canvas.onmousedown = function (e) {
                 var moose = this.moose;
@@ -933,9 +949,7 @@ var Draw = (function () {
                 } else if (e.ctrlKey) {
                     moose.zoom(moose.scale * 0.8, moose.scale, point.x / window.innerWidth, point.y / window.innerHeight);
                 } else {
-                    point.x *= moose.scale;
-                    point.y *= moose.scale;
-                    moose.selectedTool.onPointerStart(moose, point);
+                    moose.startDrawingShape(point);
                 }
             }
             this.canvas.onmousemove = function (e) {
@@ -992,7 +1006,7 @@ var Draw = (function () {
                     if (e.touches.length === 1) {
                         moose.isDrawing = true;
                         moose.lastPoint = { x: touches[0].pageX * moose.scale + moose.position.x, y: touches[0].pageY * moose.scale + moose.position.y };
-                        moose.selectedTool.onPointerStart(moose, point);
+                        moose.startDrawingShape(point);
                         document.addEventListener('touchmove', touchMoveListener);
                         document.addEventListener('touchend', touchEndListener);
                         return document.addEventListener('touchcancel', touchEndListener);
