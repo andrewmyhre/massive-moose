@@ -57,6 +57,10 @@ utils.rgbToHsl = function (r, g, b) {
     return { h: h, s: s, l: l, a: 1 };
 }
 
+utils.getRandomInt = function (min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 var math = {};
 math.scalePositionScalar = function (val, viewportSize, oldScale, newScale) {
     var newSize, oldSize;
@@ -168,14 +172,16 @@ var Draw = (function () {
                 this.enableToolbar();
                 this.selectedTool = this.tools[0];
 
-                var snapshot = JSON.parse(data.data.snapshotJson);
+                if (data && data.data && data.data.snapshotJson) {
+                    var snapshot = JSON.parse(data.data.snapshotJson);
 
-                if (snapshot && snapshot.length) {
-                    for (var i = 0; i < snapshot.length; i++) {
-                        try {
-                            this.shapes.push(snapshot[i]);
-                        } catch (ex) {
+                    if (snapshot && snapshot.length) {
+                        for (var i = 0; i < snapshot.length; i++) {
+                            try {
+                                this.shapes.push(snapshot[i]);
+                            } catch (ex) {
 
+                            }
                         }
                     }
                 }
@@ -281,6 +287,96 @@ var Draw = (function () {
 
                     },
                     onPointerStop: function(moose) {
+                        if (!moose.shapes) moose.shapes = [];
+                        moose.shapes.push(moose.currentShape);
+                        moose.currentShape = null;
+                        console.log(moose.shapes[moose.shapes.length - 1]);
+                    }
+                },
+                {
+                    name: 'ink',
+                    getToolbarElement: function (isSelected, onSelected) {
+                        var $this = this;
+                        var el = document.createElement('button');
+                        this.el = el;
+                        this.sizeVariation = (Math.random() * 1) + 0.5;
+                        this.sizeChangeWait = utils.getRandomInt(2, 5);
+                        this.blotWait = utils.getRandomInt(100, 300);
+                        this.actualInkSize = 1;
+                        el.innerHTML = 'ink';
+                        if (isSelected) {
+                            el.style.border = '1px solid red';
+                        } else {
+                            el.style.border = '1px solid #888';
+                        }
+                        el.onclick = function (e) {
+                            if (onSelected)
+                                onSelected($this);
+                        };
+                        return el;
+                    },
+                    onPointerStart: function (moose, pt) {
+                        moose.isDrawing = true;
+                        moose.lastPoint = pt;
+                    },
+                    onPointerDrag: function (moose, pt) {
+                        var dist = utils.distanceBetween(moose.lastPoint, pt);
+                        var angle = utils.angleBetween(moose.lastPoint, pt);
+
+                        var fc = moose.foreColor;
+                        this.sizeChangeWait--;
+                        this.blotWait--;
+                        
+                        if (this.sizeChangeWait<=0) {
+                            this.sizeVariation = Math.random() + 0.5;
+                            this.sizeChangeWait = utils.getRandomInt(3, 8);
+                        }
+                        if (this.blotWait <= 0) {
+                            this.sizeVariation = this.sizeVariation * (2 + Math.random() * 2);
+                            this.blotWait = utils.getRandomInt(100, 300);
+                            console.log('blot: ' + this.sizeVariation);
+                        }
+
+                        var toolSize = moose.toolSize * this.sizeVariation;
+                        this.actualInkSize += (toolSize - this.actualInkSize) / (this.sizeChangeWait/2);
+                        for (var i = 0; i < dist; i += this.actualInkSize / 4) {
+
+                            x = moose.lastPoint.x + (Math.sin(angle) * i);
+                            y = moose.lastPoint.y + (Math.cos(angle) * i);
+
+                            var radgrad = moose.ctx
+                                .createRadialGradient(x, y, this.actualInkSize / 2, x, y, this.actualInkSize);
+
+                            var centerColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                            var midColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                            var edgeColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                            centerColor.a = 1;
+                            midColor.a = 0.8;
+                            edgeColor.a = 0;
+
+                            radgrad.addColorStop(0, utils.toHslaString(centerColor));
+                            radgrad.addColorStop(0.85, utils.toHslaString(midColor));
+                            radgrad.addColorStop(1, utils.toHslaString(edgeColor));
+
+
+                            moose.ctx.fillStyle = radgrad;
+                            moose.ctx.fillRect(x - this.actualInkSize,
+                                y - this.actualInkSize,
+                                this.actualInkSize * 2,
+                                this.actualInkSize * 2);
+                        }
+                        moose.lastPoint = pt;
+                        if (!moose.currentShape) {
+                            moose.currentShape = {
+                                foreColor: fc,
+                                toolSize: moose.toolSize,
+                                points: []
+                            }
+                        }
+                        moose.currentShape.points.push(pt);
+
+                    },
+                    onPointerStop: function (moose) {
                         if (!moose.shapes) moose.shapes = [];
                         moose.shapes.push(moose.currentShape);
                         moose.currentShape = null;
@@ -473,6 +569,7 @@ var Draw = (function () {
                     lbl.attributes['for'] = 'toolSize';
                     lbl.innerHTML = 'Size:' + moose.toolSize;
                     lbl.style['margin-right'] = '1em';
+                    lbl.style['width'] = '50px';
 
                     var el = document.createElement('input');
                     el.type = 'range';
@@ -834,7 +931,7 @@ var Draw = (function () {
                 } else {
                     point.x *= moose.scale;
                     point.y *= moose.scale;
-                    moose.tools[0].onPointerStart(moose, point);
+                    moose.selectedTool.onPointerStart(moose, point);
                 }
             }
             this.canvas.onmousemove = function (e) {
@@ -847,13 +944,13 @@ var Draw = (function () {
                 var currentPoint = { x: e.clientX, y: e.clientY };
                 currentPoint.x *= moose.scale;
                 currentPoint.y *= moose.scale;
-                moose.tools[0].onPointerDrag(moose, currentPoint);
+                moose.selectedTool.onPointerDrag(moose, currentPoint);
             }
 
             this.canvas.onmouseup = function () {
                 var moose = this.moose;
                 moose.isDrawing = false;
-                moose.tools[0].onPointerStop(moose);
+                moose.selectedTool.onPointerStop(moose);
             };
             this.canvas.onmouseout = function () {
                 var moose = this.moose;
@@ -869,7 +966,7 @@ var Draw = (function () {
                         var currentPoint = { x: touches[0].pageX * moose.scale + moose.position.x, y: touches[0].pageY * moose.scale + moose.position.y };
                         //moose.debug('touch move');
                         //alert('touch move at ' + touches[0].pageX + ',' + touches[0].pageY);
-                        moose.tools[0].onPointerDrag(moose, currentPoint);
+                        moose.selectedTool.onPointerDrag(moose, currentPoint);
                     }
                 });
             this.canvas.addEventListener('touchend',
@@ -877,7 +974,7 @@ var Draw = (function () {
                     e.preventDefault();
                     var moose = this.moose;
                     moose.isDrawing = false;
-                    moose.tools[0].onPointerStop(moose);
+                    moose.selectedTool.onPointerStop(moose);
                 });
             this.canvas.addEventListener('touchstart',
                 function (e) {
@@ -891,7 +988,7 @@ var Draw = (function () {
                     if (e.touches.length === 1) {
                         moose.isDrawing = true;
                         moose.lastPoint = { x: touches[0].pageX * moose.scale + moose.position.x, y: touches[0].pageY * moose.scale + moose.position.y };
-                        moose.tools[0].onPointerStart(moose, point);
+                        moose.selectedTool.onPointerStart(moose, point);
                         document.addEventListener('touchmove', touchMoveListener);
                         document.addEventListener('touchend', touchEndListener);
                         return document.addEventListener('touchcancel', touchEndListener);
