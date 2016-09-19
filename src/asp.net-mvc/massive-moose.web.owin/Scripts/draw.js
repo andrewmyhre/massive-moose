@@ -102,8 +102,8 @@ var Draw = (function () {
             this.currentShape = null;
             this.shapes = [];
 
-            this.canvas.width = this.width = opts.width;
-            this.canvas.height = this.height = opts.height;
+            this.canvas.style.width = this.width = opts.width;
+            this.canvas.style.height = this.height = opts.height;
             this.position = { x: 0, y: 0 };
 
             this.toolSize = 10;
@@ -135,6 +135,8 @@ var Draw = (function () {
             this.containerEl.style['position'] = 'absolute';
             this.containerEl.style['top'] = '0px';
             this.containerEl.style['left'] = '0px';
+            this.containerEl.style['width'] = this.width;
+            this.containerEl.style['height'] = this.height;
             this.containerEl.appendChild(this.debugElement);
             this.isBound = true;
         },
