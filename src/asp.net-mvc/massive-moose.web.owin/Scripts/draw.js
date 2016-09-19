@@ -66,270 +66,334 @@ math.scalePositionScalar = function (val, viewportSize, oldScale, newScale) {
 };
 
 var Draw = (function () {
-    return {
-        initialize: function (arg1, arg2) {
-            var containerEl, opts;
-            opts = null;
-            containerEl = null;
-            if (arg1 instanceof HTMLElement) {
-                containerEl = arg1;
-                opts = arg2;
-            } else {
-                opts = arg1;
-            }
-
-            this.onExportImage = opts.onExportImage;
-            this.onCanceled = opts.onCanceled;
-
-            this.viewportScale = 1;
-            this.opts = opts || {};
-            this.isDrawing = false;
-            this.lastPoint = null;
-            this.mouseOut = true;
-            this.scale = 1.0;
-            this.scaleAtPinchStart = 1.0;
-            this.offsetAtPinchStart = { x: 0, y: 0 };
-            this.offset = { x: 0, y: 0 };
-            this.zoomEnabled = false;
-            document.body.style.backgroundColor = '#ff0000';
-
-            this.isPinching = false;
-
-            this.canvas = document.createElement('canvas');
-            this.buffer = document.createElement('canvas');
-            this.canvas.style['background-color'] = 'white';
-            this.canvas.moose = this;
-            this.ctx = this.canvas.getContext('2d');
-            this.ctx.lineJoin = this.ctx.lineCap = 'round';
-            this.currentShape = null;
-            this.shapes = [];
-
-            this.canvas.width = this.buffer.width = this.width = opts.width;
-            this.canvas.height = this.buffer.height = this.height = opts.height;
-            this.position = { x: 0, y: 0 };
-
-            this.buffer.moose = this;
-            this.buffer.lineJoin = this.buffer.lineCap = 'round';
-
-            this.toolSize = 10;
-            this.foreColor = { h: 100, s: 1, l: 0.5, a: 1 };
-
-            this.debugElement = this.createDebugElement();
-
-            if (containerEl) {
-                this.bindToElement(containerEl);
-                this.containerEl.appendChild(this.createToolbar());
-            }
-
-            this.bindEvents();
-
-            if (this.zoomEnabled) {
-                this.bindHammerTime(this);
-            }
-        },
-        bindToElement: function (containerEl) {
-            var ref1, repaintAll;
-            if (this.containerEl) {
-                console.warn("Trying to bind to a DOM element more than once is unsupported.");
-                return;
-            }
-            this.containerEl = containerEl;
-            this.containerEl.appendChild(this.canvas);
-            this.containerEl.style['background-color'] = "#aaaaaa"
-            this.containerEl.style['overflow'] = 'hidden';
-            this.containerEl.style['position'] = 'absolute';
-            this.containerEl.style['top'] = '0px';
-            this.containerEl.style['left'] = '0px';
-            this.containerEl.style['width'] = this.width;
-            this.containerEl.style['height'] = this.height;
-            this.containerEl.appendChild(this.debugElement);
-
-            this.isBound = true;
-        },
-        startDrawing: function (data) {
-            var viewport = document.querySelector("meta[name=viewport]");
-            var scalex = 1600 / screen.availWidth;
-            var scaley = 900 / screen.availHeight;
-            this.scale = scalex;
-            console.log(this.scale);
-            if (scalex * screen.availHeight > 900) {
-                this.scale = scaley;
-                console.log(this.scale);
-            }
-            if (this.scale < 1) {
-                this.scale = 1;
-                console.log(this.scale);
-            }
-            this.canvas.width = 1600;
-            this.canvas.height = 900;
-            this.ctx.scale(1 / this.scale, 1 / this.scale);
-            this.sessionData = data;
-            this.containerEl.style.display = 'block';
-            this.enableToolbar();
-
-            var snapshot = JSON.parse(data.data.snapshotJson);
-
-            if (snapshot && snapshot.length) {
-                for (var i = 0; i < snapshot.length; i++) {
-                    try {
-                        this.shapes.push(snapshot[i]);
-                    } catch (ex) {
-
-                    }
+        return {
+            initialize: function(arg1, arg2) {
+                var containerEl, opts;
+                opts = null;
+                containerEl = null;
+                if (arg1 instanceof HTMLElement) {
+                    containerEl = arg1;
+                    opts = arg2;
+                } else {
+                    opts = arg1;
                 }
-            }
-            this.redraw();
-        },
-        close: function () {
-            this.containerEl.style.display = 'none';
-            this.shapes = [];
-        },
-        onSave: function () {
-            this.disableToolbar();
-            if (this.onExportImage) {
-                try {
-                    this.updateBuffer();
-                    this.onExportImage(this.sessionData, this.buffer.toDataURL('image/png'), JSON.stringify(this.shapes));
-                    this.close();
+
+                this.onExportImage = opts.onExportImage;
+                this.onCanceled = opts.onCanceled;
+
+                this.viewportScale = 1;
+                this.opts = opts || {};
+                this.isDrawing = false;
+                this.lastPoint = null;
+                this.mouseOut = true;
+                this.scale = 1.0;
+                this.scaleAtPinchStart = 1.0;
+                this.offsetAtPinchStart = { x: 0, y: 0 };
+                this.offset = { x: 0, y: 0 };
+                this.zoomEnabled = false;
+                document.body.style.backgroundColor = '#ff0000';
+
+                this.isPinching = false;
+
+                this.canvas = document.createElement('canvas');
+                this.buffer = document.createElement('canvas');
+                this.canvas.style['background-color'] = 'white';
+                this.canvas.moose = this;
+                this.ctx = this.canvas.getContext('2d');
+                this.ctx.lineJoin = this.ctx.lineCap = 'round';
+                this.currentShape = null;
+                this.shapes = [];
+
+                this.canvas.width = this.buffer.width = this.width = opts.width;
+                this.canvas.height = this.buffer.height = this.height = opts.height;
+                this.position = { x: 0, y: 0 };
+
+                this.buffer.moose = this;
+                this.buffer.lineJoin = this.buffer.lineCap = 'round';
+
+                this.toolSize = 10;
+                this.foreColor = { h: 100, s: 1, l: 0.5, a: 1 };
+
+                this.debugElement = this.createDebugElement();
+
+                if (containerEl) {
+                    this.bindToElement(containerEl);
+                    this.containerEl.appendChild(this.createToolbar());
+                }
+
+                this.bindEvents();
+
+                if (this.zoomEnabled) {
+                    this.bindHammerTime(this);
+                }
+            },
+            bindToElement: function(containerEl) {
+                var ref1, repaintAll;
+                if (this.containerEl) {
+                    console.warn("Trying to bind to a DOM element more than once is unsupported.");
                     return;
-                } catch (ex) {
-                    this.debug(ex.message);
                 }
-            }
-            this.enableToolbar();
-        },
-        onCancel: function () {
-            this.disableToolbar();
-            if (this.onCanceled) {
-                try {
-                    this.onCanceled(this.sessionData);
-                    this.close();
-                    return;
-                } catch (ex) {
-                    this.debug(ex.message);
+                this.containerEl = containerEl;
+                this.containerEl.appendChild(this.canvas);
+                this.containerEl.style['background-color'] = "#aaaaaa"
+                this.containerEl.style['overflow'] = 'hidden';
+                this.containerEl.style['position'] = 'absolute';
+                this.containerEl.style['top'] = '0px';
+                this.containerEl.style['left'] = '0px';
+                this.containerEl.style['width'] = this.width;
+                this.containerEl.style['height'] = this.height;
+                this.containerEl.appendChild(this.debugElement);
+
+                this.isBound = true;
+            },
+            startDrawing: function(data) {
+                var viewport = document.querySelector("meta[name=viewport]");
+                var scalex = 1600 / screen.availWidth;
+                var scaley = 900 / screen.availHeight;
+                this.scale = scalex;
+                console.log(this.scale);
+                if (scalex * screen.availHeight > 900) {
+                    this.scale = scaley;
+                    console.log(this.scale);
                 }
-            }
-            this.enableToolbar();
-        },
-        tools: [
-            {
-                name: 'sprayPaint1',
-                onPointerStart: function (moose, pt) {
-                    moose.isDrawing = true;
-                    moose.lastPoint = pt;
-                },
-                onPointerDrag: function (moose, pt) {
-                    var dist = utils.distanceBetween(moose.lastPoint, pt);
-                    var angle = utils.angleBetween(moose.lastPoint, pt);
+                if (this.scale < 1) {
+                    this.scale = 1;
+                    console.log(this.scale);
+                }
+                this.canvas.width = 1600;
+                this.canvas.height = 900;
+                this.ctx.scale(1 / this.scale, 1 / this.scale);
+                this.sessionData = data;
+                this.containerEl.style.display = 'block';
+                this.enableToolbar();
+                this.selectedTool = this.tools[0];
 
-                    var fc = moose.foreColor;
+                var snapshot = JSON.parse(data.data.snapshotJson);
 
+                if (snapshot && snapshot.length) {
+                    for (var i = 0; i < snapshot.length; i++) {
+                        try {
+                            this.shapes.push(snapshot[i]);
+                        } catch (ex) {
 
-
-                    for (var i = 0; i < dist; i += moose.toolSize / 4) {
-
-                        x = moose.lastPoint.x + (Math.sin(angle) * i);
-                        y = moose.lastPoint.y + (Math.cos(angle) * i);
-
-                        var radgrad = moose.ctx
-                            .createRadialGradient(x, y, moose.toolSize / 2, x, y, moose.toolSize);
-
-                        var centerColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
-                        var midColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
-                        var edgeColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
-                        centerColor.a = 1;
-                        midColor.a = 0.5;
-                        edgeColor.a = 0;
-
-                        radgrad.addColorStop(0, utils.toHslaString(centerColor));
-                        radgrad.addColorStop(0.5, utils.toHslaString(midColor));
-                        radgrad.addColorStop(1, utils.toHslaString(edgeColor));
-
-                        moose.ctx.fillStyle = radgrad;
-                        moose.ctx.fillRect(x - moose.toolSize,
-                            y - moose.toolSize,
-                            moose.toolSize * 2,
-                            moose.toolSize * 2);
-                    }
-                    moose.lastPoint = pt;
-                    if (!moose.currentShape) {
-                        moose.currentShape = {
-                            foreColor: fc,
-                            toolSize: moose.toolSize,
-                            points: []
                         }
                     }
-                    moose.currentShape.points.push(pt);
-
-                },
-                onPointerStop: function (moose) {
-                    if (!moose.shapes) moose.shapes = [];
-                    moose.shapes.push(moose.currentShape);
-                    moose.currentShape = null;
-                    console.log(moose.shapes[moose.shapes.length - 1]);
                 }
-            }
-        ],
-        toolbarItems: [
-            {
-                name: 'toggleToolbarSize',
-                enabled: true,
-                showWhenCollapsed: true,
-                collapsed: false,
-                initialize: function (moose) {
-                    var $this = this;
-                    var el = document.createElement('button');
-                    el.innerHTML = '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
-                    el.onclick = function (e) {
+                this.redraw();
+            },
+            close: function() {
+                this.containerEl.style.display = 'none';
+                this.shapes = [];
+            },
+            onSave: function() {
+                this.disableToolbar();
+                if (this.onExportImage) {
+                    try {
+                        this.updateBuffer();
+                        this.onExportImage(this.sessionData,
+                            this.buffer.toDataURL('image/png'),
+                            JSON.stringify(this.shapes));
+                        this.close();
+                        return;
+                    } catch (ex) {
+                        this.debug(ex.message);
+                    }
+                }
+                this.enableToolbar();
+            },
+            onCancel: function() {
+                this.disableToolbar();
+                if (this.onCanceled) {
+                    try {
+                        this.onCanceled(this.sessionData);
+                        this.close();
+                        return;
+                    } catch (ex) {
+                        this.debug(ex.message);
+                    }
+                }
+                this.enableToolbar();
+            },
+            tools: [
+                {
+                    name: 'sprayPaint1',
+                    getToolbarElement: function(isSelected, onSelected) {
+                        var $this = this;
+                        var el = document.createElement('button');
+                        this.el = el;
+                        el.innerHTML = 'paint';
+                        if (isSelected) {
+                            el.style.border = '1px solid red';
+                        } else {
+                            el.style.border = '1px solid #888';
+                        }
+                        el.onclick = function(e) {
+                            if (onSelected)
+                                onSelected($this);
+                        };
+                        return el;
+                    },
+                    onPointerStart: function(moose, pt) {
+                        moose.isDrawing = true;
+                        moose.lastPoint = pt;
+                    },
+                    onPointerDrag: function(moose, pt) {
+                        var dist = utils.distanceBetween(moose.lastPoint, pt);
+                        var angle = utils.angleBetween(moose.lastPoint, pt);
 
-                        for (var i = 0; i < moose.toolbarItems.length; i++) {
-                            var ti = moose.toolbarItems[i];
-                            if (!ti.enabled) continue;
-                            if ($this.collapsed) {
-                                ti.el.style.setProperty("display", "inline-block", "important");
-                            } else if (!ti.showWhenCollapsed) {
-                                ti.el.style.display = 'none';
+                        var fc = moose.foreColor;
+
+
+                        for (var i = 0; i < dist; i += moose.toolSize / 4) {
+
+                            x = moose.lastPoint.x + (Math.sin(angle) * i);
+                            y = moose.lastPoint.y + (Math.cos(angle) * i);
+
+                            var radgrad = moose.ctx
+                                .createRadialGradient(x, y, moose.toolSize / 2, x, y, moose.toolSize);
+
+                            var centerColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                            var midColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                            var edgeColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                            centerColor.a = 1;
+                            midColor.a = 0.5;
+                            edgeColor.a = 0;
+
+                            radgrad.addColorStop(0, utils.toHslaString(centerColor));
+                            radgrad.addColorStop(0.5, utils.toHslaString(midColor));
+                            radgrad.addColorStop(1, utils.toHslaString(edgeColor));
+
+                            moose.ctx.fillStyle = radgrad;
+                            moose.ctx.fillRect(x - moose.toolSize,
+                                y - moose.toolSize,
+                                moose.toolSize * 2,
+                                moose.toolSize * 2);
+                        }
+                        moose.lastPoint = pt;
+                        if (!moose.currentShape) {
+                            moose.currentShape = {
+                                foreColor: fc,
+                                toolSize: moose.toolSize,
+                                points: []
                             }
                         }
-                        $this.collapsed = !$this.collapsed;
-                        if ($this.collapsed) {
-                            $this.el.innerHTML = '<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>';
-                        } else {
-                            $this.el.innerHTML = '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
-                        }
-                    }
+                        moose.currentShape.points.push(pt);
 
-                    this.el = el;
-                    return el;
-                }
-            },
-            {
-                name: 'moveToolbar',
-                enabled: true,
-                showWhenCollapsed: true,
-                position: 'top',
-                initialize: function (moose, toolbarElement) {
-                    var $this = this;
-                    $this.toolbarElement = toolbarElement;
-                    var el = document.createElement('button');
-                    el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
-                    el.onclick = function (e) {
-                        if ($this.position == 'top') {
-                            $this.toolbarElement.style.setProperty('top', '');
-                            $this.toolbarElement.style.setProperty('bottom', '0px')
-                            $this.position = 'bottom';
-                            $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-top"></span>';
-                        } else if ($this.position = 'bottom') {
-                            $this.toolbarElement.style.setProperty('top', '0px');
-                            $this.toolbarElement.style.setProperty('bottom', '')
-                            $this.position = 'top';
-                            $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
-                        }
+                    },
+                    onPointerStop: function(moose) {
+                        if (!moose.shapes) moose.shapes = [];
+                        moose.shapes.push(moose.currentShape);
+                        moose.currentShape = null;
+                        console.log(moose.shapes[moose.shapes.length - 1]);
                     }
-                    this.el = el;
-                    return el;
                 }
-            },
+            ],
+            toolbarItems: [
+                {
+                    name: 'toggleToolbarSize',
+                    enabled: true,
+                    showWhenCollapsed: true,
+                    collapsed: false,
+                    initialize: function(moose) {
+                        var $this = this;
+                        var el = document.createElement('button');
+                        el.innerHTML = '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
+                        el.onclick = function(e) {
+
+                            for (var i = 0; i < moose.toolbarItems.length; i++) {
+                                var ti = moose.toolbarItems[i];
+                                if (!ti.enabled) continue;
+                                if ($this.collapsed) {
+                                    ti.el.style.setProperty("display", "inline-block", "important");
+                                } else if (!ti.showWhenCollapsed) {
+                                    ti.el.style.display = 'none';
+                                }
+                            }
+                            $this.collapsed = !$this.collapsed;
+                            if ($this.collapsed) {
+                                $this.el
+                                    .innerHTML =
+                                    '<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>';
+                            } else {
+                                $this.el
+                                    .innerHTML =
+                                    '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
+                            }
+                        }
+
+                        this.el = el;
+                        return el;
+                    }
+                },
+                {
+                    name: 'moveToolbar',
+                    enabled: true,
+                    showWhenCollapsed: true,
+                    position: 'top',
+                    initialize: function(moose, toolbarElement) {
+                        var $this = this;
+                        $this.toolbarElement = toolbarElement;
+                        var el = document.createElement('button');
+                        el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
+                        el.onclick = function(e) {
+                            if ($this.position == 'top') {
+                                $this.toolbarElement.style.setProperty('top', '');
+                                $this.toolbarElement.style.setProperty('bottom', '0px')
+                                $this.position = 'bottom';
+                                $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-top"></span>';
+                            } else if ($this.position = 'bottom') {
+                                $this.toolbarElement.style.setProperty('top', '0px');
+                                $this.toolbarElement.style.setProperty('bottom', '')
+                                $this.position = 'top';
+                                $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
+                            }
+                        }
+                        this.el = el;
+                        return el;
+                    }
+                },
+                {
+                    name: 'selectTool',
+                    enabled: true,
+                    showWhenCollapsed: false,
+                    selectedTool: null,
+                    initialize: function(moose) {
+                        var $this = this;
+                        var el = document.createElement('button');
+                        this.el = el;
+                        if (!this.popup) {
+                            this.popup = document.createElement('div');
+                        }
+                        el.innerHTML = '<span class="glyphicon glyphicon-pencil"></span>';
+                        this.popup.style.position = 'absolute';
+                        this.popup.style['z-index'] = 103;
+                        this.popup.style.width = '200px';
+                        this.popup.style.height = '200px';
+                        this.popup.style.top = '50px';
+                        this.popup.style.left = '50px';
+                        this.popup.style.backgroundColor = 'white';
+                        this.popup.style.border = '2px solid black';
+                        this.popup.style.padding = '0.5em';
+                        $popup = this.popup;
+                        el.onclick = function(e) {
+                            $popup.innerHTML = '';
+                            for (var i = 0; i < moose.tools.length; i++) {
+                                var toolSelector = moose.tools[i].getToolbarElement(
+                                        moose.tools[i] == moose.selectedTool,
+                                        function (tool) {
+                                            moose.selectedTool = tool;
+                                            console.log('selected tool ' + tool.name);
+                                            $popup.style.display = 'none';
+                                    });
+                                $popup.appendChild(toolSelector);
+                            }
+                            $popup.style.display = 'block';
+                        };
+                        moose.containerEl.appendChild(this.popup);
+                        $popup.style.display = 'none';
+                        return el;
+                    }
+                },
             {
                 name: 'pickColor',
                 enabled: true,
@@ -751,7 +815,7 @@ var Draw = (function () {
 
             for (var i = 0; i < this.toolbarItems.length; i++) {
                 var ti = this.toolbarItems[i];
-                if (!ti.enabled) continue;
+                if (!ti || !ti.enabled) continue;
                 var el = ti.initialize(this, t);
                 el.className += 'toolbar-item';
                 t.appendChild(el);

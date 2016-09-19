@@ -18,15 +18,12 @@
         var draw = Draw();
         draw.initialize(document.getElementById('drawSpace'),
         {
-            width: window.innerWidth,
-            height: window.innerHeight,
+            width: 1600,
+            height: 900,
             onExportImage: function(imageData,json) {
-                var xhr = new XMLHttpRequest();
-                xhr.open('POST', _baseApiUrl + '/v1/save/' + sessionToken, true);
-                xhr.setRequestHeader('Content-Type', 'application/json');
-                xhr.send('{"snapshotJson":"' + escape(json) + '","imageData":"' + imageData + '"}');
+                console.log('onExportImage');
             },
-            onCanceled: function () { alert('canceled'); mm.enableToolbar(); }
+            onCanceled: function () { console.log('onCanceled'); }
         });
     </script>
 }
