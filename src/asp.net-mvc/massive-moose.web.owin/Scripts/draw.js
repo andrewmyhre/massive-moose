@@ -140,6 +140,19 @@ var Draw = (function () {
 
             this.bindEvents();
 
+            var scalex = 1600 / screen.availWidth;
+            var scaley = 900 / screen.availHeight;
+            this.scale = scalex;
+            if (scalex * screen.availHeight > 900) {
+                this.scale = scaley;
+            }
+            if (this.scale < 1) {
+                this.scale = 1;
+            }
+            this.canvas.width = 1600;
+            this.canvas.height = 900;
+            this.ctx.scale(1 / this.scale, 1 / this.scale);
+
             if (this.zoomEnabled) {
                 this.bindHammerTime(this);
             }
@@ -167,22 +180,13 @@ var Draw = (function () {
             this.isBound = true;
         },
         startDrawing: function (data) {
-            var scalex = 1600 / screen.availWidth;
-            var scaley = 900 / screen.availHeight;
-            this.scale = scalex;
-            if (scalex * screen.availHeight > 900) {
-                this.scale = scaley;
-            }
-            if (this.scale < 1) {
-                this.scale = 1;
-            }
             this.setDocumentViewportScale(1 / this.scale);
-            this.canvas.width = 1600;
-            this.canvas.height = 900;
-            this.ctx.scale(1 / this.scale, 1 / this.scale);
             this.sessionData = data;
             this.containerEl.style.display = 'block';
             this.enableToolbar();
+
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
             this.setToolbarPosition('top');
             this.toolbar.className = this.isFullScreen() ? 'toolbar-small' : 'toolbar-big';
@@ -193,21 +197,26 @@ var Draw = (function () {
                 }
             }
 
-            if (data && data.data && data.data.snapshotJson) {
-                var snapshot = JSON.parse(data.data.snapshotJson);
+            this.isDrawing = false;
+        },
+        importDrawingData: function (data) {
+            var t = this.selectedTool, ts = this.toolSize, fc = this.foreColor;
+            var snapshot = JSON.parse(data);
 
-                if (snapshot && snapshot.length) {
-                    for (var i = 0; i < snapshot.length; i++) {
-                        try {
-                            this.shapes.push(snapshot[i]);
-                        } catch (ex) {
-
-                        }
+            if (snapshot && snapshot.length) {
+                for (var i = 0; i < snapshot.length; i++) {
+                    try {
+                        this.shapes.push(snapshot[i]);
+                        this.saveShape(snapshot[i], this.ctx);
+                        this.saveShape(snapshot[i], this.bufferCtx);
+                    } catch (ex) {
+                        this.debug(ex.message);
                     }
                 }
             }
-            this.redraw();
-            this.isDrawing = false;
+            this.selectedTool = t;
+            this.toolSize = ts;
+            this.foreColor = fx;
         },
         close: function () {
             this.isDrawing = false;
@@ -238,14 +247,13 @@ var Draw = (function () {
             this.disableToolbar();
             if (this.onExportImage) {
                 try {
-                    this.updateBuffer();
                     this.onExportImage(this.sessionData,
                         this.buffer.toDataURL('image/png'),
                         JSON.stringify(this.shapes));
                     this.close();
                     return;
                 } catch (ex) {
-                    this.debug(ex.message + '<br/>' + ex.stackTrace);
+                    this.debug(ex.message);
                 }
             }
             this.enableToolbar();
@@ -284,22 +292,22 @@ var Draw = (function () {
                     return el;
                 },
                 onPointerStart: function (moose, pt) {
-                    moose.isDrawing = true;
-                    moose.lastPoint = pt;
+                    this.lastPoint = pt;
                 },
-                onPointerDrag: function (moose, pt, targets) {
-                    var dist = utils.distanceBetween(moose.lastPoint, pt);
-                    var angle = utils.angleBetween(moose.lastPoint, pt);
+                onPointerDrag: function (moose, pt, targetContext) {
+                    var dist = utils.distanceBetween(this.lastPoint, pt);
+                    var angle = utils.angleBetween(this.lastPoint, pt);
+                    var ctx = targetContext || moose.ctx;
 
                     var fc = moose.foreColor;
 
                     var toolSize = pt.toolSize || moose.toolSize;
                     for (var i = 0; i < dist; i += toolSize / 4) {
 
-                        x = moose.lastPoint.x + (Math.sin(angle) * i);
-                        y = moose.lastPoint.y + (Math.cos(angle) * i);
+                        x = this.lastPoint.x + (Math.sin(angle) * i);
+                        y = this.lastPoint.y + (Math.cos(angle) * i);
 
-                        var radgrad = moose.ctx
+                        var radgrad = ctx
                             .createRadialGradient(x, y, toolSize / 2, x, y, toolSize);
 
                         var centerColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
@@ -313,30 +321,18 @@ var Draw = (function () {
                         radgrad.addColorStop(0.5, utils.toHslaString(midColor));
                         radgrad.addColorStop(1, utils.toHslaString(edgeColor));
 
-                        for (var t = 0; t < targets.length; t++) {
-                            var ctx = targets[t].getContext('2d');
-                            ctx.fillStyle = radgrad;
-                            ctx.fillRect(x - toolSize,
-                                y - toolSize,
-                                toolSize * 2,
-                                toolSize * 2);
-                        }
+                        ctx.fillStyle = radgrad;
+                        ctx.fillRect(x - toolSize,
+                            y - toolSize,
+                            toolSize * 2,
+                            toolSize * 2);
                     }
-                    moose.lastPoint = pt;
-                    if (!moose.currentShape) {
-                        moose.currentShape = {
-                            foreColor: fc,
-                            toolSize: moose.toolSize,
-                            points: []
-                        }
-                    }
-                    moose.currentShape.points.push(pt);
-
+                    this.lastPoint = pt;
+                    return pt;
                 },
                 onPointerStop: function (moose) {
-                    if (!moose.shapes) moose.shapes = [];
-                    moose.shapes.push(moose.currentShape);
-                    moose.currentShape = null;
+                    this.lastPoint = null;
+                    moose.saveShape(moose.currentShape, moose.bufferCtx);
                 }
             },
             {
@@ -359,8 +355,7 @@ var Draw = (function () {
                     return el;
                 },
                 onPointerStart: function (moose, pt) {
-                    moose.isDrawing = true;
-                    moose.lastPoint = pt;
+                    this.lastPoint = pt;
 
                     this.sizeVariation = pt.sizeVariation || (Math.random() * 1) + 0.5;
                     this.sizeChangeWait = pt.sizeChangeWait || utils.getRandomInt(2, 5);
@@ -368,9 +363,10 @@ var Draw = (function () {
                     this.actualInkSize = pt.actualInkSize || 1;
 
                 },
-                onPointerDrag: function (moose, pt, targets) {
-                    var dist = utils.distanceBetween(moose.lastPoint, pt);
-                    var angle = utils.angleBetween(moose.lastPoint, pt);
+                onPointerDrag: function (moose, pt, targetContext) {
+                    var dist = utils.distanceBetween(this.lastPoint, pt);
+                    var angle = utils.angleBetween(this.lastPoint, pt);
+                    var ctx = targetContext || moose.ctx
 
                     var fc = moose.foreColor;
                     this.sizeChangeWait--;
@@ -395,10 +391,10 @@ var Draw = (function () {
 
                     for (var i = 0; i < dist; i += this.actualInkSize / 4) {
 
-                        x = moose.lastPoint.x + (Math.sin(angle) * i);
-                        y = moose.lastPoint.y + (Math.cos(angle) * i);
+                        x = this.lastPoint.x + (Math.sin(angle) * i);
+                        y = this.lastPoint.y + (Math.cos(angle) * i);
 
-                        var radgrad = moose.ctx
+                        var radgrad = ctx
                             .createRadialGradient(x, y, this.actualInkSize / 2, x, y, this.actualInkSize);
 
                         var centerColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
@@ -412,14 +408,11 @@ var Draw = (function () {
                         radgrad.addColorStop(0.85, utils.toHslaString(midColor));
                         radgrad.addColorStop(1, utils.toHslaString(edgeColor));
 
-                        for (var t = 0; t < targets.length; t++) {
-                            var ctx = targets[t].getContext('2d');
-                            ctx.fillStyle = radgrad;
-                            ctx.fillRect(x - this.actualInkSize,
-                                y - this.actualInkSize,
-                                this.actualInkSize * 2,
-                                this.actualInkSize * 2);
-                        }
+                        ctx.fillStyle = radgrad;
+                        ctx.fillRect(x - this.actualInkSize,
+                            y - this.actualInkSize,
+                            this.actualInkSize * 2,
+                            this.actualInkSize * 2);
                     }
 
                     var pointData =
@@ -431,23 +424,12 @@ var Draw = (function () {
                         sizeVariation: this.sizeVariation,
                         actualInkSize: this.actualInkSize
                     };
-
-                    moose.lastPoint = pt;
-                    if (!moose.currentShape) {
-                        moose.currentShape = {
-                            foreColor: fc,
-                            toolSize: moose.toolSize,
-                            points: [],
-                            toolName: moose.selectedTool.name
-                        }
-                    }
-                    moose.currentShape.points.push(pointData);
-
+                    this.lastPoint = pt;
+                    return pointData;
                 },
                 onPointerStop: function (moose) {
-                    if (!moose.shapes) moose.shapes = [];
-                    moose.shapes.push(moose.currentShape);
-                    moose.currentShape = null;
+                    this.lastPoint = null;
+                    moose.saveShape(moose.currentShape, moose.bufferCtx);
                 }
             }
         ],
@@ -928,39 +910,49 @@ var Draw = (function () {
             //this.debug('pos:'+x+','+y);
             this.redraw();
         },
+        drawMove: function (pt, tool, context) {
+            var t = tool || this.selectedTool;
+            var ctx = context || this.ctx;
+            var ptData = t.onPointerDrag(this, pt);
+            this.lastPoint = ptData;
+            if (!this.currentShape) {
+                this.currentShape = {
+                    foreColor: this.foreColor,
+                    toolSize: this.toolSize,
+                    points: [],
+                    toolName: this.selectedTool.name
+                }
+            }
+            this.currentShape.points.push(ptData);
+        },
+        saveShape: function (shape, context) {
+            if (!this.shapes) this.shapes = [];
+            if (!shape) return;
+            var lastPoint = shape.points[0];
+            var tool = this.tools[0];
+            if (shape.toolName == 'ink') {
+                tool = this.tools[1];
+            } else {
+                tool = this.tools[0];
+            }
+            this.foreColor = shape.foreColor;
+            this.toolSize = shape.toolSize;
+            tool.onPointerStart(this, lastPoint);
+            if (shape.points.length <= 0) return;
+
+            for (var p = 1; p < shape.points.length; p++) {
+                var pt = shape.points[p];
+                tool.onPointerDrag(this, pt, context);
+                lastPoint = pt;
+            }
+            this.shapes.push(shape);
+            this.currentShape = null;
+        },
         drawShapesToCanvas: function () {
             if (!this.shapes) this.shapes = [];
             for (var s = 0; s < this.shapes.length; s++) {
-                var shape = this.shapes[s];
-                if (!shape) continue;
-                var lastPoint = shape.points[0];
-                var tool = this.tools[0];
-                if (shape.toolName == 'ink') {
-                    tool = this.tools[1];
-                } else {
-                    tool = this.tools[0];
-                }
-                this.foreColor = shape.foreColor;
-                this.toolSize = shape.toolSize;
-                tool.onPointerStart(this, lastPoint);
-                if (shape.points.length <= 0) continue;
-
-                for (var p = 1; p < shape.points.length; p++) {
-                    var pt = shape.points[p];
-                    tool.onPointerDrag(this, pt, [this.canvas, this.buffer]);
-                    lastPoint = pt;
-                }
+                this.saveShape(this.shapes[s]);
             }
-        },
-        updateBuffer: function () {
-            var bufferCtx = this.buffer.getContext('2d');
-            bufferCtx.clearRect(0, 0, this.width, this.height);
-            this.drawShapesToCanvas();
-        },
-        redraw: function () {
-            this.ctx.clearRect(this.position.x, this.position.y, this.width, this.height);
-            if (!this.shapes) this.shapes = [];
-            this.drawShapesToCanvas();
         },
         buildPalette: function () {
             var p = [];
@@ -1052,7 +1044,7 @@ var Draw = (function () {
                 var currentPoint = { x: e.clientX, y: e.clientY };
                 currentPoint.x *= moose.scale;
                 currentPoint.y *= moose.scale;
-                moose.selectedTool.onPointerDrag(moose, currentPoint, [moose.canvas, moose.buffer]);
+                moose.drawMove(currentPoint);
             }
 
             this.canvas.onmouseup = function () {
@@ -1074,7 +1066,7 @@ var Draw = (function () {
                         var currentPoint = { x: touches[0].pageX * moose.scale + moose.position.x, y: touches[0].pageY * moose.scale + moose.position.y };
                         //moose.debug('touch move');
                         //alert('touch move at ' + touches[0].pageX + ',' + touches[0].pageY);
-                        moose.selectedTool.onPointerDrag(moose, currentPoint, [moose.canvas, moose.buffer]);
+                        moose.drawMove(currentPoint);
                     }
                 });
             this.canvas.addEventListener('touchend',

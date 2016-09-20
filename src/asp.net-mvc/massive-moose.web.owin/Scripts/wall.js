@@ -19,6 +19,9 @@
             }
             this.containerEl = containerEl;
 
+            this.onShowProgress = this.cfg.onShowProgress;
+            this.onCloseProgress = this.cfg.onCloseProgress;
+
             window.addEventListener("resize", this.updateHelpDialogDimensions);
             this._viewportScaleWhenDrawing = this.cfg.viewPortScaleWhenDrawing;
             this._viewportScale = this.cfg.viewPortScale;
@@ -157,6 +160,11 @@
             if (!addressX || !addressY)
                 return;
             $this = this;
+
+            if (this.onShowProgress) {
+                this.onShowProgress('Loading...');
+            }
+
             this.xhr.open('POST', this._baseApiUrl + '/v1/' + this._inviteCode + '/draw/' + addressX + '/' + addressY);
             this.xhr.setRequestHeader('Content-Type', 'application/json');
             this.xhr.onload = function () {
@@ -171,6 +179,9 @@
                     $this.updateWall();
                 } else {
                     alert('something went terribly, terribly wrong. call your lawyers.');
+                }
+                if (this.onCloseProgress) {
+                    this.onCloseProgress();
                 }
             };
             this.xhr.send();
@@ -297,6 +308,9 @@
             }
         },
         endSession: function (sessionData, imageData, json) {
+            if (this.onCloseProgress) {
+                this.onCloseProgress();
+            }
             var $this = this;
             var xhr = this.xhr;
             xhr.open('POST', sessionData.wallInstance._baseApiUrl + '/v1/save/' + sessionData.data.sessionToken, true);
@@ -319,6 +333,9 @@
             xhr.send('{"snapshotJson":"' + escape(json) + '","imageData":"' + imageData + '"}');
         },
         cancelSession: function () {
+            if (this.onCloseProgress) {
+                this.onCloseProgress();
+            }
             var $this = this;
             var xhr = this.xhr;
             xhr.open('POST', this._baseApiUrl + '/v1/release/' + this._brickInUse.sessionToken);

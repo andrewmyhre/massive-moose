@@ -55,8 +55,16 @@
                 refreshTime: @System.Configuration.ConfigurationManager.AppSettings["WallRefreshTime"],
                 drawingApp: draw,
                 startDrawing: function(data) {
-                    document.getElementById('drawSpace').scrollIntoView(); 
+                    document.getElementById('drawSpace').scrollIntoView();
                     draw.startDrawing(data);
+                    draw.importDrawingData(data.data.snapshotJson);
+                },
+                onShowProgress: function(message) {
+                    document.getElementById('working_container').style.display = 'block';
+                    document.getElementById('working_message').innerHTML = message;
+                },
+                onCloseProgress:function() {
+                    document.getElementById('working_container').style.display = 'none';
                 }
             }
         );
@@ -150,3 +158,10 @@
         <div id="diagnostics"></div>
     </div>
 }
+
+<div id="working_container" style="display: none;">
+    <div id="working_panel">
+        <span id="working_message">Loading...</span>
+        <img src="/Content/progress.gif"/>
+    </div>
+</div>
