@@ -85,6 +85,8 @@ var Draw = (function () {
             this.onExportImage = opts.onExportImage;
             this.onCanceled = opts.onCanceled;
 
+            this.viewport = document.querySelector("meta[name=viewport]");
+
             this.viewportScale = 1;
             this.opts = opts || {};
             this.isDrawing = false;
@@ -96,6 +98,8 @@ var Draw = (function () {
             this.offset = { x: 0, y: 0 };
             this.zoomEnabled = false;
             document.body.style.backgroundColor = '#ff0000';
+
+            this.popup = null;
 
             this.isPinching = false;
 
@@ -127,7 +131,8 @@ var Draw = (function () {
 
             if (containerEl) {
                 this.bindToElement(containerEl);
-                this.containerEl.appendChild(this.createToolbar());
+                this.toolbar = this.createToolbar();
+                this.containerEl.appendChild(this.toolbar);
             }
 
             this.bindEvents();
@@ -135,6 +140,9 @@ var Draw = (function () {
             if (this.zoomEnabled) {
                 this.bindHammerTime(this);
             }
+        },
+        setDocumentViewportScale: function (scale) {
+            this.viewport.setAttribute('content', 'width=1600, initial-scale=' + scale);
         },
         bindToElement: function (containerEl) {
             var ref1, repaintAll;
@@ -156,7 +164,6 @@ var Draw = (function () {
             this.isBound = true;
         },
         startDrawing: function (data) {
-            var viewport = document.querySelector("meta[name=viewport]");
             var scalex = 1600 / screen.availWidth;
             var scaley = 900 / screen.availHeight;
             this.scale = scalex;
@@ -166,6 +173,7 @@ var Draw = (function () {
             if (this.scale < 1) {
                 this.scale = 1;
             }
+            this.setDocumentViewportScale(1 / this.scale);
             this.canvas.width = 1600;
             this.canvas.height = 900;
             this.ctx.scale(1 / this.scale, 1 / this.scale);
@@ -500,6 +508,10 @@ var Draw = (function () {
                     this.popup.style.padding = '0.5em';
                     $popup = this.popup;
                     el.onclick = function (e) {
+                        if (moose.popup) {
+                            moose.popup.style.display = 'none';
+                            moose.popup = null;
+                        }
                         $popup.innerHTML = '';
                         for (var i = 0; i < moose.tools.length; i++) {
                             var toolSelector = moose.tools[i].getToolbarElement(
@@ -513,6 +525,10 @@ var Draw = (function () {
 
                         }
                         $popup.style.display = 'block';
+                        var r = this.getClientRects();
+                        $popup.style.left = r[0].left + 'px';
+                        $popup.style.top = r[0].bottom + 'px';
+                        moose.popup = $popup;
                     };
                     moose.containerEl.appendChild(this.popup);
                     $popup.style.display = 'none';
@@ -530,18 +546,24 @@ var Draw = (function () {
                 var fc = moose.foreColor;
                 el.style.backgroundColor = utils.toHslaString(fc);
                 el.onclick = function (e) {
+                    if (moose.popup) {
+                        moose.popup.style.display = 'none';
+                        moose.popup = null;
+                    }
                     if (!$this.opened) {
                         $this.picker.style.display = 'block';
                         $this.picker.style.position = 'absolute';
                         $this.picker.style.top = '0px';
                         $this.picker.style.left = '0px';
-                        $this.picker.style.width = (screen.availWidth / moose.viewportScale) + 'px';
-                        $this.picker.style.height = (screen.availHeight / moose.viewportScale) + 'px';
+                        $this.picker.style.width = '1600px';
+                        $this.picker.style.height = '900px';
                         $this.picker.style['z-index'] = 102;
                         $this.opened = true;
+                        moose.popup = null;
                     } else {
                         $this.picker.style.display = 'none';
                         $this.opened = false;
+                        moose.popup = null;
                     }
                 }
                 el.innerHTML = '&nbsp';
@@ -593,35 +615,54 @@ var Draw = (function () {
             enabled: true,
             showWhenCollapsed: false,
             initialize: function (moose) {
-                var container = document.createElement('span');
-                var lbl = document.createElement('label');
-                lbl.attributes['for'] = 'toolSize';
-                lbl.innerHTML = 'Size:' + moose.toolSize;
-                lbl.style['margin-right'] = '1em';
-                lbl.style['width'] = '50px';
+                var el = document.createElement('button');
+                el.innerHTML = 'Size:' + moose.toolSize;
+                el.style['margin-right'] = '1em';
 
-                var el = document.createElement('input');
-                el.type = 'range';
-                el.name = 'toolSize';
-                el.value = moose.toolSize;
-                el.attributes['min'] = '0';
-                el.attributes['max'] = '200';
-                el.attributes['step'] = '1';
-                el.defaultValue = moose.toolSize;
-                el.oninput = el.onchange = function (e) {
-                    moose.toolSize = el.value;
-                    lbl.innerHTML = 'Size:' + moose.toolSize;
+                el.onclick = function (e) {
+                    if (moose.popup) {
+                        moose.popup.style.display = 'none';
+                        moose.popup = null;
+                    }
+                    if (!el.popup) {
+                        el.popup = document.createElement('div');
+                        el.popup.style.backgroundColor = '#FFF';
+                        el.popup.style.padding = "10px";
+                        el.popup.style.border = "2px solid blue";
+                        el.popup.style.position = 'absolute';
+                        el.popup.style.top = '50px';
+                        el.popup.style.left = '50px';
+                        el.popup.style['z-index'] = 104;
+                        var input = document.createElement('input');
+                        input.type = 'range';
+                        input.name = 'toolSize';
+                        input.value = moose.toolSize;
+                        input.min = 3;
+                        input.max = 200;
+                        input.attributes['step'] = '1';
+                        input.defaultValue = moose.toolSize;
+                        input.oninput = input.onchange = function (e) {
+                            moose.toolSize = input.value;
+                            el.innerHTML = 'Size:' + moose.toolSize;
+                        };
+                        input.style.width = '300px';
+                        input.style.setProperty("display", "inline-block", "important");
+                        input.style['position'] = 'relative';
+                        input.style['top'] = '5px';
+                        el.popup.appendChild(input);
+                        moose.containerEl.appendChild(el.popup);
+                    }
+                    var r = this.getClientRects();
+                    el.popup.style.left = r[0].left + 'px';
+                    el.popup.style.top = r[0].bottom + 'px';
+                    el.popup.style.margin = '2px';
+                    el.popup.style.display = 'block';
+                    moose.popup = el.popup;
                 };
-                el.style.width = '100px';
-                el.style.setProperty("display", "inline-block", "important");
-                el.style['position'] = 'relative';
-                el.style['top'] = '5px';
 
-                container.appendChild(lbl);
-                container.appendChild(el);
-                this.el = container;
+                this.el = el;
 
-                return container;
+                return el;
             }
         },
         {
@@ -914,7 +955,7 @@ var Draw = (function () {
             t.style.setProperty('top', '0px');
             t.style.setProperty('left', '0px');
             t.style.backgroundColor = '#fff';
-            //t.style['font-size'] = '5em';
+            t.style['font-size'] = '3em';
             t.style['z-index'] = 1;
 
             for (var i = 0; i < this.toolbarItems.length; i++) {
@@ -940,8 +981,19 @@ var Draw = (function () {
             tool.onPointerStart(this, point);
         },
         bindEvents: function () {
+            var moose = this;
+            this.toolbar.onmousedown = function(e) {
+                if (moose.popup) {
+                    moose.popup.style.display = 'none';
+                    moose.popup = null;
+                }
+            };
             this.canvas.onmousedown = function (e) {
-                var moose = this.moose;
+                if (moose.popup) {
+                    moose.popup.style.display = 'none';
+                    moose.popup = null;
+                }
+
                 var point = { x: e.clientX, y: e.clientY };
                 if (e.shiftKey) {
                     moose.zoom(moose.scale * 1.2, moose.scale, point.x / window.innerWidth, point.y / window.innerHeight);
