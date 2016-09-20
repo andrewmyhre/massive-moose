@@ -789,6 +789,39 @@ var Draw = (function () {
                 ti.el.disabled = false;
             }
         },
+        toggleFullscreen: function() {
+            if (this.isFullscreen) {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                moose.toolbar.className = 'toolbar-big';
+            } else {
+                if (moose.containerEl.requestFullscreen) {
+                    moose.containerEl.requestFullscreen();
+                } else if (moose.containerEl.webkitRequestFullscreen) {
+                    moose.containerEl.webkitRequestFullscreen();
+                } else if (moose.containerEl.mozRequestFullScreen) {
+                    moose.containerEl.mozRequestFullScreen();
+                } else if (moose.containerEl.msRequestFullscreen) {
+                    moose.containerEl.msRequestFullscreen();
+                }
+                moose.toolbar.className = 'toolbar-small';
+            }
+        },
+        isFullScreen: function () {
+            return (
+                document.fullscreenEnabled ||
+                    document.webkitFullscreenEnabled ||
+                    document.mozFullScreenEnabled ||
+                    document.msFullscreenEnabled
+            );
+        },
         zoom: function (newScale, oldScale, centerX, centerY) {
             if (newScale < 1) newScale = 1;
             if (newScale > 32) newScale = 32;
@@ -903,7 +936,7 @@ var Draw = (function () {
             t.style.backgroundColor = '#fff';
             t.style['font-size'] = '3em';
             t.style['z-index'] = 1;
-            t.className = 'toolbar-big';
+            t.className = this.isFullscreen ? 'toolbar-small' : 'toolbar-big';
 
             for (var i = 0; i < this.toolbarItems.length; i++) {
                 var ti = this.toolbarItems[i];
