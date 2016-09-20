@@ -190,15 +190,14 @@
                 $this.updateXhr.setRequestHeader('If-None-Match', $this.wallETag);
                 $this.updateXhr.onload = function () {
                     if ($this.updateXhr.status == 200) {
-                        console.log('wall has an update')
                         $this.wallETag = $this.updateXhr.getResponseHeader('ETag');
                         if ($this.wallETag) {
                             $this.wallETag = $this.wallETag.replace("\"", "").replace("\"", "")
                         }
-                        console.log('updating wall');
                         $this.updateWall();
+                    } else {
+                        setTimeout($this.checkWallStaleness, $this._refreshTime, $this);
                     }
-                    setTimeout($this.checkWallStaleness, $this._refreshTime, $this);
                 }
                 $this.updateXhr.send();
             } else {

@@ -100,11 +100,16 @@ var Draw = (function () {
             this.isPinching = false;
 
             this.canvas = document.createElement('canvas');
-            this.buffer = document.createElement('canvas');
-            this.canvas.style['background-color'] = 'white';
-            this.canvas.moose = this;
             this.ctx = this.canvas.getContext('2d');
             this.ctx.lineJoin = this.ctx.lineCap = 'round';
+
+            this.buffer = document.createElement('canvas');
+            this.bufferCtx = this.buffer.getContext('2d');
+            this.bufferCtx.lineJoin = this.bufferCtx.lineCap = 'round';
+
+
+            this.canvas.style['background-color'] = 'white';
+            this.canvas.moose = this;
             this.currentShape = null;
             this.shapes = [];
 
@@ -155,14 +160,11 @@ var Draw = (function () {
             var scalex = 1600 / screen.availWidth;
             var scaley = 900 / screen.availHeight;
             this.scale = scalex;
-            console.log(this.scale);
             if (scalex * screen.availHeight > 900) {
                 this.scale = scaley;
-                console.log(this.scale);
             }
             if (this.scale < 1) {
                 this.scale = 1;
-                console.log(this.scale);
             }
             this.canvas.width = 1600;
             this.canvas.height = 900;
@@ -204,7 +206,7 @@ var Draw = (function () {
                     this.close();
                     return;
                 } catch (ex) {
-                    this.debug(ex.message);
+                    this.debug(ex.message + '<br/>' + ex.stackTrace);
                 }
             }
             this.enableToolbar();
@@ -246,20 +248,20 @@ var Draw = (function () {
                     moose.isDrawing = true;
                     moose.lastPoint = pt;
                 },
-                onPointerDrag: function (moose, pt, data) {
+                onPointerDrag: function (moose, pt, targets) {
                     var dist = utils.distanceBetween(moose.lastPoint, pt);
                     var angle = utils.angleBetween(moose.lastPoint, pt);
 
                     var fc = moose.foreColor;
 
-
-                    for (var i = 0; i < dist; i += moose.toolSize / 4) {
+                    var toolSize = pt.toolSize || moose.toolSize;
+                    for (var i = 0; i < dist; i += toolSize / 4) {
 
                         x = moose.lastPoint.x + (Math.sin(angle) * i);
                         y = moose.lastPoint.y + (Math.cos(angle) * i);
 
                         var radgrad = moose.ctx
-                            .createRadialGradient(x, y, moose.toolSize / 2, x, y, moose.toolSize);
+                            .createRadialGradient(x, y, toolSize / 2, x, y, toolSize);
 
                         var centerColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
                         var midColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
@@ -272,11 +274,14 @@ var Draw = (function () {
                         radgrad.addColorStop(0.5, utils.toHslaString(midColor));
                         radgrad.addColorStop(1, utils.toHslaString(edgeColor));
 
-                        moose.ctx.fillStyle = radgrad;
-                        moose.ctx.fillRect(x - moose.toolSize,
-                            y - moose.toolSize,
-                            moose.toolSize * 2,
-                            moose.toolSize * 2);
+                        for (var t = 0; t < targets.length; t++) {
+                            var ctx = targets[t].getContext('2d');
+                            ctx.fillStyle = radgrad;
+                            ctx.fillRect(x - toolSize,
+                                y - toolSize,
+                                toolSize * 2,
+                                toolSize * 2);
+                        }
                     }
                     moose.lastPoint = pt;
                     if (!moose.currentShape) {
@@ -293,7 +298,6 @@ var Draw = (function () {
                     if (!moose.shapes) moose.shapes = [];
                     moose.shapes.push(moose.currentShape);
                     moose.currentShape = null;
-                    console.log(moose.shapes[moose.shapes.length - 1]);
                 }
             },
             {
@@ -325,7 +329,7 @@ var Draw = (function () {
                     this.actualInkSize = pt.actualInkSize || 1;
 
                 },
-                onPointerDrag: function (moose, pt) {
+                onPointerDrag: function (moose, pt, targets) {
                     var dist = utils.distanceBetween(moose.lastPoint, pt);
                     var angle = utils.angleBetween(moose.lastPoint, pt);
 
@@ -369,12 +373,14 @@ var Draw = (function () {
                         radgrad.addColorStop(0.85, utils.toHslaString(midColor));
                         radgrad.addColorStop(1, utils.toHslaString(edgeColor));
 
-
-                        moose.ctx.fillStyle = radgrad;
-                        moose.ctx.fillRect(x - this.actualInkSize,
-                            y - this.actualInkSize,
-                            this.actualInkSize * 2,
-                            this.actualInkSize * 2);
+                        for (var t = 0; t < targets.length; t++) {
+                            var ctx = targets[t].getContext('2d');
+                            ctx.fillStyle = radgrad;
+                            ctx.fillRect(x - this.actualInkSize,
+                                y - this.actualInkSize,
+                                this.actualInkSize * 2,
+                                this.actualInkSize * 2);
+                        }
                     }
 
                     var pointData =
@@ -403,7 +409,6 @@ var Draw = (function () {
                     if (!moose.shapes) moose.shapes = [];
                     moose.shapes.push(moose.currentShape);
                     moose.currentShape = null;
-                    console.log(moose.shapes[moose.shapes.length - 1]);
                 }
             }
         ],
@@ -501,7 +506,6 @@ var Draw = (function () {
                                     moose.tools[i] == moose.selectedTool,
                                     function (tool) {
                                         moose.selectedTool = tool;
-                                        console.log('selected tool ' + tool.name);
                                         $popup.style.display = 'none';
                                         el.innerHTML = tool.iconHtml;
                                     });
@@ -786,9 +790,7 @@ var Draw = (function () {
             //this.debug('pos:'+x+','+y);
             this.redraw();
         },
-        drawShapesToCanvas: function (canvas) {
-            var ctx = canvas.getContext('2d');
-
+        drawShapesToCanvas: function () {
             if (!this.shapes) this.shapes = [];
             for (var s = 0; s < this.shapes.length; s++) {
                 var shape = this.shapes[s];
@@ -801,12 +803,13 @@ var Draw = (function () {
                     tool = this.tools[0];
                 }
                 this.foreColor = shape.foreColor;
+                this.toolSize = shape.toolSize;
                 tool.onPointerStart(this, lastPoint);
                 if (shape.points.length <= 0) continue;
 
                 for (var p = 1; p < shape.points.length; p++) {
                     var pt = shape.points[p];
-                    tool.onPointerDrag(this, pt);
+                    tool.onPointerDrag(this, pt, [this.canvas, this.buffer]);
                     lastPoint = pt;
                 }
             }
@@ -814,16 +817,12 @@ var Draw = (function () {
         updateBuffer: function () {
             var bufferCtx = this.buffer.getContext('2d');
             bufferCtx.clearRect(0, 0, this.width, this.height);
-            this.drawShapesToCanvas(this.buffer);
+            this.drawShapesToCanvas();
         },
         redraw: function () {
             this.ctx.clearRect(this.position.x, this.position.y, this.width, this.height);
             if (!this.shapes) this.shapes = [];
-            this.drawShapesToCanvas(this.canvas);
-
-            var bufferCtx = this.buffer.getContext('2d');
-            bufferCtx.clearRect(0, 0, this.width, this.height);
-            this.drawShapesToCanvas(this.buffer);
+            this.drawShapesToCanvas();
         },
         pallette: [
             [
@@ -962,7 +961,7 @@ var Draw = (function () {
                 var currentPoint = { x: e.clientX, y: e.clientY };
                 currentPoint.x *= moose.scale;
                 currentPoint.y *= moose.scale;
-                moose.selectedTool.onPointerDrag(moose, currentPoint);
+                moose.selectedTool.onPointerDrag(moose, currentPoint, [moose.canvas, moose.buffer]);
             }
 
             this.canvas.onmouseup = function () {
@@ -984,7 +983,7 @@ var Draw = (function () {
                         var currentPoint = { x: touches[0].pageX * moose.scale + moose.position.x, y: touches[0].pageY * moose.scale + moose.position.y };
                         //moose.debug('touch move');
                         //alert('touch move at ' + touches[0].pageX + ',' + touches[0].pageY);
-                        moose.selectedTool.onPointerDrag(moose, currentPoint);
+                        moose.selectedTool.onPointerDrag(moose, currentPoint, [moose.canvas, moose.buffer]);
                     }
                 });
             this.canvas.addEventListener('touchend',
@@ -1018,10 +1017,6 @@ var Draw = (function () {
             Shape = function () {
                 return this;
             };
-            Shape.prototype.helloWorld = function () {
-                console.log('hello world');
-            };
-
         },
         bindHammerTime: function (moose) {
             moose.hammertime = new Hammer(this.canvas);
