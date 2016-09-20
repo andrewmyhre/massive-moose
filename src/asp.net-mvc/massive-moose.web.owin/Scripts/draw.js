@@ -97,6 +97,7 @@ var Draw = (function () {
             this.offsetAtPinchStart = { x: 0, y: 0 };
             this.offset = { x: 0, y: 0 };
             this.zoomEnabled = false;
+            
             document.body.style.backgroundColor = '#ff0000';
 
             this.popup = null;
@@ -183,6 +184,7 @@ var Draw = (function () {
             this.containerEl.style.display = 'block';
             this.enableToolbar();
             this.selectedTool = this.tools[0];
+            this.toolBarPosition = 'top';
 
             if (data && data.data && data.data.snapshotJson) {
                 var snapshot = JSON.parse(data.data.snapshotJson);
@@ -463,22 +465,21 @@ var Draw = (function () {
                 name: 'moveToolbar',
                 enabled: true,
                 showWhenCollapsed: true,
-                position: 'top',
                 initialize: function (moose, toolbarElement) {
                     var $this = this;
                     $this.toolbarElement = toolbarElement;
                     var el = document.createElement('button');
                     el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
                     el.onclick = function (e) {
-                        if ($this.position == 'top') {
+                        if (moose.toolBarPosition == 'top') {
                             $this.toolbarElement.style.setProperty('top', '');
                             $this.toolbarElement.style.setProperty('bottom', '0px')
-                            $this.position = 'bottom';
+                            moose.toolBarPosition = 'bottom';
                             $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-top"></span>';
-                        } else if ($this.position = 'bottom') {
+                        } else if (moose.toolBarPosition = 'bottom') {
                             $this.toolbarElement.style.setProperty('top', '0px');
                             $this.toolbarElement.style.setProperty('bottom', '')
-                            $this.position = 'top';
+                            moose.toolBarPosition = 'top';
                             $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
                         }
                     }
@@ -528,8 +529,13 @@ var Draw = (function () {
                         }
                         $popup.style.display = 'block';
                         var r = this.getClientRects();
+                        var pr = $popup.getClientRects();
                         $popup.style.left = r[0].left + 'px';
-                        $popup.style.top = r[0].bottom + 'px';
+                        if (moose.toolBarPosition == 'top') {
+                            $popup.style.top = r[0].bottom + 'px';
+                        } else {
+                            $popup.style.top = (r[0].top - pr[0].height) + 'px';
+                        }
                         moose.popup = $popup;
                     };
                     moose.containerEl.appendChild(this.popup);
@@ -656,8 +662,13 @@ var Draw = (function () {
                     }
                     var r = this.getClientRects();
                     el.popup.style.left = r[0].left + 'px';
-                    el.popup.style.top = r[0].bottom + 'px';
-                    el.popup.style.margin = '2px';
+                    if (moose.toolBarPosition == 'bottom') {
+                        el.popup.style.top = (r[0].top-98) + 'px';
+                    } else {
+                        el.popup.style.top = (r[0].top+128) + 'px';
+                    }
+                    
+                    
                     el.popup.style.display = 'block';
                     moose.popup = el.popup;
                 };
