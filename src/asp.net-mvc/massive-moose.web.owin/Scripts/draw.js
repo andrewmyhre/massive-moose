@@ -97,7 +97,7 @@ var Draw = (function () {
             this.offsetAtPinchStart = { x: 0, y: 0 };
             this.offset = { x: 0, y: 0 };
             this.zoomEnabled = false;
-            
+
             document.body.style.backgroundColor = '#ff0000';
 
             this.popup = null;
@@ -184,7 +184,7 @@ var Draw = (function () {
             this.containerEl.style.display = 'block';
             this.enableToolbar();
             this.selectedTool = this.tools[0];
-            this.toolBarPosition = 'top';
+            this.setToolbarPosition('top');
 
             if (data && data.data && data.data.snapshotJson) {
                 var snapshot = JSON.parse(data.data.snapshotJson);
@@ -471,16 +471,12 @@ var Draw = (function () {
                     var el = document.createElement('button');
                     el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
                     el.onclick = function (e) {
-                        if (moose.toolBarPosition == 'top') {
-                            $this.toolbarElement.style.setProperty('top', '');
-                            $this.toolbarElement.style.setProperty('bottom', '0px')
-                            moose.toolBarPosition = 'bottom';
+                        if (moose.toolbarPosition == 'top') {
                             $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-top"></span>';
-                        } else if (moose.toolBarPosition = 'bottom') {
-                            $this.toolbarElement.style.setProperty('top', '0px');
-                            $this.toolbarElement.style.setProperty('bottom', '')
-                            moose.toolBarPosition = 'top';
+                            moose.setToolbarPosition('bottom');
+                        } else {
                             $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
+                            moose.setToolbarPosition('top');
                         }
                     }
                     this.el = el;
@@ -531,7 +527,7 @@ var Draw = (function () {
                         var r = this.getClientRects();
                         var pr = $popup.getClientRects();
                         $popup.style.left = r[0].left + 'px';
-                        if (moose.toolBarPosition == 'top') {
+                        if (moose.toolbarPosition == 'top') {
                             $popup.style.top = r[0].bottom + 'px';
                         } else {
                             $popup.style.top = (r[0].top - pr[0].height) + 'px';
@@ -563,8 +559,13 @@ var Draw = (function () {
                         $this.picker.style.position = 'absolute';
                         $this.picker.style.top = '0px';
                         $this.picker.style.left = '0px';
-                        $this.picker.style.width = '1600px';
-                        $this.picker.style.height = '900px';
+                        if (moose.isFullScreen()) {
+                            $this.picker.style.width = screen.availWidth + 'px';
+                            $this.picker.style.height = screen.availHeight + 'px';
+                        } else {
+                            $this.picker.style.width = '1600px';
+                            $this.picker.style.height = '900px';
+                        }
                         $this.picker.style['z-index'] = 102;
                         $this.opened = true;
                         moose.popup = null;
@@ -662,13 +663,13 @@ var Draw = (function () {
                     }
                     var r = this.getClientRects();
                     el.popup.style.left = r[0].left + 'px';
-                    if (moose.toolBarPosition == 'bottom') {
-                        el.popup.style.top = (r[0].top-98) + 'px';
+                    if (moose.toolbarPosition == 'bottom') {
+                        el.popup.style.top = (r[0].top - 98) + 'px';
                     } else {
-                        el.popup.style.top = (r[0].top+128) + 'px';
+                        el.popup.style.top = (r[0].top + 128) + 'px';
                     }
-                    
-                    
+
+
                     el.popup.style.display = 'block';
                     moose.popup = el.popup;
                 };
@@ -784,6 +785,17 @@ var Draw = (function () {
             }
         }
         ],
+        setToolbarPosition: function (position) {
+            if (position == 'top') {
+                this.toolbar.style.setProperty('top', '0px');
+                this.toolbar.style.setProperty('bottom', '')
+                this.toolbarPosition = 'top';
+            } else if (position == 'bottom') {
+                this.toolbar.style.setProperty('top', '');
+                this.toolbar.style.setProperty('bottom', '0px')
+                this.toolbarPosition = 'bottom';
+            }
+        },
         disableToolbar: function () {
             for (var i = 0; i < this.toolbarItems.length; i++) {
                 var ti = this.toolbarItems[i];
@@ -800,7 +812,7 @@ var Draw = (function () {
                 ti.el.disabled = false;
             }
         },
-        toggleFullscreen: function() {
+        toggleFullscreen: function () {
             if (this.isFullscreen) {
                 if (document.exitFullscreen) {
                     document.exitFullscreen();
@@ -972,7 +984,7 @@ var Draw = (function () {
         },
         bindEvents: function () {
             var moose = this;
-            this.toolbar.onmousedown = function(e) {
+            this.toolbar.onmousedown = function (e) {
                 if (moose.popup) {
                     moose.popup.style.display = 'none';
                     moose.popup = null;
