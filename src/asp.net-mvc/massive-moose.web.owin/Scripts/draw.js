@@ -647,7 +647,7 @@ var Draw = (function () {
                             moose.toolSize = input.value;
                             el.innerHTML = 'Size:' + moose.toolSize;
                         };
-                        input.style.width = '300px';
+                        input.style.width = '500px';
                         input.style.setProperty("display", "inline-block", "important");
                         input.style['position'] = 'relative';
                         input.style['top'] = '5px';
@@ -992,10 +992,12 @@ var Draw = (function () {
                 });
             this.canvas.addEventListener('touchstart',
                 function (e) {
+                    var moose = this.moose;
                     if (moose.popup) {
                         moose.popup.style.display = 'none';
                         moose.popup = null;
                     }
+
                     if (e.target.tagName.toLowerCase() !== 'canvas') {
                         return;
                     }
