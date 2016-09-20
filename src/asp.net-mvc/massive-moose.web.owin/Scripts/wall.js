@@ -1,356 +1,1151 @@
-﻿var Wall = (function() {
-    return {
-        cfg: {
-            baseApiUrl: '',
-            drawZoom: 0.8,
-            viewportScale: 1.0,
-            viewportScaleWhenDrawing: 0.7,
-            inviteCode: '',
-            refreshTime: 3000
-        },
-        initialize: function(containerEl, configuration) {
-            this.cfg = configuration;
-            this.wallETag = '0';
-            this.xhrWaitHandle = null;
-            this.xhr = new XMLHttpRequest();
-            this.updateXhr = new XMLHttpRequest();
-            this.xhr.onreadystatechange = function(evt) {
+﻿var utils = {};
 
+utils.distanceBetween = function (point1, point2) {
+    return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
+}
+utils.angleBetween = function (point1, point2) {
+    return Math.atan2(point2.x - point1.x, point2.y - point1.y);
+}
+utils.toHslaString = function (hsla) {
+    return 'hsla(' + hsla.h + ',' + (hsla.s * 100) + '%,' + (hsla.l * 100) + '%,' + hsla.a + ')'
+}
+utils.fromHslaString = function (input) {
+    input = input.substr(input.indexOf('(') + 1);
+    input = input.substring(0, input.length - 1);
+    var s = input.split(',');
+    var col = {
+        h: parseInt(s[0].trim()),
+        s: parseFloat(s[1].substr(0, s[1].indexOf('%')).trim()) / 100,
+        l: parseFloat(s[2].substr(0, s[2].indexOf('%')).trim()) / 100,
+        a: parseFloat(s[3].trim())
+    };
+}
+
+utils.fromRgbString = function (input) {
+    input = input.substr(input.indexOf('(') + 1);
+    input = input.substring(0, input.length - 1);
+    var s = input.split(',');
+
+
+    var col = {
+        r: parseInt(s[0].trim()),
+        g: parseInt(s[1].trim()),
+        b: parseInt(s[2].trim()),
+        a: 255
+    };
+    return utils.rgbToHsl(col.r, col.g, col.b);
+}
+
+utils.rgbToHsl = function (r, g, b) {
+    r /= 255, g /= 255, b /= 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var h, s, l = (max + min) / 2;
+
+    if (max == min) {
+        h = s = 0; // achromatic
+    } else {
+        var d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h *= 60;
+    }
+
+    return { h: h, s: s, l: l, a: 1 };
+}
+
+utils.getRandomInt = function (min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+var math = {};
+math.scalePositionScalar = function (val, viewportSize, oldScale, newScale) {
+    var newSize, oldSize;
+    oldSize = viewportSize * oldScale;
+    newSize = viewportSize * newScale;
+    return val + (oldSize - newSize) / 2;
+};
+
+var Draw = (function () {
+    return {
+        initialize: function (arg1, arg2) {
+            var containerEl, opts;
+            opts = null;
+            containerEl = null;
+            if (arg1 instanceof HTMLElement) {
+                containerEl = arg1;
+                opts = arg2;
+            } else {
+                opts = arg1;
+            }
+
+            this.onExportImage = opts.onExportImage;
+            this.onCanceled = opts.onCanceled;
+
+            this.viewport = document.querySelector("meta[name=viewport]");
+
+            this.viewportScale = 1;
+            this.opts = opts || {};
+            this.isDrawing = false;
+            this.lastPoint = null;
+            this.mouseOut = true;
+            this.scale = 1.0;
+            this.scaleAtPinchStart = 1.0;
+            this.offsetAtPinchStart = { x: 0, y: 0 };
+            this.offset = { x: 0, y: 0 };
+            this.zoomEnabled = false;
+
+            document.body.style.backgroundColor = '#ff0000';
+
+            this.popup = null;
+
+            this.isPinching = false;
+
+            this.canvas = document.createElement('canvas');
+            this.ctx = this.canvas.getContext('2d');
+            this.ctx.lineJoin = this.ctx.lineCap = 'round';
+
+            this.buffer = document.createElement('canvas');
+            this.bufferCtx = this.buffer.getContext('2d');
+            this.bufferCtx.lineJoin = this.bufferCtx.lineCap = 'round';
+
+
+            this.canvas.style['background-color'] = 'white';
+            this.canvas.moose = this;
+            this.currentShape = null;
+            this.shapes = [];
+
+            this.canvas.width = this.buffer.width = this.width = opts.width;
+            this.canvas.height = this.buffer.height = this.height = opts.height;
+            this.position = { x: 0, y: 0 };
+
+            this.buffer.moose = this;
+            this.buffer.lineJoin = this.buffer.lineCap = 'round';
+
+            this.toolSize = 10;
+            this.foreColor = { h: 100, s: 1, l: 0.5, a: 1 };
+
+            this.debugElement = this.createDebugElement();
+
+            this.buildPalette();
+
+            if (containerEl) {
+                this.bindToElement(containerEl);
+                this.toolbar = this.createToolbar();
+                this.containerEl.appendChild(this.toolbar);
+            }
+
+            this.bindEvents();
+
+            var scalex = 1600 / screen.availWidth;
+            var scaley = 900 / screen.availHeight;
+            this.scale = scalex;
+            if (scalex * screen.availHeight > 900) {
+                this.scale = scaley;
+            }
+            if (this.scale < 1) {
+                this.scale = 1;
+            }
+            this.canvas.width = 1600;
+            this.canvas.height = 900;
+            //this.ctx.scale(1 / this.scale, 1 / this.scale);
+
+            if (this.zoomEnabled) {
+                this.bindHammerTime(this);
+            }
+        },
+        setDocumentViewportScale: function (scale) {
+            this.viewport.setAttribute('content', 'width=device-width, initial-scale=' + scale);
+        },
+        bindToElement: function (containerEl) {
+            var ref1, repaintAll;
+            if (this.containerEl) {
+                console.warn("Trying to bind to a DOM element more than once is unsupported.");
+                return;
             }
             this.containerEl = containerEl;
+            this.containerEl.appendChild(this.canvas);
+            this.containerEl.style['background-color'] = "#aaaaaa"
+            this.containerEl.style['overflow'] = 'hidden';
+            this.containerEl.style['position'] = 'absolute';
+            this.containerEl.style['top'] = '0px';
+            this.containerEl.style['left'] = '0px';
+            this.containerEl.style['width'] = this.width;
+            this.containerEl.style['height'] = this.height;
+            this.containerEl.appendChild(this.debugElement);
 
-            this.onShowProgress = this.cfg.onShowProgress;
-            this.onCloseProgress = this.cfg.onCloseProgress;
-
-            window.addEventListener("resize", this.updateHelpDialogDimensions);
-            this._viewportScaleWhenDrawing = this.cfg.viewPortScaleWhenDrawing;
-            this._viewportScale = this.cfg.viewPortScale;
-            this._drawZoom = this.cfg.drawZoom;
-            this._baseApiUrl = this.cfg.baseApiUrl;
-            this._inviteCode = this.cfg.inviteCode;
-            this._refreshTime = this.cfg.refreshTime;
-
-            this._brickInUse = null;
-            this._lc = null;
-            this._wall = null;
-            this._toolsWaitHandle = 0;
-
-            this.updateHelpDialogDimensions();
-            this.bindHelp();
-            this.bindBricks();
-
-            setTimeout(this.checkWallStaleness, 10, this);
+            this.isBound = true;
         },
-        bindHelp: function () {
-            var $this = this;
-            if (document.getElementById('help')) {
-                document.getElementById('moreHelp1')
-                    .onclick = function() {
-                        $this.xhr.open('GET', '/Home/Help');
-                        $this.xhr.setRequestHeader('Content-Type', 'text/html');
-                        $this.xhr.onload = function () {
-                            document.getElementById('help-scroller').style.overflowY = 'scroll';
-                            document.getElementById('help-full').innerHTML = $this.xhr.responseText;
-                            document.getElementById('help-full-container').style.display = 'block';
-                            document.getElementById('help-question').style.display = 'none';
-                        }
-                        $this.xhr.send();
-                    };
-                document.getElementById('noHelpThanks1').onclick = function() {
-                    $this.setDontHelpMe();
-                };
-                document.getElementById('help-close').onclick = function() {
-                    $this.setDontHelpMe();
-                };
-                document.getElementById('moreHelp2')
-                    .onclick = function() {
-                        $this.xhr.open('GET', '/Home/Help');
-                        $this.xhr.setRequestHeader('Content-Type', 'text/html');
-                        $this.xhr.onload = function () {
-                            document.getElementById('help-scroller').style.overflowY = 'scroll';
-                            document.getElementById('help-full').innerHTML = $this.xhr.responseText;
-                            document.getElementById('help-full-container').style.display = 'block';
-                            document.getElementById('help-question').style.display = 'none';
-                        }
-                        $this.xhr.send();
-                    };
-                document.getElementById('noHelpThanks2').onclick = function() {
-                    $this.setDontHelpMe();
-                    document.getElementById('help').style.display = 'none';
-                };
-                document.getElementById('noHelpThanks3').onclick = function() {
-                    $this.setDontHelpMe();
-                    document.getElementById('help').style.display = 'none';
-                };
-                document.getElementById('help-close').onclick = function() {
-                    $this.setDontHelpMe();
-                    document.getElementById('help').style.display = 'none';
-                };
+        startDrawing: function (data) {
+            var scalex = 1600 / screen.availWidth;
+            var scaley = 900 / screen.availHeight;
+            this.scale = scalex;
+            if (scalex * screen.availHeight > 900) {
+                this.scale = scaley;
             }
-
-        },
-        setDontHelpMe:function() {
-            this.xhr.open('POST', '/Home/DontHelpMe');
-            this.xhr.send();
-            document.getElementById('help').style.display = 'none';
-        },
-        bindBricks: function () {
-            var $wall = this;
-            var bricks = document.getElementsByClassName('brick');
-            for (var ei = 0; ei < bricks.length; ei++) {
-                var b = document.getElementById(bricks[ei].id);
-                b.onclick = function(e) {
-                    $wall.openSession(e.currentTarget.attributes.getNamedItem('data-viewx').value,
-                        e.currentTarget.attributes.getNamedItem('data-viewy').value,
-                        e.currentTarget.attributes.getNamedItem('data-addressx').value,
-                        e.currentTarget.attributes.getNamedItem('data-addressy').value);
-                };
-
+            if (this.scale < 1) {
+                this.scale = 1;
             }
-        },
-        updateHelpDialogDimensions: function() {
-            viewport = document.querySelector("meta[name=viewport]");
-            var help = document.getElementById('help');
-            var diag = document.getElementById('diagnostics');
-            if (!help) return;
+            this.setDocumentViewportScale(1 / this.scale);
 
-            var ratio = 0.8;
-            var paddingX = Math.round(window.innerWidth * (1 - ratio) / 2);
-            var paddingY = Math.round(window.innerHeight * (1 - ratio) / 2);
-            var width = Math.round(window.innerWidth * ratio);
-            var height = Math.round(window.innerHeight * ratio);
-            help.style.width = width + 'px';
-            help.style.height = height + 'px';
-            help.style.left = (window.pageXOffset + paddingX) + 'px';
-            help.style.top = (window.pageYOffset + paddingY) + 'px';
+            this.sessionData = data;
+            this.containerEl.style.display = 'block';
+            this.enableToolbar();
 
-            if (width < height) {
-                document.getElementById('rotate-alert').style.display = 'inline-block';
-            } else {
-                document.getElementById('rotate-alert').style.display = 'none';
-            }
-        },
-        updateProgress: function(evt) {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        },
-        transferComplete: function(evt) {
+            this.setToolbarPosition('top');
+            this.toolbar.className = this.isFullscreen() ? 'toolbar-small' : 'toolbar-big';
 
-        },
-        transferFailed: function(evt) {
-
-        },
-        transferCanceled: function(evt) {
-
-        },
-        transferStarted: function(evt) {
-
-        },
-        setViewScale: function() {
-            var vs = this.cfg.viewPortScale;
-            if (this.cfg.firstTime) {
-                vs = 1.0;
-            } else if (this._brickInUse) {
-                vs = this.cfg.viewportScaleWhenDrawing;
-            }
-            viewport = document.querySelector("meta[name=viewport]");
-            viewport.setAttribute('content', 'width=device-width, initial-scale=' + vs);
-
-        },
-        openSession: function (x, y, addressX, addressY) {
-            if (!addressX || !addressY)
-                return;
-            $this = this;
-
-            if (this.onShowProgress) {
-                this.onShowProgress('Loading...');
-            }
-
-            this.xhr.open('POST', this._baseApiUrl + '/v1/' + this._inviteCode + '/draw/' + addressX + '/' + addressY);
-            this.xhr.setRequestHeader('Content-Type', 'application/json');
-            this.xhr.onload = function () {
-                if (this.status === 200) {
-                    var data = JSON.parse(this.responseText);
-                    $this._brickInUse = $this._wall[x][y];
-                    $this._brickInUse.sessionToken = data.sessionToken;
-                    $this._brickInUse.snapshotJson = data.snapshotJson;
-                    $this.openCanvas($this._brickInUse);
-                } else if (this.status == 409) {
-                    alert('someone is currently drawing on that space')
-                    $this.updateWall();
-                } else {
-                    alert('something went terribly, terribly wrong. call your lawyers.');
+            for (var i = 0; i < this.toolbarItems.length; i++) {
+                if (this.toolbarItems[i].resetToDefaults) {
+                    this.toolbarItems[i].resetToDefaults();
                 }
-                if (this.onCloseProgress) {
-                    this.onCloseProgress();
-                }
-            };
-            this.xhr.send();
-        },
-        openCanvas: function (brick) {
-            if (this.cfg.startDrawing) {
-                this.cfg.startDrawing({ data: brick, wallInstance: this });
             }
 
-        },
-        checkWallStaleness: function (wall) {
-            var $this = wall;
-            $this.updateHelpDialogDimensions();
+            this.isDrawing = false;
+            window.scrollTo(0, 0);
 
-            if ($this.updateXhr.readyState == 0 || $this.updateXhr.readyState == 4) {
-                $this.updateXhr.open('HEAD', $this._baseApiUrl + '/v2/wall/' + $this._inviteCode + '/0/0/' + $this.wallETag);
-                $this.updateXhr.setRequestHeader('If-None-Match', $this.wallETag);
-                $this.updateXhr.onload = function () {
-                    if ($this.updateXhr.status == 200) {
-                        $this.wallETag = $this.updateXhr.getResponseHeader('ETag');
-                        if ($this.wallETag) {
-                            $this.wallETag = $this.wallETag.replace("\"", "").replace("\"", "")
-                        }
-                        $this.updateWall();
-                    } else {
-                        setTimeout($this.checkWallStaleness, $this._refreshTime, $this);
+        },
+        importDrawingData: function (data) {
+            var t = this.selectedTool, ts = this.toolSize, fc = this.foreColor;
+            var snapshot = JSON.parse(data);
+
+            if (snapshot && snapshot.length) {
+                for (var i = 0; i < snapshot.length; i++) {
+                    try {
+                        this.shapes.push(snapshot[i]);
+                        this.saveShape(snapshot[i], this.ctx);
+                        this.saveShape(snapshot[i], this.bufferCtx);
+                    } catch (ex) {
+                        this.debug(ex.message);
                     }
                 }
-                $this.updateXhr.send();
-            } else {
-                setTimeout($this.checkWallStaleness, $this._refreshTime, $this);
             }
+            this.selectedTool = t;
+            this.toolSize = ts;
+            this.foreColor = fc;
         },
-        updateWall: function(updatedBrickElement) {
-            if (!this._brickInUse) {
-                $this = this;
-                this.setViewScale();
-                this.updateHelpDialogDimensions();
-                this.updateXhr.open('GET', this._baseApiUrl + '/v2/wall/' + this._inviteCode + '/0/0');
-                this.updateXhr.setRequestHeader('Content-Type', 'application/json');
-                this.updateXhr.onload = function () {
-                    if (this.status === 200) {
-                        var data = JSON.parse(this.responseText);
-                        $this.containerEl.style.display = 'block';
-                        for (var y = 0; y < data.length; y++) {
+        close: function () {
+            this.isDrawing = false;
+            this.containerEl.style.display = 'none';
+            this.shapes = [];
+            if (this.isFullscreen()) {
+                this.exitFullscreen();
+            }
 
-                            for (var x = 0; x < data[y].length; x++) {
-                                var brickView = document.getElementById('c' + (y * 12 + x));
-                                brickView.setAttribute('data-viewX', x);
-                                brickView.setAttribute('data-viewY', y);
-                                var brick = data[x][y];
-                                brick.element = brickView;
+        },
+        onSave: function () {
+            this.disableToolbar();
+            if (this.onExportImage) {
+                try {
+                    this.onExportImage(this.sessionData,
+                        this.buffer.toDataURL('image/png'),
+                        JSON.stringify(this.shapes));
+                    this.close();
+                    return;
+                } catch (ex) {
+                    this.debug(ex.message);
+                }
+            }
+            this.enableToolbar();
+        },
+        onCancel: function () {
+            this.disableToolbar();
+            if (this.onCanceled) {
+                try {
+                    this.onCanceled(this.sessionData);
+                    this.close();
+                    return;
+                } catch (ex) {
+                    this.debug(ex.message);
+                }
+            }
+            this.enableToolbar();
+        },
+        tools: [
+            {
+                name: 'sprayPaint1',
+                iconHtml: '<img src="/content/tool_paint.png" />',
+                getToolbarElement: function (isSelected, onSelected) {
+                    var $this = this;
+                    var el = document.createElement('button');
+                    this.el = el;
+                    el.innerHTML = this.iconHtml;
+                    if (isSelected) {
+                        el.style.border = '1px solid red';
+                    } else {
+                        el.style.border = '1px solid #888';
+                    }
+                    el.onclick = function (e) {
+                        if (onSelected)
+                            onSelected($this);
+                    };
+                    return el;
+                },
+                onPointerStart: function (moose, pt) {
+                    this.lastPoint = pt;
+                },
+                onPointerDrag: function (moose, pt, targetContext) {
+                    var dist = utils.distanceBetween(this.lastPoint, pt);
+                    var angle = utils.angleBetween(this.lastPoint, pt);
+                    var ctx = targetContext || moose.ctx;
 
-                                if (!brick) {
-                                    brickView.className = 'brick free';
-                                    continue;
-                                }
+                    var fc = moose.foreColor;
 
-                                var brickImageUrl = $this._baseApiUrl +
-                                    '/v1/image/t' +
-                                    '/' +
-                                    $this._inviteCode +
-                                    '/' +
-                                    brick.x +
-                                    '/' +
-                                    brick.y +
-                                    '?d=' +
-                                    brick.d;
+                    var toolSize = pt.toolSize || moose.toolSize;
+                    for (var i = 0; i < dist; i += toolSize / 4) {
 
-                                if (brick.c == 1 && ($this._wall && $this._wall[x][y])) {
-                                    // TODO: only update source image if the brick.D value is different to the data-updated attribute on the element
-                                    if (brick.d != brickView.getAttribute('data-updated')) {
-                                        brickView.style.backgroundImage = 'url("' + brickImageUrl + '")';
-                                    }
-                                }
-                                if (brick.u != 1) {
-                                    brickView.innerHTML = '';
-                                    brickView.className = 'brick free';
-                                } else {
-                                    brickView
-                                        .innerHTML = '<span class="bc iu glyphicon glyphicon-ban-circle"></span>';
-                                    brickView.className = 'brick inuse';
-                                }
-                                brickView.setAttribute('data-inuse', brick.u);
-                                brickView.setAttribute('data-hascontent', brick.c);
-                                brickView.setAttribute('data-addressx', brick.x);
-                                brickView.setAttribute('data-addressY', brick.y);
-                                brickView.setAttribute('data-updated', brick.d);
+                        x = this.lastPoint.x + (Math.sin(angle) * i);
+                        y = this.lastPoint.y + (Math.cos(angle) * i);
+
+                        var radgrad = ctx
+                            .createRadialGradient(x, y, toolSize / 2, x, y, toolSize);
+
+                        var centerColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                        var midColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                        var edgeColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                        centerColor.a = 1;
+                        midColor.a = 0.5;
+                        edgeColor.a = 0;
+
+                        radgrad.addColorStop(0, utils.toHslaString(centerColor));
+                        radgrad.addColorStop(0.5, utils.toHslaString(midColor));
+                        radgrad.addColorStop(1, utils.toHslaString(edgeColor));
+
+                        ctx.fillStyle = radgrad;
+                        ctx.fillRect(x - toolSize,
+                            y - toolSize,
+                            toolSize * 2,
+                            toolSize * 2);
+                    }
+                    this.lastPoint = pt;
+                    return pt;
+                },
+                onPointerStop: function (moose) {
+                    this.lastPoint = null;
+                    moose.saveShape(moose.currentShape, moose.bufferCtx);
+                }
+            },
+            {
+                name: 'ink',
+                iconHtml: '<img src="/content/tool_ink.png" />',
+                getToolbarElement: function (isSelected, onSelected) {
+                    var $this = this;
+                    var el = document.createElement('button');
+                    this.el = el;
+                    el.innerHTML = this.iconHtml;
+                    if (isSelected) {
+                        el.style.border = '1px solid red';
+                    } else {
+                        el.style.border = '1px solid #888';
+                    }
+                    el.onclick = function (e) {
+                        if (onSelected)
+                            onSelected($this);
+                    };
+                    return el;
+                },
+                onPointerStart: function (moose, pt) {
+                    this.lastPoint = pt;
+
+                    this.sizeVariation = pt.sizeVariation || (Math.random() * 1) + 0.5;
+                    this.sizeChangeWait = pt.sizeChangeWait || utils.getRandomInt(2, 5);
+                    this.blotWait = pt.blotWait || utils.getRandomInt(100, 300);
+                    this.actualInkSize = pt.actualInkSize || 1;
+
+                },
+                onPointerDrag: function (moose, pt, targetContext) {
+                    var dist = utils.distanceBetween(this.lastPoint, pt);
+                    var angle = utils.angleBetween(this.lastPoint, pt);
+                    var ctx = targetContext || moose.ctx
+
+                    var fc = moose.foreColor;
+                    this.sizeChangeWait--;
+                    this.blotWait--;
+
+                    if (this.sizeChangeWait <= 0) {
+                        this.sizeVariation = pt.sizeVariation || Math.random() + 0.5;
+                        this.sizeChangeWait = pt.sizeChangeWait || utils.getRandomInt(3, 8);
+                    }
+
+                    if (this.blotWait <= 0) {
+                        this.sizeVariation = pt.sizeVariation || this.sizeVariation * (2 + Math.random() * 2);
+                        this.blotWait = this.blotWait || utils.getRandomInt(100, 300);
+
+                    }
+
+                    var toolSize = moose.toolSize * this.sizeVariation;
+                    if (pt.actualInkSize)
+                        this.actualInkSize = pt.actualInkSize;
+                    else
+                        this.actualInkSize += (toolSize - this.actualInkSize) / (this.sizeChangeWait / 2);
+
+                    for (var i = 0; i < dist; i += this.actualInkSize / 4) {
+
+                        x = this.lastPoint.x + (Math.sin(angle) * i);
+                        y = this.lastPoint.y + (Math.cos(angle) * i);
+
+                        var radgrad = ctx
+                            .createRadialGradient(x, y, this.actualInkSize / 2, x, y, this.actualInkSize);
+
+                        var centerColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                        var midColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                        var edgeColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
+                        centerColor.a = 1;
+                        midColor.a = 0.8;
+                        edgeColor.a = 0;
+
+                        radgrad.addColorStop(0, utils.toHslaString(centerColor));
+                        radgrad.addColorStop(0.85, utils.toHslaString(midColor));
+                        radgrad.addColorStop(1, utils.toHslaString(edgeColor));
+
+                        ctx.fillStyle = radgrad;
+                        ctx.fillRect(x - this.actualInkSize,
+                            y - this.actualInkSize,
+                            this.actualInkSize * 2,
+                            this.actualInkSize * 2);
+                    }
+
+                    var pointData =
+                    {
+                        x: pt.x,
+                        y: pt.y,
+                        sizeChangeWait: this.sizeChangeWait,
+                        blotWait: this.blotWait,
+                        sizeVariation: this.sizeVariation,
+                        actualInkSize: this.actualInkSize
+                    };
+                    this.lastPoint = pt;
+                    return pointData;
+                },
+                onPointerStop: function (moose) {
+                    this.lastPoint = null;
+                    moose.saveShape(moose.currentShape, moose.bufferCtx);
+                }
+            }
+        ],
+        toolbarItems: [
+            {
+                name: 'toggleToolbarSize',
+                enabled: true,
+                showWhenCollapsed: true,
+                collapsed: false,
+                initialize: function (moose) {
+                    var $this = this;
+                    var el = document.createElement('button');
+                    el.innerHTML = '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
+                    el.onclick = function (e) {
+
+                        for (var i = 0; i < moose.toolbarItems.length; i++) {
+                            var ti = moose.toolbarItems[i];
+                            if (!ti.enabled) continue;
+                            if ($this.collapsed) {
+                                ti.el.style.setProperty("display", "inline-block", "important");
+                            } else if (!ti.showWhenCollapsed) {
+                                ti.el.style.display = 'none';
                             }
                         }
-                        $this._wall = data;
-                        //document.body.style.minWidth = '1600px';
-                        //document.body.style.minHeight = '900px';
-                        $this.setViewScale();
-                        $this.updateHelpDialogDimensions();
-                        if ($this.updatedBrickElement)
-                            $this.updatedBrickElement.scrollIntoView();
-                        setTimeout($this.checkWallStaleness, $this._refreshTime, $this);
+                        $this.collapsed = !$this.collapsed;
+                        if ($this.collapsed) {
+                            $this.el
+                                .innerHTML =
+                                '<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>';
+                        } else {
+                            $this.el
+                                .innerHTML =
+                                '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
+                        }
+                    }
+
+                    this.el = el;
+                    return el;
+                }
+            },
+            {
+                name: 'moveToolbar',
+                enabled: true,
+                showWhenCollapsed: true,
+                initialize: function (moose, toolbarElement) {
+                    var $this = this;
+                    $this.toolbarElement = toolbarElement;
+                    var el = document.createElement('button');
+                    el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
+                    el.onclick = function (e) {
+                        if (moose.toolbarPosition == 'top') {
+                            $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-top"></span>';
+                            moose.setToolbarPosition('bottom');
+                        } else {
+                            $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
+                            moose.setToolbarPosition('top');
+                        }
+                    }
+                    this.el = el;
+                    return el;
+                }
+            },
+            {
+                name: 'selectTool',
+                enabled: true,
+                showWhenCollapsed: false,
+                selectedTool: null,
+                resetToDefaults: function () {
+                    this.moose.selectedTool = this.moose.tools[0];
+                    this.el.innerHTML = this.moose.tools[0].iconHtml;
+                },
+                initialize: function (moose) {
+                    var $this = this;
+                    this.moose = moose;
+                    var el = document.createElement('button');
+                    this.el = el;
+                    if (!this.popup) {
+                        this.popup = document.createElement('div');
+                    }
+                    el.innerHTML = moose.tools[0].iconHtml;
+                    this.popup.style.position = 'absolute';
+                    this.popup.style['z-index'] = 103;
+                    this.popup.style.width = '200px';
+                    this.popup.style.height = '200px';
+                    this.popup.style.top = '50px';
+                    this.popup.style.left = '50px';
+                    this.popup.style.backgroundColor = 'white';
+                    this.popup.style.border = '2px solid black';
+                    this.popup.style.padding = '0.5em';
+                    $popup = this.popup;
+                    el.onclick = function (e) {
+                        if (moose.popup) {
+                            moose.popup.style.display = 'none';
+                            moose.popup = null;
+                        }
+                        $popup.innerHTML = '';
+                        for (var i = 0; i < moose.tools.length; i++) {
+                            var toolSelector = moose.tools[i].getToolbarElement(
+                                    moose.tools[i] == moose.selectedTool,
+                                    function (tool) {
+                                        moose.selectedTool = tool;
+                                        $popup.style.display = 'none';
+                                        el.innerHTML = tool.iconHtml;
+                                    });
+                            $popup.appendChild(toolSelector);
+
+                        }
+                        $popup.style.display = 'block';
+                        var r = this.getClientRects();
+                        var pr = $popup.getClientRects();
+                        $popup.style.left = r[0].left + 'px';
+                        if (moose.toolbarPosition == 'top') {
+                            $popup.style.top = r[0].bottom + 'px';
+                        } else {
+                            $popup.style.top = (r[0].top - pr[0].height) + 'px';
+                        }
+                        moose.popup = $popup;
+                    };
+                    moose.containerEl.appendChild(this.popup);
+                    $popup.style.display = 'none';
+                    return el;
+                }
+            },
+        {
+            name: 'pickColor',
+            enabled: true,
+            showWhenCollapsed: false,
+            opened: false,
+            resetToDefaults: function () {
+                this.moose.foreColor = { h: 0, s: 0, l: 0, a: 1 };
+                this.el.style.backgroundColor = utils.toHslaString(this.moose.foreColor);
+            },
+            initialize: function (moose) {
+                var $this = this;
+                this.moose = moose;
+                var el = document.createElement('button');
+                var fc = moose.foreColor;
+                el.style.backgroundColor = utils.toHslaString(fc);
+                el.onclick = function (e) {
+                    if (moose.popup) {
+                        moose.popup.style.display = 'none';
+                        moose.popup = null;
+                    }
+                    if (!$this.opened) {
+                        $this.picker.style.display = 'block';
+                        $this.picker.style.position = 'absolute';
+                        $this.picker.style.top = '0px';
+                        $this.picker.style.left = '0px';
+                        if (moose.isFullscreen()) {
+                            $this.picker.style.width = screen.availWidth + 'px';
+                            $this.picker.style.height = screen.availHeight + 'px';
+                        } else {
+                            $this.picker.style.width = '1600px';
+                            $this.picker.style.height = '900px';
+                        }
+                        $this.picker.style['z-index'] = 102;
+                        $this.opened = true;
+                        moose.popup = null;
+                    } else {
+                        $this.picker.style.display = 'none';
+                        $this.opened = false;
+                        moose.popup = null;
+                    }
+                }
+                el.innerHTML = '&nbsp';
+                this.el = el;
+
+                var colorPicker = document.createElement('div');
+                colorPicker.style.display = 'none';
+                colorPicker.style.position = 'absolute';
+                colorPicker.style.top = '0';
+                colorPicker.style.left = '1';
+                colorPicker.style['z-index'] = 1;
+                var step = 50;
+                for (var py = 0; py < 10; py++) {
+                    var row = document.createElement('div');
+                    row.style.width = '100%';
+                    row.style.height = '10%';
+                    for (var px = 0; px < 10; px++) {
+                        var cel = document.createElement('button');
+                        cel.style.width = '10%';
+                        cel.style.height = '100%';
+                        cel.style.margin = 'auto auto auto auto';
+                        cel.style.border = '0';
+                        var col = null;
+                        if (moose.pallette[px] && moose.pallette[px][py])
+                            col = moose.pallette[px][py];
+                        else
+                            col = { h: 200, s: 1, l: 1, a: 1 };
+                        cel.style.backgroundColor = utils.toHslaString(col);
+                        cel.style.display = 'inline-block';
+                        row.appendChild(cel);
+                        cel.onclick = function (e) {
+                            moose.setForeColor(utils.fromRgbString(this.style.backgroundColor));
+                            $this.el.style.backgroundColor = this.style.backgroundColor;
+                            $this.picker.style.display = 'none';
+                            $this.opened = false;
+                        };
+                    }
+                    colorPicker.appendChild(row);
+                }
+
+                $this.picker = colorPicker;
+                moose.containerEl.appendChild($this.picker);
+
+                return el;
+            }
+        },
+        {
+            name: 'toolSize',
+            enabled: true,
+            showWhenCollapsed: false,
+            resetToDefaults: function () {
+                this.moose.toolSize = 10;
+                this.el.innerHTML = 'Size:' + this.moose.toolSize;
+            },
+            initialize: function (moose) {
+                this.moose = moose;
+                var el = document.createElement('button');
+                el.innerHTML = 'Size:' + moose.toolSize;
+                el.style['margin-right'] = '1em';
+
+                el.onclick = function (e) {
+                    if (moose.popup) {
+                        moose.popup.style.display = 'none';
+                        moose.popup = null;
+                    }
+                    if (!el.popup) {
+                        el.popup = document.createElement('div');
+                        el.popup.style.backgroundColor = '#FFF';
+                        el.popup.style.padding = "10px";
+                        el.popup.style.border = "2px solid blue";
+                        el.popup.style.position = 'absolute';
+                        el.popup.style.top = '50px';
+                        el.popup.style.left = '50px';
+                        el.popup.style['z-index'] = 104;
+                        var input = document.createElement('input');
+                        input.type = 'range';
+                        input.name = 'toolSize';
+                        input.value = moose.toolSize;
+                        input.min = 3;
+                        input.max = 200;
+                        input.attributes['step'] = '1';
+                        input.defaultValue = moose.toolSize;
+                        input.oninput = input.onchange = function (e) {
+                            moose.toolSize = input.value;
+                            el.innerHTML = 'Size:' + moose.toolSize;
+                        };
+                        input.style.width = '500px';
+                        input.style.setProperty("display", "inline-block", "important");
+                        input.style['position'] = 'relative';
+                        input.style['top'] = '5px';
+                        el.popup.appendChild(input);
+                        moose.containerEl.appendChild(el.popup);
+                    }
+                    var r = this.getClientRects();
+                    el.popup.style.left = r[0].left + 'px';
+                    if (moose.toolbarPosition == 'bottom') {
+                        el.popup.style.top = (r[0].top - 98) + 'px';
+                    } else {
+                        el.popup.style.top = (r[0].top + 128) + 'px';
+                    }
+
+
+                    el.popup.style.display = 'block';
+                    moose.popup = el.popup;
+                };
+
+                this.el = el;
+
+                return el;
+            }
+        },
+        {
+            name: 'fullscreen',
+            enabled: true,
+            initialize: function (moose) {
+                var el = document.createElement('button');
+                this.el = el;
+                el.innerHTML = '<span class="glyphicon glyphicon-fullscreen"></span>';
+                el.onclick = function (e) {
+                    if (moose.isFullscreen()) {
+                        moose.exitFullscreen();
+                    } else {
+                        moose.enterFullscreen();
                     }
                 };
-                this.updateXhr.send();
+                return el;
+            }
+        },
+        {
+            name: 'cancel',
+            enabled: true,
+            initialize: function (moose) {
+                var el = document.createElement('button');
+                el.innerHTML = '<span class="glyphicon glyphicon-remove"></span>';
+                this.el = el;
+                el.onclick = function (e) {
+                    moose.onCancel();
+                };
+                return el;
+            }
+        },
+        {
+            name: 'save',
+            enabled: true,
+            initialize: function (moose) {
+                var el = document.createElement('button');
+                el.innerHTML = '<span class="glyphicon glyphicon-floppy-disk"></span>';
+                el.onclick = function (e) {
+                    moose.onSave();
+                };
+                this.el = el;
+                return el;
+            }
+        },
+        {
+            name: 'zoom-in',
+            enabled: this.zoomEnabled,
+            initialize: function (moose) {
+                var el = document.createElement('button');
+                el.innerHTML = 'zoom in';
+                el.onclick = function (e) {
+                    var newScale = moose.scale * 2;
+                    moose.zoom(newScale, moose.scale, 0.5, 0.5);
+                    moose.scale = newScale;
+                };
+                this.el = el;
+                return el;
+            }
+        },
+        {
+            name: 'zoom-out',
+            enabled: this.zoomEnabled,
+            initialize: function (moose) {
+                var el = document.createElement('button');
+                el.innerHTML = 'zoom out';
+                el.onclick = function (e) {
+                    var newScale = moose.scale / 2;
+                    if (newScale == moose.scale) return;
+                    moose.zoom(newScale, moose.scale, 0.5, 0.5);
+                    moose.scale = newScale;
+                };
+                this.el = el;
+                return el;
+            }
+        }
+        ],
+        exitFullscreen: function () {
+            if (
+                document.fullscreenEnabled ||
+                    document.webkitFullscreenEnabled ||
+                    document.mozFullScreenEnabled ||
+                    document.msFullscreenEnabled
+            ) {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                this.toolbar.className = 'toolbar-big';
+                this.setDocumentViewportScale(1 / this.scale);
+            }
+        },
+        enterFullscreen: function () {
+            if (
+                document.fullscreenEnabled ||
+                    document.webkitFullscreenEnabled ||
+                    document.mozFullScreenEnabled ||
+                    document.msFullscreenEnabled
+            ) {
+                if (this.containerEl.requestFullscreen) {
+                    this.containerEl.requestFullscreen();
+                } else if (this.containerEl.webkitRequestFullscreen) {
+                    this.containerEl.webkitRequestFullscreen();
+                } else if (this.containerEl.mozRequestFullScreen) {
+                    this.containerEl.mozRequestFullScreen();
+                } else if (this.containerEl.msRequestFullscreen) {
+                    this.containerEl.msRequestFullscreen();
+                }
+                this.toolbar.className = 'toolbar-small';
+                this.setDocumentViewportScale(1.0);
+            }
+        },
+        setToolbarPosition: function (position) {
+            if (position == 'top') {
+                this.toolbar.style.setProperty('top', '0px');
+                this.toolbar.style.setProperty('bottom', '')
+                this.toolbarPosition = 'top';
+            } else if (position == 'bottom') {
+                this.toolbar.style.setProperty('top', '');
+                this.toolbar.style.setProperty('bottom', '0px')
+                this.toolbarPosition = 'bottom';
+            }
+        },
+        disableToolbar: function () {
+            for (var i = 0; i < this.toolbarItems.length; i++) {
+                var ti = this.toolbarItems[i];
+                if (!ti.enabled) continue;
+
+                ti.el.disabled = true;
+            }
+        },
+        enableToolbar: function () {
+            for (var i = 0; i < this.toolbarItems.length; i++) {
+                var ti = this.toolbarItems[i];
+                if (!ti.enabled) continue;
+
+                ti.el.disabled = false;
+            }
+        },
+        toggleFullscreen: function () {
+            if (this.isFullscreen()) {
+                this.exitFullscreen();
             } else {
-
-            }
-
-
-        },
-        updateBrickBackground: function(brickElement) {
-            if (brickElement) {
-                brickElement.style.backgroundImage = 'url("' +
-                    this._baseApiUrl +
-                    '/v1/image/t' +
-                    '/' +
-                    this._inviteCode +
-                    '/' +
-                    this._brickInUse.x +
-                    '/' +
-                    this._brickInUse.y +
-                    '?r=' +
-                    Math.floor((Math.random() * 10000) + 1) +
-                    '")';
-                brickElement.scrollIntoView();
-                this.setViewScale();
+                this.enterFullscreen();
             }
         },
-        endSession: function (sessionData, imageData, json) {
-            if (this.onCloseProgress) {
-                this.onCloseProgress();
+        isFullscreen: function () {
+            return (
+                  document.fullscreenElement ||
+                  document.webkitFullscreenElement ||
+                  document.mozFullScreenElement ||
+                  document.msFullscreenElement
+              );
+        },
+        zoom: function (newScale, oldScale, centerX, centerY) {
+            if (newScale < 1) newScale = 1;
+            if (newScale > 32) newScale = 32;
+
+            var oldScale;
+            oldScale = this.scale;
+
+            var actualWidth = this.width * this.scale;
+            var actualHeight = this.height * this.scale;
+            var newActualWidth = this.width * newScale;
+            var newActualHeight = this.height * newScale;
+
+            var canvasPointX = this.position.x + this.width * centerX * this.scale;
+            var canvasPointY = this.position.y + this.height * centerY * this.scale;
+            var newCanvasPointX = canvasPointX * (newScale / oldScale);
+            var newCanvasPointY = canvasPointY * (newScale / oldScale);
+            var deltaX = newCanvasPointX - canvasPointX;
+            var deltaY = newCanvasPointY - canvasPointY;
+
+            if (this.position.x + deltaX < 0)
+                deltaX = this.position.x;
+            else if (this.position.x + deltaX + window.innerWidth > newActualWidth)
+                deltaX = newActualWidth - window.innerWidth - this.position.x;
+
+            if (this.position.y + deltaY < 0)
+                deltaY = this.position.Y;
+            else if (this.position.y + deltaY + window.innerHeight > newActualHeight)
+                deltaY = newActualHeight - window.innerHeight - this.position.y;
+
+            this.debug('scale:' + newScale
+                + ', t(x,y):' + canvasPointX + ',' + canvasPointY
+                + ', t\'(x,y):' + newCanvasPointX + ',' + newCanvasPointY
+                + ', d(x,y):' + deltaX + ',' + deltaY);
+
+            this.scale = newScale;
+
+            //this.keepPanInImageBounds();
+            this.ctx.scale(newScale / oldScale, newScale / oldScale);
+            this.ctx.translate(-deltaX, -deltaY);
+            this.position.x += deltaX;
+            this.position.y += deltaY;
+            //this.debug(newScale);
+
+            //this.debug('pos:'+x+','+y);
+            this.redraw();
+        },
+        drawMove: function (pt, tool, context) {
+            var t = tool || this.selectedTool;
+            var ctx = context || this.ctx;
+            var ptData = t.onPointerDrag(this, pt);
+            this.lastPoint = ptData;
+            if (!this.currentShape) {
+                this.currentShape = {
+                    foreColor: this.foreColor,
+                    toolSize: this.toolSize,
+                    points: [],
+                    toolName: this.selectedTool.name
+                }
             }
-            var $this = this;
-            var xhr = this.xhr;
-            xhr.open('POST', sessionData.wallInstance._baseApiUrl + '/v1/save/' + sessionData.data.sessionToken, true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.onload = function() {
-                if (xhr.status == 200) {
-                    $this.updateBrickBackground($this._brickInUse.element);
+            this.currentShape.points.push(ptData);
+        },
+        saveShape: function (shape, context) {
+            if (!this.shapes) this.shapes = [];
+            if (!shape) return;
+            var lastPoint = shape.points[0];
+            var tool = this.tools[0];
+            if (shape.toolName == 'ink') {
+                tool = this.tools[1];
+            } else {
+                tool = this.tools[0];
+            }
+            this.foreColor = shape.foreColor;
+            this.toolSize = shape.toolSize;
+            tool.onPointerStart(this, lastPoint);
+            if (shape.points.length <= 0) return;
 
-                    var brick = $this._brickInUse;
-                    $this._brickInUse = null;
-                    $this.containerEl.style.display = 'block';
+            for (var p = 1; p < shape.points.length; p++) {
+                var pt = shape.points[p];
+                tool.onPointerDrag(this, pt, context);
+                lastPoint = pt;
+            }
+            this.shapes.push(shape);
+            this.currentShape = null;
+        },
+        drawShapesToCanvas: function () {
+            if (!this.shapes) this.shapes = [];
+            for (var s = 0; s < this.shapes.length; s++) {
+                this.saveShape(this.shapes[s]);
+            }
+        },
+        buildPalette: function () {
+            var p = [];
+            for (var h = 5; h <= 255; h += 25) {
+                var pr = [];
+                for (var l = 0.1; l <= 1.0; l += 0.1) {
+                    pr.push({ h: h, s: 1, l: l, a: 1 });
+                }
+                p.push(pr);
+            }
+            this.pallette = p;
+        },
+        debug: function (log) {
+            this.debugElement.innerHTML = log;
+        },
+        setForeColor: function (col) {
+            this.foreColor = col;
+        },
+        createDebugElement: function () {
+            var d = document.createElement('div');
+            d.style.position = 'absolute';
+            d.style.top = '0px';
+            d.style.left = '0px';
+            d.style.height = '0px';
+            d.style['z-index'] = 2;
+            return d;
+        },
+        createToolbar: function () {
+            var t = document.createElement('div');
+            t.attributes['id'] = 'toolbar';
+            t.style.setProperty('top', '0px');
+            t.style.setProperty('left', '0px');
+            t.style.backgroundColor = '#fff';
+            t.style['z-index'] = 1;
+            t.className = this.isFullscreen() ? 'toolbar-small' : 'toolbar-big';
 
-                    // wait a second before updating to give Azure a chance to propagate the thumbnail image
-                    setTimeout(function () {
-                        $this.updateWall(brick.element);
-                    },
-                        5000);
+            for (var i = 0; i < this.toolbarItems.length; i++) {
+                var ti = this.toolbarItems[i];
+                if (!ti || !ti.enabled) continue;
+                var el = ti.initialize(this, t);
+                el.className += 'toolbar-item';
+                t.appendChild(el);
+            }
+
+            return t;
+        },
+        startDrawingShape: function (point) {
+            this.isDrawing = true;
+            this.lastPoint = point;
+            var tool = this.selectedTool || this.tools[0];
+            this.currentShape = {
+                foreColor: this.foreColor,
+                toolSize: this.toolSize,
+                points: [],
+                toolName: tool.name
+            }
+            tool.onPointerStart(this, point);
+        },
+        bindEvents: function () {
+            var moose = this;
+            this.toolbar.onmousedown = function (e) {
+                if (moose.popup) {
+                    moose.popup.style.display = 'none';
+                    moose.popup = null;
                 }
             };
-            xhr.send('{"snapshotJson":"' + escape(json) + '","imageData":"' + imageData + '"}');
-        },
-        cancelSession: function () {
-            if (this.onCloseProgress) {
-                this.onCloseProgress();
-            }
-            var $this = this;
-            var xhr = this.xhr;
-            xhr.open('POST', this._baseApiUrl + '/v1/release/' + this._brickInUse.sessionToken);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.send();
-            xhr.onload = function() {
-                if (this.status === 200) {
-                    $this._brickInUse = null;
-                    document.getElementById('drawSpace').style.display = 'none';
-                    $this.updateWall();
+            this.canvas.onmousedown = function (e) {
+                if (moose.popup) {
+                    moose.popup.style.display = 'none';
+                    moose.popup = null;
+                }
+
+                var point = { x: e.clientX + (window.pageXOffset), y: e.clientY + (window.pageYOffset) };
+                if (e.shiftKey) {
+                    moose.zoom(moose.scale * 1.2, moose.scale, point.x / window.innerWidth, point.y / window.innerHeight);
+                } else if (e.ctrlKey) {
+                    moose.zoom(moose.scale * 0.8, moose.scale, point.x / window.innerWidth, point.y / window.innerHeight);
                 } else {
-                    alert('there was a problem saving.. err... sorry... try again? :/');
+                    moose.startDrawingShape(point);
+                }
+            }
+            this.canvas.onmousemove = function (e) {
+                var moose = this.moose;
+                if (moose.isDrawing) {
+                    e.preventDefault();
+
+                    if (moose.mouseOut) {
+                        moose.lastPoint = { x: e.clientX + (window.pageXOffset), y: e.clientY + (window.pageYOffset) };
+                        moose.mouseOut = false;
+                    }
+                    var currentPoint = { x: e.clientX + (window.pageXOffset), y: e.clientY + (window.pageYOffset) };
+                    currentPoint.x *= moose.scale;
+                    currentPoint.y *= moose.scale;
+                    moose.drawMove(currentPoint);
                 }
             }
 
+            this.canvas.onmouseup = function (e) {
+                var moose = this.moose;
+                if (moose.isDrawing) {
+                    e.preventDefault();
+
+                    moose.isDrawing = false;
+                    moose.selectedTool.onPointerStop(moose);
+                }
+            };
+            this.canvas.onmouseout = function (e) {
+                var moose = this.moose;
+                moose.mouseOut = true;
+            };
+            this.canvas.addEventListener('touchmove',
+                function (e) {
+                    var moose = this.moose;
+                    if (moose.isDrawing) {
+                        e.preventDefault();
+
+
+                        var touches = e.changedTouches;
+                        if (touches.length === 1) {
+                            var currentPoint = { x: touches[0].pageX, y: touches[0].pageY };
+                            //alert('touch move at ' + touches[0].pageX + ',' + touches[0].pageY);
+                            moose.drawMove(currentPoint);
+                        }
+                    }
+                });
+            this.canvas.addEventListener('touchend',
+                function (e) {
+                    var moose = this.moose;
+                    if (moose.isDrawing) {
+                        e.preventDefault();
+
+                        moose.isDrawing = false;
+                        moose.selectedTool.onPointerStop(moose);
+                    }
+                });
+            this.canvas.addEventListener('touchstart',
+                function (e) {
+                    var moose = this.moose;
+                    if (moose.popup) {
+                        moose.popup.style.display = 'none';
+                        moose.popup = null;
+                    }
+
+                    if (e.target.tagName.toLowerCase() !== 'canvas') {
+                        return;
+                    }
+
+                    var moose = this.moose;
+
+                    var touches = e.changedTouches;
+                    if (e.touches.length === 1) {
+                        e.preventDefault();
+                        moose.isDrawing = true;
+                        var point = { x: (touches[0].pageX), y: (touches[0].pageY) };
+                        moose.lastPoint = point;
+                        moose.startDrawingShape(point);
+                        document.addEventListener('touchmove', moose.touchMoveListener);
+                        document.addEventListener('touchend', moose.touchEndListener);
+                        document.addEventListener('touchcancel', moose.touchEndListener);
+                    }
+                });
+
+            var Shape;
+            Shape = function () {
+                return this;
+            };
+        },
+        bindHammerTime: function (moose) {
+            moose.hammertime = new Hammer(this.canvas);
+            moose.hammertime.moose = moose;
+            moose.hammertime.on('pan',
+                    function (ev) {
+                        var moose = ev.target.moose;
+                    });
+            moose.hammertime.get('pinch').set({ enable: true, direction: Hammer.DIRECTION_ALL });
+            moose.hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL });
+            moose.hammertime.on('pinchstart',
+                    function (ev) {
+                        var moose = ev.target.moose;
+                        moose.scaleAtPinchStart = moose.scale
+                        moose.offsetAtPinchStart = moose.offset;
+                    });
+            moose.hammertime.on('pinchmove',
+                    function (ev) {
+                        try {
+                            var moose = ev.target.moose;
+                            var newScale = moose.scaleAtPinchStart * (ev.scale);
+                            moose.zoom(newScale, moose.scale, ev.center.x, ev.center.y);
+                        } catch (ex) {
+                            moose.debug(ex.message);
+                        }
+                    });
+            moose.hammertime.on('pinchend',
+                    function (ev) {
+                        var moose = ev.target.moose;
+                    });
+            moose.hammertime.on("panleft panright tap press",
+                    function (ev) {
+                        var moose = ev.target.moose;
+                    });
         }
+
     }
-})();
+});

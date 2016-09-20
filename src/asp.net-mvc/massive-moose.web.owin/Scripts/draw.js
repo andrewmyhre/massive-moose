@@ -98,8 +98,6 @@ var Draw = (function () {
             this.offset = { x: 0, y: 0 };
             this.zoomEnabled = false;
 
-            document.body.style.backgroundColor = '#ff0000';
-
             this.popup = null;
 
             this.isPinching = false;
@@ -151,14 +149,14 @@ var Draw = (function () {
             }
             this.canvas.width = 1600;
             this.canvas.height = 900;
-            this.ctx.scale(1 / this.scale, 1 / this.scale);
+            //this.ctx.scale(1 / this.scale, 1 / this.scale);
 
             if (this.zoomEnabled) {
                 this.bindHammerTime(this);
             }
         },
         setDocumentViewportScale: function (scale) {
-            this.viewport.setAttribute('content', 'width=1600, initial-scale=' + scale);
+            this.viewport.setAttribute('content', 'width=device-width, initial-scale=' + scale);
         },
         bindToElement: function (containerEl) {
             var ref1, repaintAll;
@@ -180,7 +178,17 @@ var Draw = (function () {
             this.isBound = true;
         },
         startDrawing: function (data) {
+            var scalex = 1600 / screen.availWidth;
+            var scaley = 900 / screen.availHeight;
+            this.scale = scalex;
+            if (scalex * screen.availHeight > 900) {
+                this.scale = scaley;
+            }
+            if (this.scale < 1) {
+                this.scale = 1;
+            }
             this.setDocumentViewportScale(1 / this.scale);
+
             this.sessionData = data;
             this.containerEl.style.display = 'block';
             this.enableToolbar();
@@ -198,6 +206,8 @@ var Draw = (function () {
             }
 
             this.isDrawing = false;
+            window.scrollTo(0, 0);
+
         },
         importDrawingData: function (data) {
             var t = this.selectedTool, ts = this.toolSize, fc = this.foreColor;
@@ -216,7 +226,7 @@ var Draw = (function () {
             }
             this.selectedTool = t;
             this.toolSize = ts;
-            this.foreColor = fx;
+            this.foreColor = fc;
         },
         close: function () {
             this.isDrawing = false;
@@ -1025,7 +1035,7 @@ var Draw = (function () {
                     moose.popup = null;
                 }
 
-                var point = { x: e.clientX, y: e.clientY };
+                var point = { x: e.clientX + (window.pageXOffset), y: e.clientY + (window.pageYOffset) };
                 if (e.shiftKey) {
                     moose.zoom(moose.scale * 1.2, moose.scale, point.x / window.innerWidth, point.y / window.innerHeight);
                 } else if (e.ctrlKey) {
@@ -1036,45 +1046,57 @@ var Draw = (function () {
             }
             this.canvas.onmousemove = function (e) {
                 var moose = this.moose;
-                if (moose.mouseOut) {
-                    moose.lastPoint = { x: e.clientX /= moose.scale, y: e.clientY /= moose.scale };
-                    moose.mouseOut = false;
+                if (moose.isDrawing) {
+                    e.preventDefault();
+
+                    if (moose.mouseOut) {
+                        moose.lastPoint = { x: e.clientX + (window.pageXOffset), y: e.clientY + (window.pageYOffset) };
+                        moose.mouseOut = false;
+                    }
+                    var currentPoint = { x: e.clientX + (window.pageXOffset), y: e.clientY + (window.pageYOffset) };
+                    currentPoint.x *= moose.scale;
+                    currentPoint.y *= moose.scale;
+                    moose.drawMove(currentPoint);
                 }
-                if (!moose.isDrawing) return;
-                var currentPoint = { x: e.clientX, y: e.clientY };
-                currentPoint.x *= moose.scale;
-                currentPoint.y *= moose.scale;
-                moose.drawMove(currentPoint);
             }
 
-            this.canvas.onmouseup = function () {
+            this.canvas.onmouseup = function (e) {
                 var moose = this.moose;
-                moose.isDrawing = false;
-                moose.selectedTool.onPointerStop(moose);
+                if (moose.isDrawing) {
+                    e.preventDefault();
+
+                    moose.isDrawing = false;
+                    moose.selectedTool.onPointerStop(moose);
+                }
             };
-            this.canvas.onmouseout = function () {
+            this.canvas.onmouseout = function (e) {
                 var moose = this.moose;
                 moose.mouseOut = true;
             };
             this.canvas.addEventListener('touchmove',
                 function (e) {
-                    e.preventDefault();
-
                     var moose = this.moose;
-                    var touches = e.changedTouches;
-                    if (touches.length === 1) {
-                        var currentPoint = { x: touches[0].pageX * moose.scale + moose.position.x, y: touches[0].pageY * moose.scale + moose.position.y };
-                        //moose.debug('touch move');
-                        //alert('touch move at ' + touches[0].pageX + ',' + touches[0].pageY);
-                        moose.drawMove(currentPoint);
+                    if (moose.isDrawing) {
+                        e.preventDefault();
+
+
+                        var touches = e.changedTouches;
+                        if (touches.length === 1) {
+                            var currentPoint = { x: touches[0].pageX, y: touches[0].pageY };
+                            //alert('touch move at ' + touches[0].pageX + ',' + touches[0].pageY);
+                            moose.drawMove(currentPoint);
+                        }
                     }
                 });
             this.canvas.addEventListener('touchend',
                 function (e) {
-                    e.preventDefault();
                     var moose = this.moose;
-                    moose.isDrawing = false;
-                    moose.selectedTool.onPointerStop(moose);
+                    if (moose.isDrawing) {
+                        e.preventDefault();
+
+                        moose.isDrawing = false;
+                        moose.selectedTool.onPointerStop(moose);
+                    }
                 });
             this.canvas.addEventListener('touchstart',
                 function (e) {
@@ -1089,11 +1111,12 @@ var Draw = (function () {
                     }
 
                     var moose = this.moose;
-                    e.preventDefault();
+
                     var touches = e.changedTouches;
                     if (e.touches.length === 1) {
+                        e.preventDefault();
                         moose.isDrawing = true;
-                        var point = { x: touches[0].pageX * moose.scale + moose.position.x, y: touches[0].pageY * moose.scale + moose.position.y };
+                        var point = { x: (touches[0].pageX), y: (touches[0].pageY) };
                         moose.lastPoint = point;
                         moose.startDrawingShape(point);
                         document.addEventListener('touchmove', moose.touchMoveListener);
