@@ -183,9 +183,15 @@ var Draw = (function () {
             this.sessionData = data;
             this.containerEl.style.display = 'block';
             this.enableToolbar();
-            this.selectedTool = this.tools[0];
+
             this.setToolbarPosition('top');
-            this.toolbar.className = this.isFullscreen() ? 'toolbar-small' : 'toolbar-big';
+            this.toolbar.className = this.isFullScreen() ? 'toolbar-small' : 'toolbar-big';
+
+            for (var i = 0; i < this.toolbarItems.length; i++) {
+                if (this.toolbarItems[i].resetToDefaults) {
+                    this.toolbarItems[i].resetToDefaults();
+                }
+            }
 
             if (data && data.data && data.data.snapshotJson) {
                 var snapshot = JSON.parse(data.data.snapshotJson);
@@ -241,7 +247,7 @@ var Draw = (function () {
             {
                 name: 'sprayPaint1',
                 iconHtml: '<img src="/content/tool_paint.png" />',
-                getToolbarElement: function (isSelected, onSelected) {
+                getToolbarElement: function (moose, indicatorElement, isSelected, onSelected) {
                     var $this = this;
                     var el = document.createElement('button');
                     this.el = el;
@@ -252,6 +258,8 @@ var Draw = (function () {
                         el.style.border = '1px solid #888';
                     }
                     el.onclick = function (e) {
+                        moose.selectTool($this);
+
                         if (onSelected)
                             onSelected($this);
                     };
@@ -316,7 +324,7 @@ var Draw = (function () {
             {
                 name: 'ink',
                 iconHtml: '<img src="/content/tool_ink.png" />',
-                getToolbarElement: function (isSelected, onSelected) {
+                getToolbarElement: function (moose, indicatorElement, isSelected, onSelected) {
                     var $this = this;
                     var el = document.createElement('button');
                     this.el = el;
@@ -327,6 +335,7 @@ var Draw = (function () {
                         el.style.border = '1px solid #888';
                     }
                     el.onclick = function (e) {
+                        moose.selectedTool = $this;
                         if (onSelected)
                             onSelected($this);
                     };
@@ -489,8 +498,13 @@ var Draw = (function () {
                 enabled: true,
                 showWhenCollapsed: false,
                 selectedTool: null,
+                resetToDefaults: function () {
+                    this.moose.selectedTool = this.moose.tools[0];
+                    this.el.innerHTML = this.moose.tools[0].iconHtml;
+                },
                 initialize: function (moose) {
                     var $this = this;
+                    this.moose = moose;
                     var el = document.createElement('button');
                     this.el = el;
                     if (!this.popup) {
@@ -515,6 +529,8 @@ var Draw = (function () {
                         $popup.innerHTML = '';
                         for (var i = 0; i < moose.tools.length; i++) {
                             var toolSelector = moose.tools[i].getToolbarElement(
+                                    moose,
+                                    el,
                                     moose.tools[i] == moose.selectedTool,
                                     function (tool) {
                                         moose.selectedTool = tool;
@@ -545,8 +561,13 @@ var Draw = (function () {
             enabled: true,
             showWhenCollapsed: false,
             opened: false,
+            resetToDefaults: function () {
+                this.moose.foreColor = { h: 0, s: 0, l: 0, a: 1 };
+                this.el.style.backgroundColor = utils.toHslaString(this.moose.foreColor);
+            },
             initialize: function (moose) {
                 var $this = this;
+                this.moose = moose;
                 var el = document.createElement('button');
                 var fc = moose.foreColor;
                 el.style.backgroundColor = utils.toHslaString(fc);
@@ -624,7 +645,12 @@ var Draw = (function () {
             name: 'toolSize',
             enabled: true,
             showWhenCollapsed: false,
+            resetToDefaults: function () {
+                this.moose.toolSize = 10;
+                this.el.innerHTML = 'Size:' + this.moose.toolSize;
+            },
             initialize: function (moose) {
+                this.moose = moose;
                 var el = document.createElement('button');
                 el.innerHTML = 'Size:' + moose.toolSize;
                 el.style['margin-right'] = '1em';
