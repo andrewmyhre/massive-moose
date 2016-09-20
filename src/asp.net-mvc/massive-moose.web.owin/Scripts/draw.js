@@ -934,7 +934,6 @@ var Draw = (function () {
             t.style.setProperty('top', '0px');
             t.style.setProperty('left', '0px');
             t.style.backgroundColor = '#fff';
-            t.style['font-size'] = '3em';
             t.style['z-index'] = 1;
             t.className = this.isFullscreen ? 'toolbar-small' : 'toolbar-big';
 
