@@ -213,6 +213,26 @@ var Draw = (function () {
             this.isDrawing = false;
             this.containerEl.style.display = 'none';
             this.shapes = [];
+            if (moose.isFullScreen()) {
+
+                if (
+                    document.fullscreenElement ||
+                        document.webkitFullscreenElement ||
+                        document.mozFullScreenElement ||
+                        document.msFullscreenElement
+                ) {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    }
+                    moose.toolbar.className = 'toolbar-big';
+                }
+            }
         },
         onSave: function () {
             this.disableToolbar();
@@ -709,12 +729,7 @@ var Draw = (function () {
                 this.el = el;
                 el.innerHTML = '<span class="glyphicon glyphicon-fullscreen"></span>';
                 el.onclick = function (e) {
-                    if (
-                          document.fullscreenEnabled ||
-                          document.webkitFullscreenEnabled ||
-                          document.mozFullScreenEnabled ||
-                          document.msFullscreenEnabled
-                      ) {
+                    if (moose.isFullScreen()) {
 
                         if (
                               document.fullscreenElement ||
