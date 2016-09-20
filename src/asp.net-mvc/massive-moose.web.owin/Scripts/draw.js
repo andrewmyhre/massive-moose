@@ -247,7 +247,7 @@ var Draw = (function () {
             {
                 name: 'sprayPaint1',
                 iconHtml: '<img src="/content/tool_paint.png" />',
-                getToolbarElement: function (moose, indicatorElement, isSelected, onSelected) {
+                getToolbarElement: function (isSelected, onSelected) {
                     var $this = this;
                     var el = document.createElement('button');
                     this.el = el;
@@ -258,8 +258,6 @@ var Draw = (function () {
                         el.style.border = '1px solid #888';
                     }
                     el.onclick = function (e) {
-                        moose.selectTool($this);
-
                         if (onSelected)
                             onSelected($this);
                     };
@@ -324,7 +322,7 @@ var Draw = (function () {
             {
                 name: 'ink',
                 iconHtml: '<img src="/content/tool_ink.png" />',
-                getToolbarElement: function (moose, indicatorElement, isSelected, onSelected) {
+                getToolbarElement: function (isSelected, onSelected) {
                     var $this = this;
                     var el = document.createElement('button');
                     this.el = el;
@@ -335,7 +333,6 @@ var Draw = (function () {
                         el.style.border = '1px solid #888';
                     }
                     el.onclick = function (e) {
-                        moose.selectedTool = $this;
                         if (onSelected)
                             onSelected($this);
                     };
@@ -529,8 +526,6 @@ var Draw = (function () {
                         $popup.innerHTML = '';
                         for (var i = 0; i < moose.tools.length; i++) {
                             var toolSelector = moose.tools[i].getToolbarElement(
-                                    moose,
-                                    el,
                                     moose.tools[i] == moose.selectedTool,
                                     function (tool) {
                                         moose.selectedTool = tool;
