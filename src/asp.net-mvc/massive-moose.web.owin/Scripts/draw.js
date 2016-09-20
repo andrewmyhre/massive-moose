@@ -897,7 +897,6 @@ var Draw = (function () {
         },
         createToolbar: function () {
             var t = document.createElement('div');
-            t.className = 'toolbar';
             t.attributes['id'] = 'toolbar';
             t.style.setProperty('top', '0px');
             t.style.setProperty('left', '0px');
