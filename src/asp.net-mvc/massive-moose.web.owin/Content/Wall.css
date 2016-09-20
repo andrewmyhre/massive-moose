@@ -246,14 +246,14 @@ button.tool svg circle {
     }
     #working_panel {
         width: 300px;
-        top: 100px;
-    position: relative;
+        top: 0;
+        left: 0;
+    position: fixed;
         background-color: white;
-        margin: auto;
         font-style: italic;
         text-align: center;
         font-size: 3em;
         border-radius: 10px;
         border: 2px solid blue;
-        padding: 1em;
+        padding: 15px;
     }
