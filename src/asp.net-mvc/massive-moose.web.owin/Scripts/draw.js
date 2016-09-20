@@ -697,6 +697,7 @@ var Draw = (function () {
                             } else if (document.msExitFullscreen) {
                                 document.msExitFullscreen();
                             }
+                            moose.toolbar.className = 'toolbar-big';
                         } else {
                             if (moose.containerEl.requestFullscreen) {
                                 moose.containerEl.requestFullscreen();
@@ -707,6 +708,7 @@ var Draw = (function () {
                             } else if (moose.containerEl.msRequestFullscreen) {
                                 moose.containerEl.msRequestFullscreen();
                             }
+                            moose.toolbar.className = 'toolbar-small';
                         }
                     }
                 };
@@ -902,6 +904,7 @@ var Draw = (function () {
             t.style.backgroundColor = '#fff';
             t.style['font-size'] = '3em';
             t.style['z-index'] = 1;
+            t.className = 'toolbar-big';
 
             for (var i = 0; i < this.toolbarItems.length; i++) {
                 var ti = this.toolbarItems[i];
