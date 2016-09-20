@@ -185,6 +185,7 @@ var Draw = (function () {
             this.enableToolbar();
             this.selectedTool = this.tools[0];
             this.setToolbarPosition('top');
+            this.toolbar.className = this.isFullscreen() ? 'toolbar-small' : 'toolbar-big';
 
             if (data && data.data && data.data.snapshotJson) {
                 var snapshot = JSON.parse(data.data.snapshotJson);
