@@ -54,7 +54,7 @@
                 firstTime: '@(!Model.DontHelpMe)',
                 refreshTime: @System.Configuration.ConfigurationManager.AppSettings["WallRefreshTime"],
                 drawingApp: draw,
-                startDrawing: function(data){draw.startDrawing(data);}
+                startDrawing: function(data) { document.getElementById('drawSpace').scrollIntoView(); draw.startDrawing(data);}
             }
         );
     </script>
