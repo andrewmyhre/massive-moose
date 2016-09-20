@@ -213,7 +213,7 @@ var Draw = (function () {
             this.isDrawing = false;
             this.containerEl.style.display = 'none';
             this.shapes = [];
-            if (moose.isFullScreen()) {
+            if (this.isFullScreen()) {
 
                 if (
                     document.fullscreenElement ||
@@ -230,7 +230,7 @@ var Draw = (function () {
                     } else if (document.msExitFullscreen) {
                         document.msExitFullscreen();
                     }
-                    moose.toolbar.className = 'toolbar-big';
+                    this.toolbar.className = 'toolbar-big';
                 }
             }
         },
