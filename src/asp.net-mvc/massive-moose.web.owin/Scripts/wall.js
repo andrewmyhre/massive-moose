@@ -1,4 +1,4 @@
-﻿var Wall = (function() {
+﻿var Wall = (function () {
     return {
         cfg: {
             baseApiUrl: '',
@@ -8,13 +8,13 @@
             inviteCode: '',
             refreshTime: 3000
         },
-        initialize: function(containerEl, configuration) {
+        initialize: function (containerEl, configuration) {
             this.cfg = configuration;
             this.wallETag = '0';
             this.xhrWaitHandle = null;
             this.xhr = new XMLHttpRequest();
             this.updateXhr = new XMLHttpRequest();
-            this.xhr.onreadystatechange = function(evt) {
+            this.xhr.onreadystatechange = function (evt) {
 
             }
             this.containerEl = containerEl;
@@ -35,17 +35,20 @@
             this._wall = null;
             this._toolsWaitHandle = 0;
 
-            this.updateHelpDialogDimensions();
+            this.updateDialogs();
             this.bindHelp();
             this.bindBricks();
 
             setTimeout(this.checkWallStaleness, 10, this);
+
+            var wall = this;
+            window.onscroll = wall.updateDialogs;
         },
         bindHelp: function () {
             var $this = this;
             if (document.getElementById('help')) {
                 document.getElementById('moreHelp1')
-                    .onclick = function() {
+                    .onclick = function () {
                         $this.xhr.open('GET', '/Home/Help');
                         $this.xhr.setRequestHeader('Content-Type', 'text/html');
                         $this.xhr.onload = function () {
@@ -56,14 +59,14 @@
                         }
                         $this.xhr.send();
                     };
-                document.getElementById('noHelpThanks1').onclick = function() {
+                document.getElementById('noHelpThanks1').onclick = function () {
                     $this.setDontHelpMe();
                 };
-                document.getElementById('help-close').onclick = function() {
+                document.getElementById('help-close').onclick = function () {
                     $this.setDontHelpMe();
                 };
                 document.getElementById('moreHelp2')
-                    .onclick = function() {
+                    .onclick = function () {
                         $this.xhr.open('GET', '/Home/Help');
                         $this.xhr.setRequestHeader('Content-Type', 'text/html');
                         $this.xhr.onload = function () {
@@ -74,22 +77,22 @@
                         }
                         $this.xhr.send();
                     };
-                document.getElementById('noHelpThanks2').onclick = function() {
+                document.getElementById('noHelpThanks2').onclick = function () {
                     $this.setDontHelpMe();
                     document.getElementById('help').style.display = 'none';
                 };
-                document.getElementById('noHelpThanks3').onclick = function() {
+                document.getElementById('noHelpThanks3').onclick = function () {
                     $this.setDontHelpMe();
                     document.getElementById('help').style.display = 'none';
                 };
-                document.getElementById('help-close').onclick = function() {
+                document.getElementById('help-close').onclick = function () {
                     $this.setDontHelpMe();
                     document.getElementById('help').style.display = 'none';
                 };
             }
 
         },
-        setDontHelpMe:function() {
+        setDontHelpMe: function () {
             this.xhr.open('POST', '/Home/DontHelpMe');
             this.xhr.send();
             document.getElementById('help').style.display = 'none';
@@ -99,7 +102,7 @@
             var bricks = document.getElementsByClassName('brick');
             for (var ei = 0; ei < bricks.length; ei++) {
                 var b = document.getElementById(bricks[ei].id);
-                b.onclick = function(e) {
+                b.onclick = function (e) {
                     $wall.openSession(e.currentTarget.attributes.getNamedItem('data-viewx').value,
                         e.currentTarget.attributes.getNamedItem('data-viewy').value,
                         e.currentTarget.attributes.getNamedItem('data-addressx').value,
@@ -108,41 +111,50 @@
 
             }
         },
-        updateHelpDialogDimensions: function() {
+        updateDialogs: function () {
             viewport = document.querySelector("meta[name=viewport]");
             var help = document.getElementById('help');
             var diag = document.getElementById('diagnostics');
-            if (!help) return;
+            var progress_container = document.getElementById('working_container');
+            var progress = document.getElementById('working_panel');
+            if (help) {
 
-            var ratio = 0.8;
-            var paddingX = Math.round(window.innerWidth * (1 - ratio) / 2);
-            var paddingY = Math.round(window.innerHeight * (1 - ratio) / 2);
-            var width = Math.round(window.innerWidth * ratio);
-            var height = Math.round(window.innerHeight * ratio);
-            help.style.width = width + 'px';
-            help.style.height = height + 'px';
-            help.style.left = (window.pageXOffset + paddingX) + 'px';
-            help.style.top = (window.pageYOffset + paddingY) + 'px';
+                var ratio = 0.8;
+                var paddingX = Math.round(window.innerWidth * (1 - ratio) / 2);
+                var paddingY = Math.round(window.innerHeight * (1 - ratio) / 2);
+                var width = Math.round(window.innerWidth * ratio);
+                var height = Math.round(window.innerHeight * ratio);
+                help.style.width = width + 'px';
+                help.style.height = height + 'px';
+                help.style.left = (window.pageXOffset + paddingX) + 'px';
+                help.style.top = (window.pageYOffset + paddingY) + 'px';
 
-            if (width < height) {
-                document.getElementById('rotate-alert').style.display = 'inline-block';
-            } else {
-                document.getElementById('rotate-alert').style.display = 'none';
+                if (width < height) {
+                    document.getElementById('rotate-alert').style.display = 'inline-block';
+                } else {
+                    document.getElementById('rotate-alert').style.display = 'none';
+                }
+            }
+
+            if (progress_container.style.display != 'none') {
+                var r = progress.getClientRects();
+                progress.style.left = ((window.scrollX) + ((window.innerWidth - r[0].width) / 2)) + 'px';
+                progress.style.top = ((window.scrollY * 0.7) + ((window.innerHeight - r[0].height) / 2)) + 'px';
             }
         },
-        updateProgress: function(evt) {
+        updateProgress: function (evt) {
 
         },
-        transferComplete: function(evt) {
+        transferComplete: function (evt) {
 
         },
-        transferFailed: function(evt) {
+        transferFailed: function (evt) {
 
         },
-        transferCanceled: function(evt) {
+        transferCanceled: function (evt) {
 
         },
-        transferStarted: function(evt) {
+        transferStarted: function (evt) {
 
         },
         setViewScale: function () {
@@ -158,6 +170,7 @@
 
             if (this.onShowProgress) {
                 this.onShowProgress('Loading...');
+                this.updateDialogs();
             }
 
             this.xhr.open('POST', this._baseApiUrl + '/v1/' + this._inviteCode + '/draw/' + addressX + '/' + addressY);
@@ -189,7 +202,6 @@
         },
         checkWallStaleness: function (wall) {
             var $this = wall;
-            $this.updateHelpDialogDimensions();
 
             if ($this.updateXhr.readyState == 0 || $this.updateXhr.readyState == 4) {
                 $this.updateXhr.open('HEAD', $this._baseApiUrl + '/v2/wall/' + $this._inviteCode + '/0/0/' + $this.wallETag);
@@ -210,11 +222,10 @@
                 setTimeout($this.checkWallStaleness, $this._refreshTime, $this);
             }
         },
-        updateWall: function(updatedBrickElement) {
+        updateWall: function (updatedBrickElement) {
             if (!this._brickInUse) {
                 $this = this;
                 this.setViewScale();
-                this.updateHelpDialogDimensions();
                 this.updateXhr.open('GET', this._baseApiUrl + '/v2/wall/' + this._inviteCode + '/0/0');
                 this.updateXhr.setRequestHeader('Content-Type', 'application/json');
                 this.updateXhr.onload = function () {
@@ -271,7 +282,6 @@
                         //document.body.style.minWidth = '1600px';
                         //document.body.style.minHeight = '900px';
                         $this.setViewScale();
-                        $this.updateHelpDialogDimensions();
                         if ($this.updatedBrickElement) {
                             var r = $this.updatedBrickElement.getClientRects;
 
@@ -287,7 +297,7 @@
 
 
         },
-        updateBrickBackground: function(brickElement) {
+        updateBrickBackground: function (brickElement) {
             if (brickElement) {
                 brickElement.style.backgroundImage = 'url("' +
                     this._baseApiUrl +
@@ -314,7 +324,7 @@
             var xhr = this.xhr;
             xhr.open('POST', sessionData.wallInstance._baseApiUrl + '/v1/save/' + sessionData.data.sessionToken, true);
             xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.onload = function() {
+            xhr.onload = function () {
                 if (xhr.status == 200) {
                     $this.updateBrickBackground($this._brickInUse.element);
 
@@ -340,7 +350,7 @@
             xhr.open('POST', this._baseApiUrl + '/v1/release/' + this._brickInUse.sessionToken);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send();
-            xhr.onload = function() {
+            xhr.onload = function () {
                 if (this.status === 200) {
                     $this._brickInUse = null;
                     document.getElementById('drawSpace').style.display = 'none';
