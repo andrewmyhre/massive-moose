@@ -197,7 +197,7 @@ var Draw = (function () {
             this.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
             this.setToolbarPosition('top');
-            this.toolbar.className = this.isFullScreen() ? 'toolbar-small' : 'toolbar-big';
+            this.toolbar.className = this.isFullscreen() ? 'toolbar-small' : 'toolbar-big';
 
             for (var i = 0; i < this.toolbarItems.length; i++) {
                 if (this.toolbarItems[i].resetToDefaults) {
@@ -232,25 +232,9 @@ var Draw = (function () {
             this.isDrawing = false;
             this.containerEl.style.display = 'none';
             this.shapes = [];
-            if (this.isFullScreen()) {
+            if (this.isFullscreen()) {
 
-                if (
-                    document.fullscreenElement ||
-                        document.webkitFullscreenElement ||
-                        document.mozFullScreenElement ||
-                        document.msFullscreenElement
-                ) {
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen();
-                    } else if (document.webkitExitFullscreen) {
-                        document.webkitExitFullscreen();
-                    } else if (document.mozCancelFullScreen) {
-                        document.mozCancelFullScreen();
-                    } else if (document.msExitFullscreen) {
-                        document.msExitFullscreen();
-                    }
-                    this.toolbar.className = 'toolbar-big';
-                }
+                this.exitFullscreen();
             }
         },
         onSave: function () {
@@ -588,12 +572,12 @@ var Draw = (function () {
                         $this.picker.style.position = 'absolute';
                         $this.picker.style.top = '0px';
                         $this.picker.style.left = '0px';
-                        if (moose.isFullScreen()) {
-                            $this.picker.style.width = screen.availWidth + 'px';
-                            $this.picker.style.height = screen.availHeight + 'px';
+                        if (!moose.isFullscreen()) {
+                            $this.picker.style.width = window.innerWidth + 'px';
+                            $this.picker.style.height = window.innerHeight + 'px';
                         } else {
-                            $this.picker.style.width = '1600px';
-                            $this.picker.style.height = '900px';
+                            $this.picker.style.width = window.innerWidth + 'px';
+                            $this.picker.style.height = window.innerHeight + 'px';
                         }
                         $this.picker.style['z-index'] = 102;
                         $this.opened = true;
@@ -612,11 +596,12 @@ var Draw = (function () {
                 colorPicker.style.position = 'absolute';
                 colorPicker.style.top = '0';
                 colorPicker.style.left = '1';
+                colorPicker.style.height = screen.availHeight + 'px';
                 colorPicker.style['z-index'] = 1;
                 var step = 50;
                 for (var py = 0; py < 10; py++) {
                     var row = document.createElement('div');
-                    row.style.width = '100%';
+                    row.style.width = screen.availWidth + 'px';
                     row.style.height = '10%';
                     for (var px = 0; px < 10; px++) {
                         var cel = document.createElement('button');
@@ -721,36 +706,10 @@ var Draw = (function () {
                 this.el = el;
                 el.innerHTML = '<span class="glyphicon glyphicon-fullscreen"></span>';
                 el.onclick = function (e) {
-                    if (moose.isFullScreen()) {
-
-                        if (
-                              document.fullscreenElement ||
-                              document.webkitFullscreenElement ||
-                              document.mozFullScreenElement ||
-                              document.msFullscreenElement
-                          ) {
-                            if (document.exitFullscreen) {
-                                document.exitFullscreen();
-                            } else if (document.webkitExitFullscreen) {
-                                document.webkitExitFullscreen();
-                            } else if (document.mozCancelFullScreen) {
-                                document.mozCancelFullScreen();
-                            } else if (document.msExitFullscreen) {
-                                document.msExitFullscreen();
-                            }
-                            moose.toolbar.className = 'toolbar-big';
-                        } else {
-                            if (moose.containerEl.requestFullscreen) {
-                                moose.containerEl.requestFullscreen();
-                            } else if (moose.containerEl.webkitRequestFullscreen) {
-                                moose.containerEl.webkitRequestFullscreen();
-                            } else if (moose.containerEl.mozRequestFullScreen) {
-                                moose.containerEl.mozRequestFullScreen();
-                            } else if (moose.containerEl.msRequestFullscreen) {
-                                moose.containerEl.msRequestFullscreen();
-                            }
-                            moose.toolbar.className = 'toolbar-small';
-                        }
+                    if (moose.isFullscreen()) {
+                        moose.exitFullscreen();
+                    } else {
+                        moose.enterFullscreen();
                     }
                 };
                 return el;
@@ -842,37 +801,54 @@ var Draw = (function () {
             }
         },
         toggleFullscreen: function () {
-            if (this.isFullscreen) {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
-                moose.toolbar.className = 'toolbar-big';
+            if (this.isFullscreen()) {
+                this.exitFullscreen();
             } else {
-                if (moose.containerEl.requestFullscreen) {
-                    moose.containerEl.requestFullscreen();
-                } else if (moose.containerEl.webkitRequestFullscreen) {
-                    moose.containerEl.webkitRequestFullscreen();
-                } else if (moose.containerEl.mozRequestFullScreen) {
-                    moose.containerEl.mozRequestFullScreen();
-                } else if (moose.containerEl.msRequestFullscreen) {
-                    moose.containerEl.msRequestFullscreen();
-                }
-                moose.toolbar.className = 'toolbar-small';
+                this.enterFullscreen();
             }
         },
-        isFullScreen: function () {
-            return (
+        exitFullscreen: function () {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+            this.toolbar.className = 'toolbar-big';
+        },
+        enterFullscreen: function () {
+            if (this.containerEl.requestFullscreen) {
+                this.containerEl.requestFullscreen();
+            } else if (this.containerEl.webkitRequestFullscreen) {
+                this.containerEl.webkitRequestFullscreen();
+            } else if (this.containerEl.mozRequestFullScreen) {
+                this.containerEl.mozRequestFullScreen();
+            } else if (this.containerEl.msRequestFullscreen) {
+                this.containerEl.msRequestFullscreen();
+            }
+            this.toolbar.className = 'toolbar-small';
+        },
+        isFullscreen: function () {
+            if (
                 document.fullscreenEnabled ||
                     document.webkitFullscreenEnabled ||
                     document.mozFullScreenEnabled ||
                     document.msFullscreenEnabled
-            );
+            ) {
+                var isFullscreen =
+                	document.fullscreenElement ||
+                	document.webkitFullscreenElement ||
+                	document.mozFullScreenElement ||
+                	document.msFullscreenElement;
+                if (!isFullscreen || isFullscreen == 'undefined')
+                    return false;
+                return true;
+
+            }
+            return false;
         },
         zoom: function (newScale, oldScale, centerX, centerY) {
             if (newScale < 1) newScale = 1;
@@ -997,7 +973,7 @@ var Draw = (function () {
             t.style.setProperty('left', '0px');
             t.style.backgroundColor = '#fff';
             t.style['z-index'] = 1;
-            t.className = this.isFullscreen ? 'toolbar-small' : 'toolbar-big';
+            t.className = this.isFullscreen() ? 'toolbar-small' : 'toolbar-big';
 
             for (var i = 0; i < this.toolbarItems.length; i++) {
                 var ti = this.toolbarItems[i];
