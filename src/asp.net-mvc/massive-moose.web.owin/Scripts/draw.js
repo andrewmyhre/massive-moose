@@ -289,7 +289,6 @@ var Draw = (function () {
                 },
                 onPointerStart: function (moose, pt) {
                     this.lastPoint = pt;
-                    console.log('start');
                 },
                 onPointerDrag: function (moose, pt, targetContext) {
                     var dist = utils.distanceBetween(this.lastPoint, pt);
@@ -441,6 +440,8 @@ var Draw = (function () {
                 initialize: function (moose) {
                     var $this = this;
                     var el = document.createElement('button');
+                    el.style.height = '100%';
+                    el.style.float = 'left';
                     el.innerHTML = '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
                     el.onclick = function (e) {
 
@@ -471,7 +472,7 @@ var Draw = (function () {
             },
             {
                 name: 'moveToolbar',
-                enabled: true,
+                enabled: false,
                 showWhenCollapsed: true,
                 initialize: function (moose, toolbarElement) {
                     var $this = this;
@@ -491,6 +492,73 @@ var Draw = (function () {
                     return el;
                 }
             },
+        {
+            name: 'save',
+            enabled: true,
+            initialize: function (moose) {
+                var el = document.createElement('button');
+                el.innerHTML = '<span class="glyphicon glyphicon-floppy-disk"></span>';
+                el.onclick = function (e) {
+                    moose.onSave();
+                };
+                this.el = el;
+                return el;
+            }
+        },
+        {
+            name: 'cancel',
+            enabled: true,
+            initialize: function (moose) {
+                var el = document.createElement('button');
+                el.innerHTML = '<span class="glyphicon glyphicon-remove"></span>';
+                this.el = el;
+                el.onclick = function (e) {
+                    moose.onCancel();
+                };
+                return el;
+            }
+        },
+            {
+                name: 'undo',
+                enabled: true,
+                initialize: function (moose) {
+                    this.el = document.createElement('button');
+                    this.el.innerHTML = '<span class="glyphicon glyphicon-arrow-left"></span>';
+                    this.el.onclick = function () {
+                        moose.undo();
+                    }
+                    return this.el;
+                }
+            },
+            {
+                name: 'redo',
+                enabled: true,
+                initialize: function (moose) {
+                    this.el = document.createElement('button');
+                    this.el.innerHTML = '<span class="glyphicon glyphicon-arrow-right"></span>';
+                    this.el.onclick = function () {
+                        moose.redo();
+                    }
+                    return this.el;
+                }
+            },
+        {
+            name: 'fullscreen',
+            enabled: true,
+            initialize: function (moose) {
+                var el = document.createElement('button');
+                this.el = el;
+                el.innerHTML = '<span class="glyphicon glyphicon-fullscreen"></span>';
+                el.onclick = function (e) {
+                    if (moose.isFullscreen()) {
+                        moose.exitFullscreen();
+                    } else {
+                        moose.enterFullscreen();
+                    }
+                };
+                return el;
+            }
+        },
             {
                 name: 'selectTool',
                 enabled: true,
@@ -519,10 +587,11 @@ var Draw = (function () {
                     this.popup.style.border = '2px solid black';
                     this.popup.style.padding = '0.5em';
                     $popup = this.popup;
-                    el.onclick = function (e) {
-                        if (moose.popup) {
-                            moose.popup.style.display = 'none';
-                            moose.popup = null;
+                    el.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (moose.closePopups() == $popup) {
+                            return;
                         }
                         $popup.innerHTML = '';
                         for (var i = 0; i < moose.tools.length; i++) {
@@ -545,8 +614,8 @@ var Draw = (function () {
                         } else {
                             $popup.style.top = (r[0].top - pr[0].height) + 'px';
                         }
-                        moose.popup = $popup;
-                    };
+                        moose.setPopup($popup);
+                    }, true);
                     moose.containerEl.appendChild(this.popup);
                     $popup.style.display = 'none';
                     return el;
@@ -567,32 +636,31 @@ var Draw = (function () {
                 var el = document.createElement('button');
                 var fc = moose.foreColor;
                 el.style.backgroundColor = utils.toHslaString(fc);
-                el.onclick = function (e) {
-                    if (moose.popup) {
-                        moose.popup.style.display = 'none';
-                        moose.popup = null;
-                    }
-                    if (!$this.opened) {
-                        $this.picker.style.display = 'block';
-                        $this.picker.style.position = 'absolute';
-                        $this.picker.style.top = '0px';
-                        $this.picker.style.left = '0px';
-                        if (!moose.isFullscreen()) {
-                            $this.picker.style.width = window.innerWidth + 'px';
-                            $this.picker.style.height = window.innerHeight + 'px';
+                el.addEventListener('click',
+                    function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        moose.closePopups();
+                        if (!$this.opened) {
+                            $this.picker.style.display = 'block';
+                            $this.picker.style.position = 'absolute';
+                            $this.picker.style.top = '0px';
+                            $this.picker.style.left = '0px';
+                            if (!moose.isFullscreen()) {
+                                $this.picker.style.width = window.innerWidth + 'px';
+                                $this.picker.style.height = window.innerHeight + 'px';
+                            } else {
+                                $this.picker.style.width = window.innerWidth + 'px';
+                                $this.picker.style.height = window.innerHeight + 'px';
+                            }
+                            $this.picker.style['z-index'] = 102;
+                            $this.opened = true;
                         } else {
-                            $this.picker.style.width = window.innerWidth + 'px';
-                            $this.picker.style.height = window.innerHeight + 'px';
+                            $this.picker.style.display = 'none';
+                            $this.opened = false;
                         }
-                        $this.picker.style['z-index'] = 102;
-                        $this.opened = true;
-                        moose.popup = null;
-                    } else {
-                        $this.picker.style.display = 'none';
-                        $this.opened = false;
-                        moose.popup = null;
-                    }
-                }
+                    },
+                    false);
                 el.innerHTML = '&nbsp';
                 this.el = el;
 
@@ -652,11 +720,10 @@ var Draw = (function () {
                 el.innerHTML = 'Size:' + moose.toolSize;
                 el.style['margin-right'] = '1em';
 
-                el.onclick = function (e) {
-                    if (moose.popup) {
-                        moose.popup.style.display = 'none';
-                        moose.popup = null;
-                    }
+                el.addEventListener('click', function (e) {
+                    console.log('tool size click');
+                    e.preventDefault();
+                    e.stopPropagation();
                     if (!el.popup) {
                         el.popup = document.createElement('div');
                         el.popup.style.backgroundColor = '#FFF';
@@ -674,7 +741,7 @@ var Draw = (function () {
                         input.max = 200;
                         input.attributes['step'] = '1';
                         input.defaultValue = moose.toolSize;
-                        input.oninput = input.onchange = function (e) {
+                        input.oninput = input.onchange = function(e) {
                             moose.toolSize = input.value;
                             el.innerHTML = 'Size:' + moose.toolSize;
                         };
@@ -684,7 +751,12 @@ var Draw = (function () {
                         input.style['top'] = '5px';
                         el.popup.appendChild(input);
                         moose.containerEl.appendChild(el.popup);
+                    } else {
+                        if (moose.closePopups() == el.popup) {
+                            return;
+                        }
                     }
+
                     var r = this.getClientRects();
                     el.popup.style.left = r[0].left + 'px';
                     if (moose.toolbarPosition == 'bottom') {
@@ -695,78 +767,11 @@ var Draw = (function () {
 
 
                     el.popup.style.display = 'block';
-                    moose.popup = el.popup;
-                };
+                    moose.setPopup(el.popup);
+                }, true);
 
                 this.el = el;
 
-                return el;
-            }
-        },
-            {
-                name: 'undo',
-                enabled: true,
-                initialize: function (moose) {
-                    this.el = document.createElement('button');
-                    this.el.innerHTML = '<span class="glyphicon glyphicon-arrow-left"></span>';
-                    this.el.onclick = function () {
-                        moose.undo();
-                    }
-                    return this.el;
-                }
-            },
-            {
-                name: 'redo',
-                enabled: true,
-                initialize: function (moose) {
-                    this.el = document.createElement('button');
-                    this.el.innerHTML = '<span class="glyphicon glyphicon-arrow-right"></span>';
-                    this.el.onclick = function () {
-                        moose.redo();
-                    }
-                    return this.el;
-                }
-            },
-        {
-            name: 'fullscreen',
-            enabled: true,
-            initialize: function (moose) {
-                var el = document.createElement('button');
-                this.el = el;
-                el.innerHTML = '<span class="glyphicon glyphicon-fullscreen"></span>';
-                el.onclick = function (e) {
-                    if (moose.isFullscreen()) {
-                        moose.exitFullscreen();
-                    } else {
-                        moose.enterFullscreen();
-                    }
-                };
-                return el;
-            }
-        },
-        {
-            name: 'cancel',
-            enabled: true,
-            initialize: function (moose) {
-                var el = document.createElement('button');
-                el.innerHTML = '<span class="glyphicon glyphicon-remove"></span>';
-                this.el = el;
-                el.onclick = function (e) {
-                    moose.onCancel();
-                };
-                return el;
-            }
-        },
-        {
-            name: 'save',
-            enabled: true,
-            initialize: function (moose) {
-                var el = document.createElement('button');
-                el.innerHTML = '<span class="glyphicon glyphicon-floppy-disk"></span>';
-                el.onclick = function (e) {
-                    moose.onSave();
-                };
-                this.el = el;
                 return el;
             }
         },
@@ -802,6 +807,18 @@ var Draw = (function () {
             }
         }
         ],
+        setPopup: function(popup) {
+            this.popup = popup;
+            console.log(this.popup);
+        },
+        closePopups: function() {
+            if (this.popup) {
+                var p = this.popup;
+                this.popup.style.display = 'none';
+                this.popup = null;
+                return p;
+            }
+        },
         setToolbarPosition: function (position) {
             if (position == 'top') {
                 this.toolbar.style.setProperty('top', '0px');
@@ -912,6 +929,9 @@ var Draw = (function () {
             }
             this.currentShape.points.push(ptData);
         },
+        drawStop: function() {
+            this.selectedTool.onPointerStop(this);
+        },
         drawShapeToCanvas: function (shape, context) {
             if (!this.shapes) this.shapes = [];
             if (!shape) return;
@@ -1003,12 +1023,70 @@ var Draw = (function () {
         },
         bindEvents: function () {
             var moose = this;
-            this.toolbar.onmousedown = function (e) {
+
+            moose.toolbar.move = function(e) {
+                if (moose.toolbar.dragging) {
+                    moose.disableToolbar();
+                    var newPos = {
+                        x: e.clientX - moose.toolbar.dragPosition.x,
+                        y: e.clientY - moose.toolbar.dragPosition.y
+                    };
+
+                    var r = moose.toolbar.getClientRects();
+                    if (newPos.x + r[0].width > window.innerWidth) {
+                        newPos.x = window.innerWidth - r[0].width;
+                    }
+                    if (newPos.y + r[0].height > window.innerHeight) {
+                        newPos.y = window.innerHeight - r[0].height;
+                    }
+                    if (newPos.y < 0) {
+                        newPos.y = 0;
+                    }
+                    if (newPos.x < 0) {
+                        newPos.x = 0;
+                    }
+
+                    moose.toolbar.position = newPos;
+                    moose.toolbar.style.left = moose.toolbar.position.x + 'px';
+                    moose.toolbar.style.top = moose.toolbar.position.y + 'px';
+                        
+                };
+            moose.toolbar.startmove = function(e) {
+                var r = moose.toolbar.getClientRects();
+                moose.toolbar.position = { x: r[0].left, y: r[0].top };
+                moose.toolbar.dragging = true;
+                moose.toolbar.dragPosition = { x: e.clientX - r[0].left, y: e.clientY - r[0].top };
+            };
+            moose.toolbar.endmove = function(e) {
+                if (moose.toolbar.dragging) {
+                    moose.toolbar.dragging = false;
+                    moose.enableToolbar();
+                }
+            };
+            this.toolbar.addEventListener('mousedown',moose.toolbar.startmove, true);
+            document.addEventListener('mousemove',moose.toolbar.move, true);
+            document.addEventListener('mouseup',moose.toolbar.endmove, true);
+            this.toolbar.addEventListener('touchstart',moose.toolbar.startmove, true);
+            document.addEventListener('touchmove',moose.toolbar.move, true);
+            document.addEventListener('touchend',moose.toolbar.endmove, true);
+
+
+            this.toolbar.addEventListener('click', function (e) {
+                console.log('toolbar click');
                 if (moose.popup) {
                     moose.popup.style.display = 'none';
                     moose.popup = null;
                 }
-            };
+            }, false);
+            
+            this.toolbar.addEventListener('mouseup',
+                function (e) {
+                    moose.toolbar.dragging = false;
+                }, true);
+            this.toolbar.addEventListener('mousemove',
+                function (e) {
+                    
+                }, true);
             this.canvas.onmousedown = function (e) {
                 if (moose.popup) {
                     moose.popup.style.display = 'none';
@@ -1026,23 +1104,23 @@ var Draw = (function () {
                 }
             }
             this.canvas.onmousemove = function (e) {
-                var moose = this.moose;
+                //var moose = this.moose;
                 var currentPoint = { x: e.clientX + (window.pageXOffset), y: e.clientY + (window.pageYOffset) };
-                if (moose.mouseOut) {
-                    moose.mouseOut = false;
-                    moose.isDrawing = true;
-                    moose.startDrawingShape(currentPoint);
+                if (this.moose.mouseOut) {
+                    this.moose.mouseOut = false;
+                    this.moose.isDrawing = true;
+                    this.moose.startDrawingShape(currentPoint);
                 }
-                if (moose.isDrawing) {
+                if (this.moose.isDrawing) {
                     e.preventDefault();
 
-                    if (moose.mouseOut) {
-                        moose.lastPoint = 
-                        moose.mouseOut = false;
+                    if (this.moose.mouseOut) {
+                        this.moose.lastPoint =
+                        this.moose.mouseOut = false;
                     }
-                    currentPoint.x *= moose.scale;
-                    currentPoint.y *= moose.scale;
-                    moose.drawMove(currentPoint);
+                    currentPoint.x *= this.moose.scale;
+                    currentPoint.y *= this.moose.scale;
+                    this.moose.drawMove(currentPoint);
                 }
             }
 
@@ -1052,7 +1130,7 @@ var Draw = (function () {
                     e.preventDefault();
 
                     moose.isDrawing = false;
-                    moose.selectedTool.onPointerStop(moose);
+                    moose.drawStop(moose);
                 }
             };
             this.canvas.onmouseout = function (e) {
