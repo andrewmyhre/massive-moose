@@ -741,7 +741,7 @@ var Draw = (function () {
                         input.max = 200;
                         input.attributes['step'] = '1';
                         input.defaultValue = moose.toolSize;
-                        input.oninput = input.onchange = function(e) {
+                        input.oninput = input.onchange = function (e) {
                             moose.toolSize = input.value;
                             el.innerHTML = 'Size:' + moose.toolSize;
                         };
@@ -807,11 +807,11 @@ var Draw = (function () {
             }
         }
         ],
-        setPopup: function(popup) {
+        setPopup: function (popup) {
             this.popup = popup;
             console.log(this.popup);
         },
-        closePopups: function() {
+        closePopups: function () {
             if (this.popup) {
                 var p = this.popup;
                 this.popup.style.display = 'none';
@@ -929,7 +929,7 @@ var Draw = (function () {
             }
             this.currentShape.points.push(ptData);
         },
-        drawStop: function() {
+        drawStop: function () {
             this.selectedTool.onPointerStop(this);
         },
         drawShapeToCanvas: function (shape, context) {
@@ -1024,12 +1024,23 @@ var Draw = (function () {
         bindEvents: function () {
             var moose = this;
 
-            moose.toolbar.move = function(e) {
+            moose.toolbar.move = function (e) {
                 if (moose.toolbar.dragging) {
                     moose.disableToolbar();
+                    e.stopPropagation();
+                    e.preventDefault();
+
+                    var touches = e.changedTouches;
+                    var pos = { x: e.clientX, y: e.clientY };
+                    if (touches) {
+                        if (touches.length == 1) {
+                            pos = { x: touches[0].pageX, y: touches[0].pageY };
+                        }
+                    }
+
                     var newPos = {
-                        x: e.clientX - moose.toolbar.dragPosition.x,
-                        y: e.clientY - moose.toolbar.dragPosition.y
+                        x: pos.x - moose.toolbar.dragPosition.x,
+                        y: pos.y - moose.toolbar.dragPosition.y
                     };
 
                     var r = moose.toolbar.getClientRects();
@@ -1049,27 +1060,36 @@ var Draw = (function () {
                     moose.toolbar.position = newPos;
                     moose.toolbar.style.left = moose.toolbar.position.x + 'px';
                     moose.toolbar.style.top = moose.toolbar.position.y + 'px';
-
+                    moose.debug(e.pageX + ',' + e.pageY);
                 }
             };
-            moose.toolbar.startmove = function(e) {
+            moose.toolbar.startmove = function (e) {
+                var touches = e.changedTouches;
+                var pos = { x: e.clientX, y: e.clientY };
+                if (touches) {
+                    if (touches.length == 1) {
+                        pos = { x: touches[0].pageX, y: touches[0].pageY };
+                    }
+                }
                 var r = moose.toolbar.getClientRects();
                 moose.toolbar.position = { x: r[0].left, y: r[0].top };
                 moose.toolbar.dragging = true;
-                moose.toolbar.dragPosition = { x: e.clientX - r[0].left, y: e.clientY - r[0].top };
+                moose.toolbar.dragPosition = { x: pos.x - r[0].left, y: pos.y - r[0].top };
+                moose.debug(moose.toolbar.dragPosition.x + ',' + moose.toolbar.dragPosition.y);
             };
-            moose.toolbar.endmove = function(e) {
+            moose.toolbar.endmove = function (e) {
                 if (moose.toolbar.dragging) {
                     moose.toolbar.dragging = false;
                     moose.enableToolbar();
+                    moose.debug(moose.toolbar.dragPosition.x + ',' + moose.toolbar.dragPosition.y);
                 }
             };
-            this.toolbar.addEventListener('mousedown',moose.toolbar.startmove, true);
-            document.addEventListener('mousemove',moose.toolbar.move, true);
-            document.addEventListener('mouseup',moose.toolbar.endmove, true);
-            this.toolbar.addEventListener('touchstart',moose.toolbar.startmove, true);
-            document.addEventListener('touchmove',moose.toolbar.move, true);
-            document.addEventListener('touchend',moose.toolbar.endmove, true);
+            this.toolbar.addEventListener('mousedown', moose.toolbar.startmove, true);
+            document.addEventListener('mousemove', moose.toolbar.move, true);
+            document.addEventListener('mouseup', moose.toolbar.endmove, true);
+            this.toolbar.addEventListener('touchstart', moose.toolbar.startmove, true);
+            document.addEventListener('touchmove', moose.toolbar.move, true);
+            document.addEventListener('touchend', moose.toolbar.endmove, true);
 
 
             this.toolbar.addEventListener('click', function (e) {
@@ -1079,14 +1099,14 @@ var Draw = (function () {
                     moose.popup = null;
                 }
             }, false);
-            
+
             this.toolbar.addEventListener('mouseup',
                 function (e) {
                     moose.toolbar.dragging = false;
                 }, true);
             this.toolbar.addEventListener('mousemove',
                 function (e) {
-                    
+
                 }, true);
             this.canvas.onmousedown = function (e) {
                 if (moose.popup) {
@@ -1207,7 +1227,7 @@ var Draw = (function () {
                 this.drawShapeToCanvas(this.shapes[s], this.ctx);
             }
         },
-        drawDot: function (x, y,color) {
+        drawDot: function (x, y, color) {
             this.ctx.fillStyle = color;
             this.ctx.beginPath();
             this.ctx.arc(x, y, 6, 0, Math.PI / 2, true);
@@ -1261,7 +1281,7 @@ var Draw = (function () {
 
             //this.debug('pos:'+x+','+y);
             this.redraw();
-            this.drawDot(canvasPointX, canvasPointY,"red");
+            this.drawDot(canvasPointX, canvasPointY, "red");
             this.drawDot(newCanvasPointX, newCanvasPointY, "blue");
         },
         bindHammerTime: function (moose) {
