@@ -1049,8 +1049,9 @@ var Draw = (function () {
                     moose.toolbar.position = newPos;
                     moose.toolbar.style.left = moose.toolbar.position.x + 'px';
                     moose.toolbar.style.top = moose.toolbar.position.y + 'px';
-                        
-                };
+
+                }
+            };
             moose.toolbar.startmove = function(e) {
                 var r = moose.toolbar.getClientRects();
                 moose.toolbar.position = { x: r[0].left, y: r[0].top };
