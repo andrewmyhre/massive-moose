@@ -1,0 +1,39 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+
+    <title>draw</title>
+
+    <link href="/Content/blank.css" rel="stylesheet" />
+    <link href="/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="/Content/draw.css" rel="stylesheet" />
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="icon" type="image/gif" href="/animated_favicon1.gif">
+</head>
+<body>
+    <div id="drawSpace"></div>
+
+    <script type="text/javascript" src="/Scripts/hammer.min.js"></script>
+    <script type="text/javascript" src="/Scripts/draw.js"></script>
+    <script type="text/javascript">
+        var _baseApiUrl = 'http://local.api.massivemoose.com';
+        var sessionToken = '12345';
+        var draw = Draw();
+        draw.initialize(document.getElementById('drawSpace'),
+        {
+            width: 1600,
+            height: 900,
+            onExportImage: function(imageData,json) {
+                console.log('onExportImage');
+            },
+            onCanceled: function () { console.log('onCanceled'); }
+        });
+        draw.startDrawing({ data: null });
+    </script>
+</body>
+</html>

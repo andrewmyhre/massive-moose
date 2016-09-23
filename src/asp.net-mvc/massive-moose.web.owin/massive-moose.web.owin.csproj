@@ -274,6 +274,7 @@
     <Content Include="Content\twitter-logo.png" />
     <Content Include="Content\Wall.css" />
     <Content Include="Content\backgrounds\white-brick.jpg" />
+    <Content Include="Draw.html" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />

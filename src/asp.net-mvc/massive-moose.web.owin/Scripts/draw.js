@@ -91,12 +91,12 @@ var Draw = (function () {
             this.opts = opts || {};
             this.isDrawing = false;
             this.lastPoint = null;
-            this.mouseOut = true;
+            this.mouseOut = false;
             this.scale = 1.0;
             this.scaleAtPinchStart = 1.0;
             this.offsetAtPinchStart = { x: 0, y: 0 };
             this.offset = { x: 0, y: 0 };
-            this.zoomEnabled = false;
+            this.zoomEnabled = true;
 
             this.popup = null;
 
@@ -115,6 +115,8 @@ var Draw = (function () {
             this.canvas.moose = this;
             this.currentShape = null;
             this.shapes = [];
+            this.shapeHistory = [];
+            this.historyIndex = 0;
 
             this.canvas.width = this.buffer.width = this.width = opts.width;
             this.canvas.height = this.buffer.height = this.height = opts.height;
@@ -287,6 +289,7 @@ var Draw = (function () {
                 },
                 onPointerStart: function (moose, pt) {
                     this.lastPoint = pt;
+                    console.log('start');
                 },
                 onPointerDrag: function (moose, pt, targetContext) {
                     var dist = utils.distanceBetween(this.lastPoint, pt);
@@ -326,6 +329,7 @@ var Draw = (function () {
                 },
                 onPointerStop: function (moose) {
                     this.lastPoint = null;
+                    moose.addHistory(moose.currentShape);
                     moose.saveShape(moose.currentShape, moose.bufferCtx);
                 }
             },
@@ -423,6 +427,7 @@ var Draw = (function () {
                 },
                 onPointerStop: function (moose) {
                     this.lastPoint = null;
+                    moose.addHistory(moose.currentShape);
                     moose.saveShape(moose.currentShape, moose.bufferCtx);
                 }
             }
@@ -698,6 +703,30 @@ var Draw = (function () {
                 return el;
             }
         },
+            {
+                name: 'undo',
+                enabled: true,
+                initialize: function (moose) {
+                    this.el = document.createElement('button');
+                    this.el.innerHTML = '<span class="glyphicon glyphicon-arrow-left"></span>';
+                    this.el.onclick = function () {
+                        moose.undo();
+                    }
+                    return this.el;
+                }
+            },
+            {
+                name: 'redo',
+                enabled: true,
+                initialize: function (moose) {
+                    this.el = document.createElement('button');
+                    this.el.innerHTML = '<span class="glyphicon glyphicon-arrow-right"></span>';
+                    this.el.onclick = function () {
+                        moose.redo();
+                    }
+                    return this.el;
+                }
+            },
         {
             name: 'fullscreen',
             enabled: true,
@@ -850,51 +879,23 @@ var Draw = (function () {
             }
             return false;
         },
-        zoom: function (newScale, oldScale, centerX, centerY) {
-            if (newScale < 1) newScale = 1;
-            if (newScale > 32) newScale = 32;
-
-            var oldScale;
-            oldScale = this.scale;
-
-            var actualWidth = this.width * this.scale;
-            var actualHeight = this.height * this.scale;
-            var newActualWidth = this.width * newScale;
-            var newActualHeight = this.height * newScale;
-
-            var canvasPointX = this.position.x + this.width * centerX * this.scale;
-            var canvasPointY = this.position.y + this.height * centerY * this.scale;
-            var newCanvasPointX = canvasPointX * (newScale / oldScale);
-            var newCanvasPointY = canvasPointY * (newScale / oldScale);
-            var deltaX = newCanvasPointX - canvasPointX;
-            var deltaY = newCanvasPointY - canvasPointY;
-
-            if (this.position.x + deltaX < 0)
-                deltaX = this.position.x;
-            else if (this.position.x + deltaX + window.innerWidth > newActualWidth)
-                deltaX = newActualWidth - window.innerWidth - this.position.x;
-
-            if (this.position.y + deltaY < 0)
-                deltaY = this.position.Y;
-            else if (this.position.y + deltaY + window.innerHeight > newActualHeight)
-                deltaY = newActualHeight - window.innerHeight - this.position.y;
-
-            this.debug('scale:' + newScale
-                + ', t(x,y):' + canvasPointX + ',' + canvasPointY
-                + ', t\'(x,y):' + newCanvasPointX + ',' + newCanvasPointY
-                + ', d(x,y):' + deltaX + ',' + deltaY);
-
-            this.scale = newScale;
-
-            //this.keepPanInImageBounds();
-            this.ctx.scale(newScale / oldScale, newScale / oldScale);
-            this.ctx.translate(-deltaX, -deltaY);
-            this.position.x += deltaX;
-            this.position.y += deltaY;
-            //this.debug(newScale);
-
-            //this.debug('pos:'+x+','+y);
+        undo: function () {
+            if (this.shapes.length == 0) return;
+            this.shapes.pop();
+            this.historyIndex--;
             this.redraw();
+        },
+        redo: function () {
+            if (this.historyIndex == this.shapeHistory.length) return;
+            this.shapes.push(this.shapeHistory[this.historyIndex++]);
+            this.redraw();
+        },
+        addHistory: function (shape) {
+            if (this.historyIndex < this.shapeHistory.length) {
+                this.shapeHistory = this.shapeHistory.slice(this.historyIndex - 1);
+            }
+            this.shapeHistory.push(shape);
+            this.historyIndex = this.shapeHistory.length;
         },
         drawMove: function (pt, tool, context) {
             var t = tool || this.selectedTool;
@@ -911,7 +912,7 @@ var Draw = (function () {
             }
             this.currentShape.points.push(ptData);
         },
-        saveShape: function (shape, context) {
+        drawShapeToCanvas: function (shape, context) {
             if (!this.shapes) this.shapes = [];
             if (!shape) return;
             var lastPoint = shape.points[0];
@@ -931,6 +932,9 @@ var Draw = (function () {
                 tool.onPointerDrag(this, pt, context);
                 lastPoint = pt;
             }
+        },
+        saveShape: function (shape, context) {
+            this.drawShapeToCanvas(shape, context);
             this.shapes.push(shape);
             this.currentShape = null;
         },
@@ -1012,6 +1016,7 @@ var Draw = (function () {
                 }
 
                 var point = { x: e.clientX + (window.pageXOffset), y: e.clientY + (window.pageYOffset) };
+                moose.debug(point.x + ',' + point.y);
                 if (e.shiftKey) {
                     moose.zoom(moose.scale * 1.2, moose.scale, point.x / window.innerWidth, point.y / window.innerHeight);
                 } else if (e.ctrlKey) {
@@ -1022,14 +1027,19 @@ var Draw = (function () {
             }
             this.canvas.onmousemove = function (e) {
                 var moose = this.moose;
+                var currentPoint = { x: e.clientX + (window.pageXOffset), y: e.clientY + (window.pageYOffset) };
+                if (moose.mouseOut) {
+                    moose.mouseOut = false;
+                    moose.isDrawing = true;
+                    moose.startDrawingShape(currentPoint);
+                }
                 if (moose.isDrawing) {
                     e.preventDefault();
 
                     if (moose.mouseOut) {
-                        moose.lastPoint = { x: e.clientX + (window.pageXOffset), y: e.clientY + (window.pageYOffset) };
+                        moose.lastPoint = 
                         moose.mouseOut = false;
                     }
-                    var currentPoint = { x: e.clientX + (window.pageXOffset), y: e.clientY + (window.pageYOffset) };
                     currentPoint.x *= moose.scale;
                     currentPoint.y *= moose.scale;
                     moose.drawMove(currentPoint);
@@ -1047,7 +1057,13 @@ var Draw = (function () {
             };
             this.canvas.onmouseout = function (e) {
                 var moose = this.moose;
-                moose.mouseOut = true;
+                if (moose.isDrawing) {
+                    e.preventDefault();
+
+                    moose.mouseOut = true;
+                    moose.isDrawing = false;
+                    moose.selectedTool.onPointerStop(moose);
+                }
             };
             this.canvas.addEventListener('touchmove',
                 function (e) {
@@ -1106,6 +1122,69 @@ var Draw = (function () {
                 return this;
             };
         },
+        redraw: function () {
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            for (var s = 0; s < this.shapes.length; s++) {
+                this.drawShapeToCanvas(this.shapes[s], this.ctx);
+            }
+        },
+        drawDot: function (x, y,color) {
+            this.ctx.fillStyle = color;
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, 6, 0, Math.PI / 2, true);
+            this.ctx.fill();
+        },
+        zoom: function (newScale, oldScale, centerX, centerY) {
+            if (newScale < 1) newScale = 1;
+            if (newScale > 32) newScale = 32;
+
+            var oldScale;
+            oldScale = this.scale;
+
+            var scaler = this.scale > newScale ? oldScale : newScale;
+
+            var actualWidth = this.width * this.scale;
+            var actualHeight = this.height * this.scale;
+            var newActualWidth = this.width * newScale;
+            var newActualHeight = this.height * newScale;
+
+            var canvasPointX = (this.position.x) + (this.width * centerX / scaler);
+            var canvasPointY = (this.position.y) + (this.height * centerY / scaler);
+            var newCanvasPointX = canvasPointX * (newScale / oldScale);
+            var newCanvasPointY = canvasPointY * (newScale / oldScale);
+            var deltaX = newCanvasPointX - canvasPointX;
+            var deltaY = newCanvasPointY - canvasPointY;
+
+            if (this.position.x + deltaX < 0)
+                deltaX = this.position.x;
+            else if (this.position.x + deltaX + window.innerWidth > newActualWidth)
+                deltaX = newActualWidth - window.innerWidth - this.position.x;
+
+            if (this.position.y + deltaY < 0)
+                deltaY = this.position.y;
+            else if (this.position.y + deltaY + window.innerHeight > newActualHeight)
+                deltaY = newActualHeight - window.innerHeight - this.position.y;
+
+            this.scale = newScale;
+            this.position.x += deltaX;
+            this.position.y += deltaY;
+
+            //this.keepPanInImageBounds();
+            this.ctx.scale(newScale / oldScale, newScale / oldScale);
+            this.ctx.translate(-deltaX, -deltaY);
+            //this.debug(newScale);
+
+            this.debug('scale:' + newScale
+    + ',p(x,y):' + (Math.round(this.position.x * 100) / 100) + ',' + (Math.round(this.position.y * 100) / 100)
+    + ', t(x,y):' + (Math.round(canvasPointX * 100) / 100) + ',' + (Math.round(canvasPointY * 100) / 100)
+    + ', t\'(x,y):' + (Math.round(newCanvasPointX * 100) / 100) + ',' + (Math.round(newCanvasPointY * 100) / 100)
+    + ', d(x,y):' + (Math.round(deltaX * 100) / 100) + ',' + (Math.round(deltaY * 100) / 100));
+
+            //this.debug('pos:'+x+','+y);
+            this.redraw();
+            this.drawDot(canvasPointX, canvasPointY,"red");
+            this.drawDot(newCanvasPointX, newCanvasPointY, "blue");
+        },
         bindHammerTime: function (moose) {
             moose.hammertime = new Hammer(this.canvas);
             moose.hammertime.moose = moose;
@@ -1126,7 +1205,9 @@ var Draw = (function () {
                         try {
                             var moose = ev.target.moose;
                             var newScale = moose.scaleAtPinchStart * (ev.scale);
-                            moose.zoom(newScale, moose.scale, ev.center.x, ev.center.y);
+                            var pt = { x: ev.center.x + (window.pageXOffset), y: ev.center.y + (window.pageYOffset) };
+                            moose.debug(pt.x + ',' + pt.y);
+                            moose.zoom(newScale, moose.scale, pt.x / window.innerWidth, pt.y / window.innerHeight);
                         } catch (ex) {
                             moose.debug(ex.message);
                         }
