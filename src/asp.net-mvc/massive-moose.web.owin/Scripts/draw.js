@@ -97,6 +97,7 @@ var Draw = (function () {
             this.offsetAtPinchStart = { x: 0, y: 0 };
             this.offset = { x: 0, y: 0 };
             this.zoomEnabled = true;
+            this.transform = new Transform();
 
             this.popup = null;
 
@@ -442,6 +443,7 @@ var Draw = (function () {
                     var el = document.createElement('button');
                     el.style.height = '100%';
                     el.style.float = 'left';
+                    el.className = 'btn btn-info';
                     el.innerHTML = '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
                     el.onclick = function (e) {
 
@@ -464,6 +466,7 @@ var Draw = (function () {
                                 .innerHTML =
                                 '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
                         }
+                        moose.toolbar.fitOnScreen();
                     }
 
                     this.el = el;
@@ -478,6 +481,7 @@ var Draw = (function () {
                     var $this = this;
                     $this.toolbarElement = toolbarElement;
                     var el = document.createElement('button');
+                    el.className = 'btn btn-default';
                     el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
                     el.onclick = function (e) {
                         if (moose.toolbarPosition == 'top') {
@@ -497,6 +501,7 @@ var Draw = (function () {
             enabled: true,
             initialize: function (moose) {
                 var el = document.createElement('button');
+                el.className = 'btn btn-primary';
                 el.innerHTML = '<span class="glyphicon glyphicon-floppy-disk"></span>';
                 el.onclick = function (e) {
                     moose.onSave();
@@ -510,6 +515,7 @@ var Draw = (function () {
             enabled: true,
             initialize: function (moose) {
                 var el = document.createElement('button');
+                el.className = 'btn btn-danger';
                 el.innerHTML = '<span class="glyphicon glyphicon-remove"></span>';
                 this.el = el;
                 el.onclick = function (e) {
@@ -523,6 +529,7 @@ var Draw = (function () {
                 enabled: true,
                 initialize: function (moose) {
                     this.el = document.createElement('button');
+                    this.el.className = 'btn btn-default';
                     this.el.innerHTML = '<span class="glyphicon glyphicon-arrow-left"></span>';
                     this.el.onclick = function () {
                         moose.undo();
@@ -535,6 +542,7 @@ var Draw = (function () {
                 enabled: true,
                 initialize: function (moose) {
                     this.el = document.createElement('button');
+                    this.el.className = 'btn btn-default';
                     this.el.innerHTML = '<span class="glyphicon glyphicon-arrow-right"></span>';
                     this.el.onclick = function () {
                         moose.redo();
@@ -547,6 +555,7 @@ var Draw = (function () {
             enabled: true,
             initialize: function (moose) {
                 var el = document.createElement('button');
+                el.className = 'btn btn-default';
                 this.el = el;
                 el.innerHTML = '<span class="glyphicon glyphicon-fullscreen"></span>';
                 el.onclick = function (e) {
@@ -555,6 +564,7 @@ var Draw = (function () {
                     } else {
                         moose.enterFullscreen();
                     }
+                    moose.toolbar.fitOnScreen();
                 };
                 return el;
             }
@@ -572,6 +582,7 @@ var Draw = (function () {
                     var $this = this;
                     this.moose = moose;
                     var el = document.createElement('button');
+                    el.className = 'btn btn-default';
                     this.el = el;
                     if (!this.popup) {
                         this.popup = document.createElement('div');
@@ -634,6 +645,7 @@ var Draw = (function () {
                 var $this = this;
                 this.moose = moose;
                 var el = document.createElement('button');
+                el.className = 'btn btn-default';
                 var fc = moose.foreColor;
                 el.style.backgroundColor = utils.toHslaString(fc);
                 el.addEventListener('click',
@@ -717,6 +729,7 @@ var Draw = (function () {
             initialize: function (moose) {
                 this.moose = moose;
                 var el = document.createElement('button');
+                el.className = 'btn btn-default';
                 el.innerHTML = 'Size:' + moose.toolSize;
                 el.style['margin-right'] = '1em';
 
@@ -780,6 +793,7 @@ var Draw = (function () {
             enabled: this.zoomEnabled,
             initialize: function (moose) {
                 var el = document.createElement('button');
+                el.className = 'btn btn-default';
                 el.innerHTML = 'zoom in';
                 el.onclick = function (e) {
                     var newScale = moose.scale * 2;
@@ -795,6 +809,7 @@ var Draw = (function () {
             enabled: this.zoomEnabled,
             initialize: function (moose) {
                 var el = document.createElement('button');
+                el.className = 'btn btn-default';
                 el.innerHTML = 'zoom out';
                 el.onclick = function (e) {
                     var newScale = moose.scale / 2;
@@ -914,9 +929,40 @@ var Draw = (function () {
             this.shapeHistory.push(shape);
             this.historyIndex = this.shapeHistory.length;
         },
+        debugInfo: function (e) {
+            var d = '';
+            if (e) { d += 's:' + e.screenX + ',' + e.screenY + ' c:' + e.clientX + ',' + e.clientY + '<br/>'; }
+            d += 'scale:' + this.scale + ' p:' + (Math.round(this.position.x)) + ',' + Math.round(this.position.y) + ' o:' + window.pageXOffset + ',' + window.pageYOffset + '<br/>';
+            if (this.transform) {
+                d += this.transform + '<br/>';
+            }
+            this.debug(d);
+        },
+        clientToCanvas: function (point) {
+            point.x /= this.scale;
+            point.y /= this.scale;
+            point.x += this.position.x;
+            point.y += this.position.y;
+
+            return point;
+        },
+        startDrawingShape: function (point) {
+            this.isDrawing = true;
+            point = this.clientToCanvas(point);
+            this.lastPoint = point;
+            var tool = this.selectedTool || this.tools[0];
+            this.currentShape = {
+                foreColor: this.foreColor,
+                toolSize: this.toolSize,
+                points: [],
+                toolName: tool.name
+            }
+            tool.onPointerStart(this, point);
+        },
         drawMove: function (pt, tool, context) {
             var t = tool || this.selectedTool;
             var ctx = context || this.ctx;
+            pt = this.clientToCanvas(pt);
             var ptData = t.onPointerDrag(this, pt);
             this.lastPoint = ptData;
             if (!this.currentShape) {
@@ -1003,23 +1049,11 @@ var Draw = (function () {
                 var ti = this.toolbarItems[i];
                 if (!ti || !ti.enabled) continue;
                 var el = ti.initialize(this, t);
-                el.className += 'toolbar-item';
+                el.className += ' toolbar-item';
                 t.appendChild(el);
             }
 
             return t;
-        },
-        startDrawingShape: function (point) {
-            this.isDrawing = true;
-            this.lastPoint = point;
-            var tool = this.selectedTool || this.tools[0];
-            this.currentShape = {
-                foreColor: this.foreColor,
-                toolSize: this.toolSize,
-                points: [],
-                toolName: tool.name
-            }
-            tool.onPointerStart(this, point);
         },
         bindEvents: function () {
             var moose = this;
@@ -1043,24 +1077,11 @@ var Draw = (function () {
                         y: pos.y - moose.toolbar.dragPosition.y
                     };
 
-                    var r = moose.toolbar.getClientRects();
-                    if (newPos.x + r[0].width > window.innerWidth) {
-                        newPos.x = window.innerWidth - r[0].width;
-                    }
-                    if (newPos.y + r[0].height > window.innerHeight) {
-                        newPos.y = window.innerHeight - r[0].height;
-                    }
-                    if (newPos.y < 0) {
-                        newPos.y = 0;
-                    }
-                    if (newPos.x < 0) {
-                        newPos.x = 0;
-                    }
+                    moose.toolbar.fitOnScreen();
 
                     moose.toolbar.position = newPos;
                     moose.toolbar.style.left = moose.toolbar.position.x + 'px';
                     moose.toolbar.style.top = moose.toolbar.position.y + 'px';
-                    moose.debug(e.pageX + ',' + e.pageY);
                 }
             };
             moose.toolbar.startmove = function (e) {
@@ -1075,18 +1096,36 @@ var Draw = (function () {
                 moose.toolbar.position = { x: r[0].left, y: r[0].top };
                 moose.toolbar.dragging = true;
                 moose.toolbar.dragPosition = { x: pos.x - r[0].left, y: pos.y - r[0].top };
-                moose.debug(moose.toolbar.dragPosition.x + ',' + moose.toolbar.dragPosition.y);
             };
             moose.toolbar.endmove = function (e) {
                 if (moose.toolbar.dragging) {
                     moose.toolbar.dragging = false;
                     moose.enableToolbar();
-                    moose.debug(moose.toolbar.dragPosition.x + ',' + moose.toolbar.dragPosition.y);
                 }
+            };
+            moose.toolbar.fitOnScreen = function () {
+                var r = moose.toolbar.getClientRects();
+                var pos = { x: r[0].left, y: r[0].height };
+                if (pos.x + r[0].width > screen.availWidth) {
+                    pos.x = screen.availWidth - r[0].width;
+                }
+                if (pos.y + r[0].height > screen.availHeight) {
+                    pos.y = screen.availHeight - r[0].height;
+                }
+                if (pos.y < 0) {
+                    pos.y = 0;
+                }
+                if (pos.x < 0) {
+                    pos.x = 0;
+                }
+
+                moose.toolbar.position = pos;
+                moose.toolbar.style.left = moose.toolbar.position.x + 'px';
+                moose.toolbar.style.top = moose.toolbar.position.y + 'px';
             };
             this.toolbar.addEventListener('mousedown', moose.toolbar.startmove, true);
             document.addEventListener('mousemove', moose.toolbar.move, true);
-            document.addEventListener('mouseup', moose.toolbar.endmove, true);
+            window.addEventListener('mouseup', moose.toolbar.endmove, true);
             this.toolbar.addEventListener('touchstart', moose.toolbar.startmove, true);
             document.addEventListener('touchmove', moose.toolbar.move, true);
             document.addEventListener('touchend', moose.toolbar.endmove, true);
@@ -1114,19 +1153,20 @@ var Draw = (function () {
                     moose.popup = null;
                 }
 
-                var point = { x: e.clientX + (window.pageXOffset), y: e.clientY + (window.pageYOffset) };
-                moose.debug(point.x + ',' + point.y);
+                var point = { x: e.clientX, y: e.clientY };
                 if (e.shiftKey) {
-                    moose.zoom(moose.scale * 1.2, moose.scale, point.x / window.innerWidth, point.y / window.innerHeight);
+                    moose.zoom(moose.scale * 1.2, moose.scale, point.x, point.y);
                 } else if (e.ctrlKey) {
-                    moose.zoom(moose.scale * 0.8, moose.scale, point.x / window.innerWidth, point.y / window.innerHeight);
+                    moose.zoom(moose.scale * 0.8, moose.scale, point.x, point.y);
                 } else {
                     moose.startDrawingShape(point);
                 }
             }
             this.canvas.onmousemove = function (e) {
                 //var moose = this.moose;
-                var currentPoint = { x: e.clientX + (window.pageXOffset), y: e.clientY + (window.pageYOffset) };
+                this.moose.debugInfo();
+                var currentPoint = { x: e.clientX, y: e.clientY };
+
                 if (this.moose.mouseOut) {
                     this.moose.mouseOut = false;
                     this.moose.isDrawing = true;
@@ -1139,8 +1179,7 @@ var Draw = (function () {
                         this.moose.lastPoint =
                         this.moose.mouseOut = false;
                     }
-                    currentPoint.x *= this.moose.scale;
-                    currentPoint.y *= this.moose.scale;
+
                     this.moose.drawMove(currentPoint);
                 }
             }
@@ -1173,8 +1212,8 @@ var Draw = (function () {
 
                         var touches = e.changedTouches;
                         if (touches.length === 1) {
-                            var currentPoint = { x: touches[0].pageX, y: touches[0].pageY };
-                            //alert('touch move at ' + touches[0].pageX + ',' + touches[0].pageY);
+                            var currentPoint = { x: touches[0].clientX, y: touches[0].clientY };
+                            currentPoint = this.clientToCanvas(currentPoint);
                             moose.drawMove(currentPoint);
                         }
                     }
@@ -1207,7 +1246,7 @@ var Draw = (function () {
                     if (e.touches.length === 1) {
                         e.preventDefault();
                         moose.isDrawing = true;
-                        var point = { x: (touches[0].pageX), y: (touches[0].pageY) };
+                        var point = { x: (touches[0].clientX), y: (touches[0].clientY) };
                         moose.lastPoint = point;
                         moose.startDrawingShape(point);
                         document.addEventListener('touchmove', moose.touchMoveListener);
@@ -1233,12 +1272,13 @@ var Draw = (function () {
             this.ctx.arc(x, y, 6, 0, Math.PI / 2, true);
             this.ctx.fill();
         },
-        zoom: function (newScale, oldScale, centerX, centerY) {
+        zoom: function (newScale, oldScale, clientX, clientY) {
             if (newScale < 1) newScale = 1;
             if (newScale > 32) newScale = 32;
 
             var oldScale;
             oldScale = this.scale;
+
 
             var scaler = this.scale > newScale ? oldScale : newScale;
 
@@ -1247,8 +1287,8 @@ var Draw = (function () {
             var newActualWidth = this.width * newScale;
             var newActualHeight = this.height * newScale;
 
-            var canvasPointX = (this.position.x) + (this.width * centerX / scaler);
-            var canvasPointY = (this.position.y) + (this.height * centerY / scaler);
+            var canvasPointX = (this.position.x) + (clientX / scaler);
+            var canvasPointY = (this.position.y) + (clientY / scaler);
             var newCanvasPointX = canvasPointX * (newScale / oldScale);
             var newCanvasPointY = canvasPointY * (newScale / oldScale);
             var deltaX = newCanvasPointX - canvasPointX;
@@ -1256,21 +1296,25 @@ var Draw = (function () {
 
             if (this.position.x + deltaX < 0)
                 deltaX = this.position.x;
-            else if (this.position.x + deltaX + window.innerWidth > newActualWidth)
-                deltaX = newActualWidth - window.innerWidth - this.position.x;
+            else if (this.position.x + deltaX + screen.availWidth > newActualWidth)
+                deltaX = newActualWidth - screen.availWidth - this.position.x;
 
             if (this.position.y + deltaY < 0)
                 deltaY = this.position.y;
-            else if (this.position.y + deltaY + window.innerHeight > newActualHeight)
-                deltaY = newActualHeight - window.innerHeight - this.position.y;
+            else if (this.position.y + deltaY + screen.availHeight > newActualHeight)
+                deltaY = newActualHeight - screen.availHeight - this.position.y;
 
             this.scale = newScale;
             this.position.x += deltaX;
             this.position.y += deltaY;
 
             //this.keepPanInImageBounds();
-            this.ctx.scale(newScale / oldScale, newScale / oldScale);
-            this.ctx.translate(-deltaX, -deltaY);
+            this.transform.scale(newScale / oldScale, newScale / oldScale);
+            this.transform.translate(-deltaX, -deltaY);
+            var m = this.transform.m;
+            this.ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
+            //this.ctx.scale(newScale / oldScale, newScale / oldScale);
+            //this.ctx.translate(-deltaX, -deltaY);
             //this.debug(newScale);
 
             this.debug('scale:' + newScale
