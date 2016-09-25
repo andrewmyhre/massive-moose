@@ -1222,6 +1222,7 @@ moose.debug('touch');
                         var touches = e.changedTouches;
                         if (touches.length === 1) {
                             var currentPoint = { x: touches[0].clientX, y: touches[0].clientY };
+this.debug(currentPoint.x+','+currentPoint.y);
                             currentPoint = this.clientToCanvas(currentPoint);
                             moose.drawMove(currentPoint);
                         }
