@@ -951,6 +951,7 @@ this.debug(ex.message);
             return point;
         },
         startDrawingShape: function (point) {
+try {
             this.isDrawing = true;
             point = this.clientToCanvas(point);
             this.lastPoint = point;
@@ -962,8 +963,10 @@ this.debug(ex.message);
                 toolName: tool.name
             }
             tool.onPointerStart(this, point);
+} catch(ex){ this.debug(ex.message); }
         },
         drawMove: function (pt, tool, context) {
+try {
             var t = tool || this.selectedTool;
             var ctx = context || this.ctx;
             pt = this.clientToCanvas(pt);
@@ -978,6 +981,7 @@ this.debug(ex.message);
                 }
             }
             this.currentShape.points.push(ptData);
+} catch (ex) { this.debug(ex.message);}
         },
         drawStop: function () {
             this.selectedTool.onPointerStop(this);
