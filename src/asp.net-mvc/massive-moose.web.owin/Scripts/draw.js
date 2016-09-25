@@ -977,7 +977,7 @@ try {
                 }
             }
             this.currentShape.points.push(ptData);
-} catch (ex) { this.debug(ex.message);}I
+} catch (ex) { this.debug(ex.message);}
         },
         drawStop: function () {
             this.selectedTool.onPointerStop(this);
