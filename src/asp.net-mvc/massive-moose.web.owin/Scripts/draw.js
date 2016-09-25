@@ -72,6 +72,7 @@ math.scalePositionScalar = function (val, viewportSize, oldScale, newScale) {
 var Draw = (function () {
     return {
         initialize: function (arg1, arg2) {
+try {
             var containerEl, opts;
             opts = null;
             containerEl = null;
@@ -157,6 +158,9 @@ var Draw = (function () {
             if (this.zoomEnabled) {
                 this.bindHammerTime(this);
             }
+} catch(ex){
+this.debug(ex.message);
+}
         },
         setDocumentViewportScale: function (scale) {
             this.viewport.setAttribute('content', 'width=device-width, initial-scale=' + scale);
