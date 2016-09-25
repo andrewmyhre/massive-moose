@@ -981,7 +981,7 @@ try {
                 }
             }
             this.currentShape.points.push(ptData);
-} catch (ex) { this.debug(ex.message);}
+} catch (ex) { this.debug(ex.message);}I
         },
         drawStop: function () {
             this.selectedTool.onPointerStop(this);
@@ -1214,6 +1214,7 @@ try {
             this.canvas.addEventListener('touchmove',
                 function (e) {
                     var moose = this.moose;
+moose.debug('touch');
                     if (moose.isDrawing) {
                         e.preventDefault();
 
