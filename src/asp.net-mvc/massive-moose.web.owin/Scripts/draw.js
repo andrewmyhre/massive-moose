@@ -1217,7 +1217,7 @@ try {
                             try {
                             var currentPoint = { x: touches[0].clientX, y: touches[0].clientY };
                             moose.debug(currentPoint.x+','+currentPoint.y);
-                            currentPoint = this.clientToCanvas(currentPoint);
+                            currentPoint = moose.clientToCanvas(currentPoint);
                             moose.drawMove(currentPoint);
                             } catch (ex)
                             {
@@ -1255,6 +1255,7 @@ try {
                         e.preventDefault();
                         moose.isDrawing = true;
                         var point = { x: (touches[0].clientX), y: (touches[0].clientY) };
+                        point = moose.clientToCanvas(point);
                         moose.lastPoint = point;
                         moose.startDrawingShape(point);
                         document.addEventListener('touchmove', moose.touchMoveListener);
