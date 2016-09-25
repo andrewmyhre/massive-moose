@@ -1210,12 +1210,10 @@ try {
             this.canvas.addEventListener('touchmove',
                 function (e) {
                     var moose = this.moose;
-moose.debug('touch');
                     if (moose.isDrawing) {
                         e.preventDefault();
-
-
                         var touches = e.changedTouches;
+                        moose.debug('touches:'+touches.length);
                         if (touches.length === 1) {
                             var currentPoint = { x: touches[0].clientX, y: touches[0].clientY };
 this.debug(currentPoint.x+','+currentPoint.y);
