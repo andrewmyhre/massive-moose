@@ -1213,12 +1213,16 @@ try {
                     if (moose.isDrawing) {
                         e.preventDefault();
                         var touches = e.changedTouches;
-                        moose.debug('touches:'+touches.length);
                         if (touches.length === 1) {
+                            try {
                             var currentPoint = { x: touches[0].clientX, y: touches[0].clientY };
-this.debug(currentPoint.x+','+currentPoint.y);
+                            moose.debug(currentPoint.x+','+currentPoint.y);
                             currentPoint = this.clientToCanvas(currentPoint);
                             moose.drawMove(currentPoint);
+                            } catch (ex)
+                            {
+                                moose.debug(ex.message);
+                            }
                         }
                     }
                 });
