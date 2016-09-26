@@ -92,7 +92,7 @@ var Draw = (function () {
             this.isDrawing = false;
             this.lastPoint = null;
             this.mouseOut = false;
-            this.scale = 1.0;
+            //this.scale = 1.0;
             this.scaleAtPinchStart = 1.0;
             this.offsetAtPinchStart = { x: 0, y: 0 };
             this.offset = { x: 0, y: 0 };
@@ -158,6 +158,14 @@ var Draw = (function () {
                 this.bindHammerTime(this);
             }
         },
+        getScale: function() {
+            return this.transform.m[0];
+        },
+        setScale:function(scale) {
+            this.transform.scale(scale);
+            var m = this.transform.m;
+            this.ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
+        },
         setDocumentViewportScale: function (scale) {
             this.viewport.setAttribute('content', 'width=device-width, initial-scale=' + scale);
         },
@@ -183,14 +191,14 @@ var Draw = (function () {
         startDrawing: function (data) {
             var scalex = 1600 / screen.availWidth;
             var scaley = 900 / screen.availHeight;
-            this.scale = scalex;
-            if (scalex * screen.availHeight > 900) {
-                this.scale = scaley;
+            var s = scalex;
+            if (s * screen.availHeight > 900) {
+                s = scaley;
             }
-            if (this.scale < 1) {
-                this.scale = 1;
+            if (s < 1) {
+                s = 1;
             }
-            this.setDocumentViewportScale(1 / this.scale);
+            this.setDocumentViewportScale(1 / s);
 
             this.sessionData = data;
             this.containerEl.style.display = 'block';
@@ -796,9 +804,8 @@ var Draw = (function () {
                 el.className = 'btn btn-default';
                 el.innerHTML = 'zoom in';
                 el.onclick = function (e) {
-                    var newScale = moose.scale * 2;
-                    moose.zoom(newScale, moose.scale, 0.5, 0.5);
-                    moose.scale = newScale;
+                    var newScale = moose.getScale() * 2;
+                    moose.zoom(newScale, moose.getScale(), 0.5, 0.5);
                 };
                 this.el = el;
                 return el;
@@ -812,10 +819,9 @@ var Draw = (function () {
                 el.className = 'btn btn-default';
                 el.innerHTML = 'zoom out';
                 el.onclick = function (e) {
-                    var newScale = moose.scale / 2;
-                    if (newScale == moose.scale) return;
-                    moose.zoom(newScale, moose.scale, 0.5, 0.5);
-                    moose.scale = newScale;
+                    var newScale = moose.getScale() / 2;
+                    if (newScale == moose.getScale()) return;
+                    moose.zoom(newScale, moose.getScale(), 0.5, 0.5);
                 };
                 this.el = el;
                 return el;
@@ -932,19 +938,20 @@ var Draw = (function () {
         debugInfo: function (e) {
             var d = '';
             if (e) { d += 's:' + e.screenX + ',' + e.screenY + ' c:' + e.clientX + ',' + e.clientY + '<br/>'; }
-            d += 'scale:' + this.scale + ' p:' + (Math.round(this.position.x)) + ',' + Math.round(this.position.y) + ' o:' + window.pageXOffset + ',' + window.pageYOffset + '<br/>';
+            //d += 'scale:' + this.getScale() + ' p:' + (Math.round(this.position.x)) + ',' + Math.round(this.position.y) + ' o:' + window.pageXOffset + ',' + window.pageYOffset + '<br/>';
             if (this.transform) {
-                d += this.transform + '<br/>';
+                d += this.transform.toString() + '<br/>';
             }
             this.debug(d);
         },
         clientToCanvas: function (point) {
-            point.x /= this.scale;
-            point.y /= this.scale;
-            point.x += this.position.x;
-            point.y += this.position.y;
+            var m = this.transform.m;
+            var p = {
+                x: point.x / m[0] + m[4],
+                y: point.y / m[3] + m[5]
+            };
 
-            return point;
+            return p;
         },
         startDrawingShape: function (point) {
             this.isDrawing = true;
@@ -1155,9 +1162,9 @@ var Draw = (function () {
 
                 var point = { x: e.clientX, y: e.clientY };
                 if (e.shiftKey) {
-                    moose.zoom(moose.scale * 1.2, moose.scale, point.x, point.y);
+                    moose.zoom(moose.getScale() * 1.2, moose.getScale(), point.x, point.y);
                 } else if (e.ctrlKey) {
-                    moose.zoom(moose.scale * 0.8, moose.scale, point.x, point.y);
+                    moose.zoom(moose.getScale() * 0.8, moose.getScale(), point.x, point.y);
                 } else {
                     moose.startDrawingShape(point);
                 }
@@ -1276,14 +1283,10 @@ var Draw = (function () {
             if (newScale < 1) newScale = 1;
             if (newScale > 32) newScale = 32;
 
-            var oldScale;
-            oldScale = this.scale;
+            var scaler = this.getScale() > newScale ? oldScale : newScale;
 
-
-            var scaler = this.scale > newScale ? oldScale : newScale;
-
-            var actualWidth = this.width * this.scale;
-            var actualHeight = this.height * this.scale;
+            var actualWidth = this.width * this.getScale();
+            var actualHeight = this.height * this.getScale();
             var newActualWidth = this.width * newScale;
             var newActualHeight = this.height * newScale;
 
@@ -1304,15 +1307,16 @@ var Draw = (function () {
             else if (this.position.y + deltaY + screen.availHeight > newActualHeight)
                 deltaY = newActualHeight - screen.availHeight - this.position.y;
 
-            this.scale = newScale;
             this.position.x += deltaX;
             this.position.y += deltaY;
 
             //this.keepPanInImageBounds();
-            this.transform.scale(newScale / oldScale, newScale / oldScale);
             this.transform.translate(-deltaX, -deltaY);
+            this.transform.scale(newScale / oldScale, newScale / oldScale);
             var m = this.transform.m;
             this.ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
+            this.position.x = m[4];
+            this.position.y = m[5];
             //this.ctx.scale(newScale / oldScale, newScale / oldScale);
             //this.ctx.translate(-deltaX, -deltaY);
             //this.debug(newScale);
@@ -1340,7 +1344,7 @@ var Draw = (function () {
             moose.hammertime.on('pinchstart',
                     function (ev) {
                         var moose = ev.target.moose;
-                        moose.scaleAtPinchStart = moose.scale
+                        moose.scaleAtPinchStart = moose.getScale()
                         moose.offsetAtPinchStart = moose.offset;
                     });
             moose.hammertime.on('pinchmove',
@@ -1350,7 +1354,7 @@ var Draw = (function () {
                             var newScale = moose.scaleAtPinchStart * (ev.scale);
                             var pt = { x: ev.center.x + (window.pageXOffset), y: ev.center.y + (window.pageYOffset) };
                             moose.debug(pt.x + ',' + pt.y);
-                            moose.zoom(newScale, moose.scale, pt.x / window.innerWidth, pt.y / window.innerHeight);
+                            moose.zoom(newScale, moose.getScale(), pt.x / window.innerWidth, pt.y / window.innerHeight);
                         } catch (ex) {
                             moose.debug(ex.message);
                         }
