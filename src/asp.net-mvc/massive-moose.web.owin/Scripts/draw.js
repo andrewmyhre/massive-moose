@@ -1,4 +1,4 @@
-﻿var utils = {};
+﻿var utils = {}; 
 
 utils.distanceBetween = function (point1, point2) {
     return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
@@ -954,6 +954,7 @@ var Draw = (function () {
             return p;
         },
         startDrawingShape: function (point) {
+try {
             this.isDrawing = true;
             point = this.clientToCanvas(point);
             this.lastPoint = point;
@@ -965,8 +966,10 @@ var Draw = (function () {
                 toolName: tool.name
             }
             tool.onPointerStart(this, point);
+} catch(ex){ this.debug(ex.message); }
         },
         drawMove: function (pt, tool, context) {
+try {
             var t = tool || this.selectedTool;
             var ctx = context || this.ctx;
             pt = this.clientToCanvas(pt);
@@ -981,6 +984,7 @@ var Draw = (function () {
                 }
             }
             this.currentShape.points.push(ptData);
+} catch (ex) { this.debug(ex.message);}
         },
         drawStop: function () {
             this.selectedTool.onPointerStop(this);
@@ -1215,13 +1219,17 @@ var Draw = (function () {
                     var moose = this.moose;
                     if (moose.isDrawing) {
                         e.preventDefault();
-
-
                         var touches = e.changedTouches;
                         if (touches.length === 1) {
+                            try {
                             var currentPoint = { x: touches[0].clientX, y: touches[0].clientY };
-                            currentPoint = this.clientToCanvas(currentPoint);
+                            moose.debug(currentPoint.x+','+currentPoint.y);
+                            currentPoint = moose.clientToCanvas(currentPoint);
                             moose.drawMove(currentPoint);
+                            } catch (ex)
+                            {
+                                moose.debug(ex.message);
+                            }
                         }
                     }
                 });
@@ -1254,6 +1262,7 @@ var Draw = (function () {
                         e.preventDefault();
                         moose.isDrawing = true;
                         var point = { x: (touches[0].clientX), y: (touches[0].clientY) };
+                        point = moose.clientToCanvas(point);
                         moose.lastPoint = point;
                         moose.startDrawingShape(point);
                         document.addEventListener('touchmove', moose.touchMoveListener);
