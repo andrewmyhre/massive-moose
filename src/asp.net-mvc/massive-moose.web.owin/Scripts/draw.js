@@ -1071,6 +1071,7 @@ try {
 
             moose.toolbar.move = function (e) {
                 if (moose.toolbar.dragging) {
+moose.debug('toolbar dragging');
                     moose.disableToolbar();
                     e.stopPropagation();
                     e.preventDefault();
