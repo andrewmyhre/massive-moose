@@ -1174,7 +1174,7 @@ moose.debug('toolbar dragging');
                     moose.startDrawingShape(point);
                 }
             }
-            this.canvas.onmousemove = function (e) {
+            this.canvas.addEventListener('mousemove',function (e) {
                 //var moose = this.moose;
                 this.moose.debugInfo();
                 var currentPoint = { x: e.clientX, y: e.clientY };
@@ -1194,9 +1194,9 @@ moose.debug('toolbar dragging');
 
                     this.moose.drawMove(currentPoint);
                 }
-            }
+            });
 
-            this.canvas.onmouseup = function (e) {
+            this.canvas.addEventListener('mouseup',function (e) {
                 var moose = this.moose;
                 if (moose.isDrawing) {
                     e.preventDefault();
@@ -1204,8 +1204,8 @@ moose.debug('toolbar dragging');
                     moose.isDrawing = false;
                     moose.drawStop(moose);
                 }
-            };
-            this.canvas.onmouseout = function (e) {
+            });
+            this.canvas.addEventListener('mouseout',function (e) {
                 var moose = this.moose;
                 if (moose.isDrawing) {
                     e.preventDefault();
@@ -1214,7 +1214,7 @@ moose.debug('toolbar dragging');
                     moose.isDrawing = false;
                     moose.selectedTool.onPointerStop(moose);
                 }
-            };
+            });
             this.canvas.addEventListener('touchmove',
                 function (e) {
                     var moose = this.moose;
@@ -1237,6 +1237,7 @@ moose.debug('toolbar dragging');
             this.canvas.addEventListener('touchend',
                 function (e) {
                     var moose = this.moose;
+moose.debug('touchend');
                     if (moose.isDrawing) {
                         e.preventDefault();
 
