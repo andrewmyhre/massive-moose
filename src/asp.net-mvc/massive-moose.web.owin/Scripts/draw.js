@@ -1218,6 +1218,7 @@ moose.debug('toolbar dragging');
             this.canvas.addEventListener('touchmove',
                 function (e) {
                     var moose = this.moose;
+moose.debug('touchmove');
                     if (moose.isDrawing) {
                         e.preventDefault();
                         var touches = e.changedTouches;
