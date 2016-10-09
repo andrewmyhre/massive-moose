@@ -184,7 +184,7 @@
                     $this._brickInUse.snapshotJson = data.snapshotJson;
                     $this.openCanvas($this._brickInUse);
                 } else if (this.status == 409) {
-                    alert('someone is currently drawing on that space')
+                    alert('someone is currently drawing on that space');
                     $this.updateWall();
                 } else {
                     alert('something went terribly, terribly wrong. call your lawyers.');

@@ -202,6 +202,11 @@ var Draw = (function () {
             }
             this.setDocumentViewportScale(1 / s);
 
+            this.transform = new Transform();
+            var m = this.transform.m;
+            this.ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
+            console.log('scale=' + m[0]);
+
             this.sessionData = data;
             this.containerEl.style.display = 'block';
             this.enableToolbar();
@@ -219,6 +224,7 @@ var Draw = (function () {
             }
 
             this.isDrawing = false;
+            this.zoom(1, 1, 0, 0);
             window.scrollTo(0, 0);
 
         },
@@ -236,6 +242,7 @@ var Draw = (function () {
                         this.writeDebug(ex.message);
                     }
                 }
+                this.rasterize();
             }
             this.selectedTool = t;
             this.toolSize = ts;
@@ -257,7 +264,6 @@ var Draw = (function () {
                     this.onExportImage(this.sessionData,
                         this.buffer.toDataURL('image/png'),
                         JSON.stringify(this.shapes));
-                    this.close();
                     return;
                 } catch (ex) {
                     this.writeDebug(ex.message);
@@ -958,7 +964,6 @@ var Draw = (function () {
             return p;
         },
         startDrawingShape: function (point) {
-            this.redraw();
             this.isDrawing = true;
             point = this.clientToCanvas(point);
             this.lastPoint = point;
