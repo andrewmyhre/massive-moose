@@ -1067,7 +1067,6 @@ var Draw = (function () {
 
             moose.toolbar.move = function (e) {
                 if (moose.toolbar.dragging) {
-moose.debug('toolbar dragging');
                     moose.disableToolbar();
                     e.stopPropagation();
                     e.preventDefault();
@@ -1214,27 +1213,18 @@ moose.debug('toolbar dragging');
             this.canvas.addEventListener('touchmove',
                 function (e) {
                     var moose = this.moose;
-moose.debug('touchmove');
                     if (moose.isDrawing) {
                         e.preventDefault();
                         var touches = e.changedTouches;
                         if (touches.length === 1) {
-                            try {
                             var currentPoint = { x: touches[0].clientX, y: touches[0].clientY };
-                            moose.debug(currentPoint.x+','+currentPoint.y);
-                            currentPoint = moose.clientToCanvas(currentPoint);
                             moose.drawMove(currentPoint);
-                            } catch (ex)
-                            {
-                                moose.debug(ex.message);
-                            }
                         }
                     }
                 });
             this.canvas.addEventListener('touchend',
                 function (e) {
                     var moose = this.moose;
-moose.debug('touchend');
                     if (moose.isDrawing) {
                         e.preventDefault();
 
@@ -1261,8 +1251,6 @@ moose.debug('touchend');
                         e.preventDefault();
                         moose.isDrawing = true;
                         var point = { x: (touches[0].clientX), y: (touches[0].clientY) };
-                        point = moose.clientToCanvas(point);
-                        moose.lastPoint = point;
                         moose.startDrawingShape(point);
                         document.addEventListener('touchmove', moose.touchMoveListener);
                         document.addEventListener('touchend', moose.touchEndListener);
@@ -1296,15 +1284,13 @@ moose.debug('touchend');
             this.transform.scale(newScale / oldScale, newScale / oldScale);
             var can_post = this.clientToCanvas({ x: clientX, y: clientY });
             var delta = { x: can_post.x - can.x, y: can_post.y - can.y };
-            this.transform.translate(delta.x, delta.x);
+            this.transform.translate(delta.x, delta.y);
             var m = this.transform.m;
             this.ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
             this.position.x = m[4];
             this.position.y = m[5];
 
             this.redraw();
-            //this.drawDot(can.x, can.y, "red");
-            //this.drawDot(can_post.x, can_post.y, "blue");
         },
         bindHammerTime: function (moose) {
             moose.hammertime = new Hammer(this.canvas);
@@ -1317,6 +1303,10 @@ moose.debug('touchend');
             moose.hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL });
             moose.hammertime.on('pinchstart',
                     function (ev) {
+                        if (this.isDrawing) {
+                            this.lastPoint = null;
+                            this.isDrawing = false;
+                        }
                         var moose = ev.target.moose;
                         moose.scaleAtPinchStart = moose.getScale()
                         moose.offsetAtPinchStart = moose.offset;
@@ -1324,11 +1314,15 @@ moose.debug('touchend');
             moose.hammertime.on('pinchmove',
                     function (ev) {
                         try {
+                            if (this.isDrawing) {
+                                this.lastPoint = null;
+                                this.isDrawing = false;
+                            }
+
                             var moose = ev.target.moose;
                             var newScale = moose.scaleAtPinchStart * (ev.scale);
                             var pt = { x: ev.center.x + (window.pageXOffset), y: ev.center.y + (window.pageYOffset) };
-                            moose.debug(pt.x + ',' + pt.y);
-                            moose.zoom(newScale, moose.getScale(), pt.x / window.innerWidth, pt.y / window.innerHeight);
+                            moose.zoom(newScale, moose.getScale(), pt.x, pt.y);
                         } catch (ex) {
                             moose.debug(ex.message);
                         }
