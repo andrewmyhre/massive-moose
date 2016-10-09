@@ -82,6 +82,7 @@ var Draw = (function () {
                 opts = arg1;
             }
 
+            this.debug = false;
             this.onExportImage = opts.onExportImage;
             this.onCanceled = opts.onCanceled;
 
@@ -231,7 +232,7 @@ var Draw = (function () {
                         this.saveShape(snapshot[i], this.ctx);
                         this.saveShape(snapshot[i], this.bufferCtx);
                     } catch (ex) {
-                        this.debug(ex.message);
+                        this.writeDebug(ex.message);
                     }
                 }
             }
@@ -258,7 +259,7 @@ var Draw = (function () {
                     this.close();
                     return;
                 } catch (ex) {
-                    this.debug(ex.message);
+                    this.writeDebug(ex.message);
                 }
             }
             this.enableToolbar();
@@ -271,7 +272,7 @@ var Draw = (function () {
                     this.close();
                     return;
                 } catch (ex) {
-                    this.debug(ex.message);
+                    this.writeDebug(ex.message);
                 }
             }
             this.enableToolbar();
@@ -942,7 +943,9 @@ var Draw = (function () {
             if (this.transform) {
                 d += this.transform.toString() + '<br/>';
             }
-            this.debug(d);
+            if (this.debug) {
+                this.writeDebug(d);
+            }
         },
         clientToCanvas: function (point) {
             var m = this.transform.m;
@@ -1028,7 +1031,7 @@ var Draw = (function () {
             }
             this.pallette = p;
         },
-        debug: function (log) {
+        writeDebug: function (log) {
             this.debugElement.innerHTML = log;
         },
         setForeColor: function (col) {
@@ -1324,7 +1327,7 @@ var Draw = (function () {
                             var pt = { x: ev.center.x + (window.pageXOffset), y: ev.center.y + (window.pageYOffset) };
                             moose.zoom(newScale, moose.getScale(), pt.x, pt.y);
                         } catch (ex) {
-                            moose.debug(ex.message);
+                            moose.writeDebug(ex.message);
                         }
                     });
             moose.hammertime.on('pinchend',

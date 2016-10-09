@@ -21,6 +21,7 @@
 
             this.onShowProgress = this.cfg.onShowProgress;
             this.onCloseProgress = this.cfg.onCloseProgress;
+            this.onSessionClosed = this.cfg.onSessionClosed;
 
             window.addEventListener("resize", this.updateHelpDialogDimensions);
             this._viewportScaleWhenDrawing = this.cfg.viewPortScaleWhenDrawing;
@@ -335,8 +336,11 @@
                     // wait a second before updating to give Azure a chance to propagate the thumbnail image
                     setTimeout(function () {
                         $this.updateWall(brick.element);
-                    },
-                        5000);
+                    }, 5000);
+
+                    if ($this.onSessionClosed) {
+                        $this.onSessionClosed();
+                    }
                 }
             };
             xhr.send('{"snapshotJson":"' + escape(json) + '","imageData":"' + imageData + '"}');
@@ -355,6 +359,9 @@
                     $this._brickInUse = null;
                     document.getElementById('drawSpace').style.display = 'none';
                     $this.updateWall();
+                    if ($this.onSessionClosed) {
+                        $this.onSessionClosed();
+                    }
                 } else {
                     alert('there was a problem saving.. err... sorry... try again? :/');
                 }

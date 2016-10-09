@@ -36,11 +36,9 @@
             width: 1600,
             height: 900,
             onExportImage: function(sessionData, imageData, json) {
-                window.location.hash = '';
                 sessionData.wallInstance.endSession(sessionData, imageData, json);
             },
             onCanceled: function(sessionData) {
-                window.location.hash = '';
                 sessionData.wallInstance.cancelSession(sessionData);
             }
         });
@@ -70,6 +68,9 @@
                 },
                 onCloseProgress: function() {
                     document.getElementById('working_container').style.display = 'none';
+                },
+                onSessionClosed: function() {
+                    window.location.hash = '';
                 }
             }
         );
