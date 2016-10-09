@@ -200,6 +200,7 @@ var Draw = (function () {
             if (s < 1) {
                 s = 1;
             }
+            this.raster = null;
             this.setDocumentViewportScale(1 / s);
 
             this.transform = new Transform();
@@ -250,6 +251,7 @@ var Draw = (function () {
         },
         close: function () {
             this.isDrawing = false;
+            this.raster = null;
             this.containerEl.style.display = 'none';
             this.shapes = [];
             if (this.isFullscreen()) {
