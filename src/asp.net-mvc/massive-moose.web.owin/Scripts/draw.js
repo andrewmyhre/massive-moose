@@ -112,6 +112,7 @@ var Draw = (function () {
             this.bufferCtx = this.buffer.getContext('2d');
             this.bufferCtx.lineJoin = this.bufferCtx.lineCap = 'round';
 
+            this.raster = null;
 
             this.canvas.style['background-color'] = 'white';
             this.canvas.moose = this;
@@ -957,6 +958,7 @@ var Draw = (function () {
             return p;
         },
         startDrawingShape: function (point) {
+            this.redraw();
             this.isDrawing = true;
             point = this.clientToCanvas(point);
             this.lastPoint = point;
@@ -987,6 +989,7 @@ var Draw = (function () {
         },
         drawStop: function () {
             this.selectedTool.onPointerStop(this);
+            this.rasterize();
         },
         drawShapeToCanvas: function (shape, context) {
             if (!this.shapes) this.shapes = [];
@@ -1266,11 +1269,24 @@ var Draw = (function () {
                 return this;
             };
         },
+        drawRasterized: function() {
+            var img = new Image;
+            var moose = this;
+            img.onload = function () {
+                moose.ctx.clearRect(0, 0, this.width, this.height);
+                moose.ctx.drawImage(img, 0, 0);
+            };
+            img.src = this.raster;
+        },
+        rasterize: function () {
+            this.raster = this.buffer.toDataURL('image/png');
+        },
         redraw: function () {
             this.ctx.clearRect(0, 0, this.width, this.height);
             for (var s = 0; s < this.shapes.length; s++) {
                 this.drawShapeToCanvas(this.shapes[s], this.ctx);
             }
+            this.raster = this.buffer.toDataURL('image/png');
         },
         drawDot: function (x, y, color) {
             this.ctx.fillStyle = color;
@@ -1293,7 +1309,7 @@ var Draw = (function () {
             this.position.x = m[4];
             this.position.y = m[5];
 
-            this.redraw();
+            this.drawRasterized();
         },
         bindHammerTime: function (moose) {
             moose.hammertime = new Hammer(this.canvas);
@@ -1333,6 +1349,7 @@ var Draw = (function () {
             moose.hammertime.on('pinchend',
                     function (ev) {
                         var moose = ev.target.moose;
+                        moose.redraw();
                     });
             moose.hammertime.on("panleft panright tap press",
                     function (ev) {
