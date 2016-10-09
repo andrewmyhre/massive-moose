@@ -996,7 +996,7 @@ var Draw = (function () {
         },
         drawStop: function () {
             this.selectedTool.onPointerStop(this);
-            this.rasterize();
+            //this.rasterize();
         },
         drawShapeToCanvas: function (shape, context) {
             if (!this.shapes) this.shapes = [];
@@ -1242,7 +1242,7 @@ var Draw = (function () {
                         e.preventDefault();
 
                         moose.isDrawing = false;
-                        moose.selectedTool.onPointerStop(moose);
+                        moose.drawStop(moose);
                     }
                 });
             this.canvas.addEventListener('touchstart',
@@ -1276,14 +1276,17 @@ var Draw = (function () {
                 return this;
             };
         },
-        drawRasterized: function() {
-            var img = new Image;
+        drawRasterized: function () {
+            if (this.raster == null) return;
             var moose = this;
-            img.onload = function () {
-                moose.ctx.clearRect(0, 0, this.width, this.height);
-                moose.ctx.drawImage(img, 0, 0);
-            };
-            img.src = this.raster;
+            if (!this.rasterizedImage) {
+                this.rasterizedImage = new Image;
+                this.rasterizedImage.onload = function () {
+                    moose.ctx.clearRect(0, 0, moose.width, moose.height);
+                    moose.ctx.drawImage(moose.rasterizedImage, 0, 0);
+                };
+            }
+            this.rasterizedImage.src = this.raster;
         },
         rasterize: function () {
             this.raster = this.buffer.toDataURL('image/png');
