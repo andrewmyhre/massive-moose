@@ -1282,11 +1282,15 @@ var Draw = (function () {
             this.raster = this.buffer.toDataURL('image/png');
         },
         redraw: function () {
+            var toolSize = this.toolSize;
+            var foreColor = this.foreColor;
             this.ctx.clearRect(0, 0, this.width, this.height);
             for (var s = 0; s < this.shapes.length; s++) {
                 this.drawShapeToCanvas(this.shapes[s], this.ctx);
             }
             this.raster = this.buffer.toDataURL('image/png');
+            this.toolSize = toolSize;
+            this.foreColor = foreColor;
         },
         drawDot: function (x, y, color) {
             this.ctx.fillStyle = color;
