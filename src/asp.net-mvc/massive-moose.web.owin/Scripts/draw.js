@@ -937,7 +937,7 @@ var Draw = (function () {
         },
         debugInfo: function (e) {
             var d = '';
-            if (e) { d += 's:' + e.screenX + ',' + e.screenY + ' c:' + e.clientX + ',' + e.clientY + '<br/>'; }
+            if (e) { d += 's:' + Math.round(e.screenX) + ',' + Math.round(e.screenY) + ' c:' + Math.round(e.clientX) + ',' + Math.round(e.clientY) + '<br/>'; }
             //d += 'scale:' + this.getScale() + ' p:' + (Math.round(this.position.x)) + ',' + Math.round(this.position.y) + ' o:' + window.pageXOffset + ',' + window.pageYOffset + '<br/>';
             if (this.transform) {
                 d += this.transform.toString() + '<br/>';
@@ -947,14 +947,13 @@ var Draw = (function () {
         clientToCanvas: function (point) {
             var m = this.transform.m;
             var p = {
-                x: point.x / m[0] + m[4],
-                y: point.y / m[3] + m[5]
+                x: (point.x / m[0]) - (m[4] / m[0]),
+                y: (point.y / m[3]) - (m[5] / m[3])
             };
 
             return p;
         },
         startDrawingShape: function (point) {
-try {
             this.isDrawing = true;
             point = this.clientToCanvas(point);
             this.lastPoint = point;
@@ -966,10 +965,8 @@ try {
                 toolName: tool.name
             }
             tool.onPointerStart(this, point);
-} catch(ex){ this.debug(ex.message); }
         },
         drawMove: function (pt, tool, context) {
-try {
             var t = tool || this.selectedTool;
             var ctx = context || this.ctx;
             pt = this.clientToCanvas(pt);
@@ -984,7 +981,6 @@ try {
                 }
             }
             this.currentShape.points.push(ptData);
-} catch (ex) { this.debug(ex.message);}
         },
         drawStop: function () {
             this.selectedTool.onPointerStop(this);
@@ -1296,53 +1292,19 @@ moose.debug('touchend');
             if (newScale > 32) newScale = 32;
 
             var scaler = this.getScale() > newScale ? oldScale : newScale;
-
-            var actualWidth = this.width * this.getScale();
-            var actualHeight = this.height * this.getScale();
-            var newActualWidth = this.width * newScale;
-            var newActualHeight = this.height * newScale;
-
-            var canvasPointX = (this.position.x) + (clientX / scaler);
-            var canvasPointY = (this.position.y) + (clientY / scaler);
-            var newCanvasPointX = canvasPointX * (newScale / oldScale);
-            var newCanvasPointY = canvasPointY * (newScale / oldScale);
-            var deltaX = newCanvasPointX - canvasPointX;
-            var deltaY = newCanvasPointY - canvasPointY;
-
-            if (this.position.x + deltaX < 0)
-                deltaX = this.position.x;
-            else if (this.position.x + deltaX + screen.availWidth > newActualWidth)
-                deltaX = newActualWidth - screen.availWidth - this.position.x;
-
-            if (this.position.y + deltaY < 0)
-                deltaY = this.position.y;
-            else if (this.position.y + deltaY + screen.availHeight > newActualHeight)
-                deltaY = newActualHeight - screen.availHeight - this.position.y;
-
-            this.position.x += deltaX;
-            this.position.y += deltaY;
-
-            //this.keepPanInImageBounds();
-            this.transform.translate(-deltaX, -deltaY);
+            var can = this.clientToCanvas({ x: clientX, y: clientY });
             this.transform.scale(newScale / oldScale, newScale / oldScale);
+            var can_post = this.clientToCanvas({ x: clientX, y: clientY });
+            var delta = { x: can_post.x - can.x, y: can_post.y - can.y };
+            this.transform.translate(delta.x, delta.x);
             var m = this.transform.m;
             this.ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
             this.position.x = m[4];
             this.position.y = m[5];
-            //this.ctx.scale(newScale / oldScale, newScale / oldScale);
-            //this.ctx.translate(-deltaX, -deltaY);
-            //this.debug(newScale);
 
-            this.debug('scale:' + newScale
-    + ',p(x,y):' + (Math.round(this.position.x * 100) / 100) + ',' + (Math.round(this.position.y * 100) / 100)
-    + ', t(x,y):' + (Math.round(canvasPointX * 100) / 100) + ',' + (Math.round(canvasPointY * 100) / 100)
-    + ', t\'(x,y):' + (Math.round(newCanvasPointX * 100) / 100) + ',' + (Math.round(newCanvasPointY * 100) / 100)
-    + ', d(x,y):' + (Math.round(deltaX * 100) / 100) + ',' + (Math.round(deltaY * 100) / 100));
-
-            //this.debug('pos:'+x+','+y);
             this.redraw();
-            this.drawDot(canvasPointX, canvasPointY, "red");
-            this.drawDot(newCanvasPointX, newCanvasPointY, "blue");
+            //this.drawDot(can.x, can.y, "red");
+            //this.drawDot(can_post.x, can_post.y, "blue");
         },
         bindHammerTime: function (moose) {
             moose.hammertime = new Hammer(this.canvas);
