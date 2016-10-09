@@ -1358,7 +1358,6 @@ var Draw = (function () {
             moose.hammertime.on('pinchend',
                     function (ev) {
                         var moose = ev.target.moose;
-                        moose.redraw();
                     });
             moose.hammertime.on("panleft panright tap press",
                     function (ev) {
