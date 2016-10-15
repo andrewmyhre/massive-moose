@@ -2115,7 +2115,7 @@ defineShape = function(name, props) {
   if (props.draw) {
     legacyDrawFunc = props.draw;
     legacyDrawLatestFunc = props.draw || function(ctx, bufferCtx, retryCallback) {
-      return this.draw(ctx, bufferCtx, retryCallback);
+      return this.draw(ctx, bufferCtmath.x, retryCallback);
     };
     drawFunc = function(ctx, shape, retryCallback) {
       return legacyDrawFunc.call(shape, ctx, retryCallback);

@@ -230,6 +230,7 @@
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\draw.css" />
     <Content Include="Content\facebook-logo.png" />
     <Content Include="Content\google-logo.png" />
     <Content Include="Content\help\done.png" />
@@ -268,9 +269,12 @@
     <Content Include="Content\rolling.css" />
     <Content Include="Content\Seamless_Brick_Wall_Texture.jpg" />
     <Content Include="Content\Tiled_bricks.jpg" />
+    <Content Include="Content\tool_ink.png" />
+    <Content Include="Content\tool_paint.png" />
     <Content Include="Content\twitter-logo.png" />
     <Content Include="Content\Wall.css" />
     <Content Include="Content\backgrounds\white-brick.jpg" />
+    <Content Include="Draw.html" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
@@ -284,6 +288,7 @@
     <Content Include="Content\bootstrap-theme.min.css.map" />
     <Content Include="Content\bootstrap-theme.css.map" />
     <Compile Include="App_Start\Startup.Wall.cs" />
+    <Content Include="Scripts\hammer.min.js" />
     <None Include="Scripts\jquery-3.1.0.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
@@ -291,6 +296,8 @@
     <Content Include="Scripts\colorPicker.data.js" />
     <Content Include="Scripts\colorPicker.js" />
     <Content Include="Scripts\colors.js" />
+    <Content Include="Scripts\Colour.js" />
+    <Content Include="Scripts\draw.js" />
     <Content Include="Scripts\html.js" />
     <Content Include="Scripts\jquery-3.1.0.js" />
     <Content Include="Scripts\jquery-3.1.0.min.js" />
@@ -359,7 +366,8 @@
     <Content Include="Scripts\literallycanvas\tools\Rectangle.js" />
     <Content Include="Scripts\literallycanvas\tools\SelectShape.js" />
     <Content Include="Scripts\literallycanvas\tools\Text.js" />
-    <Content Include="Scripts\mm.js" />
+    <Content Include="Scripts\transform.js" />
+    <Content Include="Scripts\wall.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.matchmedia.addListener.js" />
@@ -414,6 +422,7 @@
     <Content Include="Views\Home\Help.cshtml" />
     <Content Include="Views\Legal\PrivacyPolicy.cshtml" />
     <Content Include="Views\Legal\TermsOfUse.cshtml" />
+    <Content Include="Views\Home\Draw.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
