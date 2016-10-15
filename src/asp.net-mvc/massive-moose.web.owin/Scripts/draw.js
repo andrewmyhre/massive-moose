@@ -773,7 +773,7 @@ var Draw = (function () {
                         input.type = 'range';
                         input.name = 'toolSize';
                         input.value = moose.toolSize;
-                        input.min = 3;
+                        input.min = 0.5;
                         input.max = 200;
                         input.attributes['step'] = '1';
                         input.defaultValue = moose.toolSize;
@@ -1364,6 +1364,7 @@ var Draw = (function () {
                             this.isDrawing = false;
                         }
                         var moose = ev.target.moose;
+                        moose.pinchDeltaLastFrame = { x: 0, y: 0 };
                         moose.scaleAtPinchStart = moose.getScale()
                         moose.offsetAtPinchStart = moose.offset;
                     });
@@ -1379,6 +1380,10 @@ var Draw = (function () {
                             var newScale = moose.scaleAtPinchStart * (ev.scale);
                             var pt = { x: ev.center.x + (window.pageXOffset), y: ev.center.y + (window.pageYOffset) };
                             moose.zoom(newScale, moose.getScale(), pt.x, pt.y);
+                            var dx = ev.deltaX - moose.pinchDeltaLastFrame.x,
+                                dy = ev.deltaY - moose.pinchDeltaLastFrame.y;
+                            moose.transform.translate(dx / newScale, dy / newScale);
+                            moose.pinchDeltaLastFrame = { x: ev.deltaX, y: ev.deltaY };
                         } catch (ex) {
                             moose.writeDebug(ex.message);
                         }
