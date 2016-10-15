@@ -40,7 +40,8 @@
             },
             onCanceled: function(sessionData) {
                 sessionData.wallInstance.cancelSession(sessionData);
-            }
+            },
+            debug:@(System.Configuration.ConfigurationManager.AppSettings["drawing_debug"] ?? "false")
         });
 
         Wall.initialize(document.getElementById('wall'),

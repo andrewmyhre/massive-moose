@@ -82,7 +82,7 @@ var Draw = (function () {
                 opts = arg1;
             }
 
-            this.debug = true;
+            this.debug = opts.debug;
             this.onExportImage = opts.onExportImage;
             this.onCanceled = opts.onCanceled;
 
@@ -131,7 +131,9 @@ var Draw = (function () {
             this.toolSize = 10;
             this.foreColor = { h: 100, s: 1, l: 0.5, a: 1 };
 
-            this.debugElement = this.createDebugElement();
+            if (this.debug) {
+                this.debugElement = this.createDebugElement();
+            }
 
             this.buildPalette();
 
@@ -186,7 +188,8 @@ var Draw = (function () {
             this.containerEl.style['left'] = '0px';
             this.containerEl.style['width'] = this.width;
             this.containerEl.style['height'] = this.height;
-            this.containerEl.appendChild(this.debugElement);
+            if (this.debugElement)
+                this.containerEl.appendChild(this.debugElement);
 
             this.isBound = true;
         },
