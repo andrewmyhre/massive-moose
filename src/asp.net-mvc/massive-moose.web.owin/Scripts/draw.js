@@ -1,4 +1,4 @@
-﻿var utils = {}; 
+﻿var utils = {};
 
 utils.distanceBetween = function (point1, point2) {
     return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
@@ -82,7 +82,7 @@ var Draw = (function () {
                 opts = arg1;
             }
 
-            this.debug = false;
+            this.debug = true;
             this.onExportImage = opts.onExportImage;
             this.onCanceled = opts.onCanceled;
 
@@ -160,10 +160,10 @@ var Draw = (function () {
                 this.bindHammerTime(this);
             }
         },
-        getScale: function() {
+        getScale: function () {
             return this.transform.m[0];
         },
-        setScale:function(scale) {
+        setScale: function (scale) {
             this.transform.scale(scale);
             var m = this.transform.m;
             this.ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
@@ -206,7 +206,6 @@ var Draw = (function () {
             this.transform = new Transform();
             var m = this.transform.m;
             this.ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
-            console.log('scale=' + m[0]);
 
             this.sessionData = data;
             this.containerEl.style.display = 'block';
@@ -216,7 +215,7 @@ var Draw = (function () {
             this.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
             this.setToolbarPosition('top');
-            this.toolbar.className = this.isFullscreen() ? 'toolbar-small' : 'toolbar-big';
+            this.toolbar.children[0].className = this.isFullscreen() ? 'toolbar toolbar-sm' : 'toolbar toolbar-bg';
 
             for (var i = 0; i < this.toolbarItems.length; i++) {
                 if (this.toolbarItems[i].resetToDefaults) {
@@ -300,6 +299,7 @@ var Draw = (function () {
                     } else {
                         el.style.border = '1px solid #888';
                     }
+                    el.className = 'btn btn-default btn-brush';
                     el.onclick = function (e) {
                         if (onSelected)
                             onSelected($this);
@@ -364,6 +364,7 @@ var Draw = (function () {
                     } else {
                         el.style.border = '1px solid #888';
                     }
+                    el.className = 'btn btn-default btn-brush';
                     el.onclick = function (e) {
                         if (onSelected)
                             onSelected($this);
@@ -459,7 +460,6 @@ var Draw = (function () {
                 initialize: function (moose) {
                     var $this = this;
                     var el = document.createElement('button');
-                    el.style.height = '100%';
                     el.style.float = 'left';
                     el.className = 'btn btn-info';
                     el.innerHTML = '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
@@ -608,8 +608,8 @@ var Draw = (function () {
                     el.innerHTML = moose.tools[0].iconHtml;
                     this.popup.style.position = 'absolute';
                     this.popup.style['z-index'] = 103;
-                    this.popup.style.width = '200px';
-                    this.popup.style.height = '200px';
+                    this.popup.style.maxWidth = '100%';
+                    //this.popup.style.height = '200px';
                     this.popup.style.top = '50px';
                     this.popup.style.left = '50px';
                     this.popup.style.backgroundColor = 'white';
@@ -628,8 +628,8 @@ var Draw = (function () {
                                     moose.tools[i] == moose.selectedTool,
                                     function (tool) {
                                         moose.selectedTool = tool;
-                                        $popup.style.display = 'none';
                                         el.innerHTML = tool.iconHtml;
+                                        moose.closePopups();
                                     });
                             $popup.appendChild(toolSelector);
 
@@ -638,10 +638,13 @@ var Draw = (function () {
                         var r = this.getClientRects();
                         var pr = $popup.getClientRects();
                         $popup.style.left = r[0].left + 'px';
-                        if (moose.toolbarPosition == 'top') {
-                            $popup.style.top = r[0].bottom + 'px';
-                        } else {
+                        var spaceBelow = window.innerHeight - (r[0].top + r[0].height + 50);
+                        var spaceAbove = r[0].top;
+                        if (spaceBelow < spaceAbove) {
                             $popup.style.top = (r[0].top - pr[0].height) + 'px';
+
+                        } else {
+                            $popup.style.top = r[0].bottom + 'px';
                         }
                         moose.setPopup($popup);
                     }, true);
@@ -752,7 +755,6 @@ var Draw = (function () {
                 el.style['margin-right'] = '1em';
 
                 el.addEventListener('click', function (e) {
-                    console.log('tool size click');
                     e.preventDefault();
                     e.stopPropagation();
                     if (!el.popup) {
@@ -790,7 +792,7 @@ var Draw = (function () {
 
                     var r = this.getClientRects();
                     el.popup.style.left = r[0].left + 'px';
-                    if (moose.toolbarPosition == 'bottom') {
+                    if (window.innerHeight - r[0].bottom < r[0].top) {
                         el.popup.style.top = (r[0].top - 98) + 'px';
                     } else {
                         el.popup.style.top = (r[0].top + 128) + 'px';
@@ -838,9 +840,40 @@ var Draw = (function () {
             }
         }
         ],
+        createToolbar: function () {
+            var t = document.createElement('div');
+
+            t.className = 'toolbar-container';
+            t.style.setProperty('top', '0px');
+            t.style.setProperty('left', '0px');
+            t.style['z-index'] = 1;
+
+            var tb = document.createElement('div');
+            tb.attributes['id'] = 'toolbar';
+            tb.className = this.isFullscreen() ? 'toolbar toolbar-sm' : 'toolbar toolbar-bg';
+
+            for (var i = 0; i < this.toolbarItems.length; i++) {
+                var ti = this.toolbarItems[i];
+                if (!ti || !ti.enabled) continue;
+                var el = ti.initialize(this, t);
+                el.className += ' toolbar-item btn-toolbar';
+                tb.appendChild(el);
+            }
+            t.appendChild(tb);
+
+            // toolbar drag element
+            var dr = document.createElement('div');
+            dr.attributes['id'] = 'toolbar-drag';
+            dr.className = 'toolbar-drag';
+            dr.style['z-index'] = 2;
+            dr.top = '0';
+            dr.left = '0';
+            t.appendChild(dr);
+
+            return t;
+        },
         setPopup: function (popup) {
             this.popup = popup;
-            console.log(this.popup);
         },
         closePopups: function () {
             if (this.popup) {
@@ -868,6 +901,7 @@ var Draw = (function () {
 
                 ti.el.disabled = true;
             }
+            this.toolbar.children[1].style.display = 'inline-block';
         },
         enableToolbar: function () {
             for (var i = 0; i < this.toolbarItems.length; i++) {
@@ -876,6 +910,7 @@ var Draw = (function () {
 
                 ti.el.disabled = false;
             }
+            this.toolbar.children[1].style.display = 'none';
         },
         toggleFullscreen: function () {
             if (this.isFullscreen()) {
@@ -894,7 +929,7 @@ var Draw = (function () {
             } else if (document.msExitFullscreen) {
                 document.msExitFullscreen();
             }
-            this.toolbar.className = 'toolbar-big';
+            this.toolbar.children[0].className = 'toolbar toolbar-bg';
         },
         enterFullscreen: function () {
             if (this.containerEl.requestFullscreen) {
@@ -906,7 +941,7 @@ var Draw = (function () {
             } else if (this.containerEl.msRequestFullscreen) {
                 this.containerEl.msRequestFullscreen();
             }
-            this.toolbar.className = 'toolbar-small';
+            this.toolbar.children[0].className = 'toolbar toolbar-sm';
         },
         isFullscreen: function () {
             if (
@@ -996,7 +1031,7 @@ var Draw = (function () {
         },
         drawStop: function () {
             this.selectedTool.onPointerStop(this);
-            //this.rasterize();
+            this.rasterize();
         },
         drawShapeToCanvas: function (shape, context) {
             if (!this.shapes) this.shapes = [];
@@ -1049,31 +1084,8 @@ var Draw = (function () {
         },
         createDebugElement: function () {
             var d = document.createElement('div');
-            d.style.position = 'absolute';
-            d.style.top = '0px';
-            d.style.left = '0px';
-            d.style.height = '0px';
-            d.style['z-index'] = 2;
+            d.className = 'debug-panel';
             return d;
-        },
-        createToolbar: function () {
-            var t = document.createElement('div');
-            t.attributes['id'] = 'toolbar';
-            t.style.setProperty('top', '0px');
-            t.style.setProperty('left', '0px');
-            t.style.backgroundColor = '#fff';
-            t.style['z-index'] = 1;
-            t.className = this.isFullscreen() ? 'toolbar-small' : 'toolbar-big';
-
-            for (var i = 0; i < this.toolbarItems.length; i++) {
-                var ti = this.toolbarItems[i];
-                if (!ti || !ti.enabled) continue;
-                var el = ti.initialize(this, t);
-                el.className += ' toolbar-item';
-                t.appendChild(el);
-            }
-
-            return t;
         },
         bindEvents: function () {
             var moose = this;
@@ -1081,6 +1093,7 @@ var Draw = (function () {
             moose.toolbar.move = function (e) {
                 if (moose.toolbar.dragging) {
                     moose.disableToolbar();
+                    moose.closePopups();
                     e.stopPropagation();
                     e.preventDefault();
 
@@ -1144,45 +1157,43 @@ var Draw = (function () {
                 moose.toolbar.style.top = moose.toolbar.position.y + 'px';
             };
             this.toolbar.addEventListener('mousedown', moose.toolbar.startmove, true);
-            document.addEventListener('mousemove', moose.toolbar.move, true);
-            window.addEventListener('mouseup', moose.toolbar.endmove, true);
+            this.toolbar.addEventListener('mouseup', moose.toolbar.endmove, true);
             this.toolbar.addEventListener('touchstart', moose.toolbar.startmove, true);
-            document.addEventListener('touchmove', moose.toolbar.move, true);
-            document.addEventListener('touchend', moose.toolbar.endmove, true);
+
+            document.body.addEventListener('mousemove', moose.toolbar.move, true);
+            document.body.addEventListener('mouseup', moose.toolbar.endmove, true);
+            document.body.addEventListener('touchmove', moose.toolbar.move, true);
+            document.body.addEventListener('touchend', moose.toolbar.endmove, true);
+
+            window.addEventListener('mouseup', moose.toolbar.endmove, true);
+            this.canvas.addEventListener('mouseup', moose.toolbar.endmove, true);
 
 
             this.toolbar.addEventListener('click', function (e) {
-                console.log('toolbar click');
                 if (moose.popup) {
                     moose.popup.style.display = 'none';
                     moose.popup = null;
                 }
             }, false);
 
-            this.toolbar.addEventListener('mouseup',
+            this.canvas.addEventListener('mousedown',
                 function (e) {
-                    moose.toolbar.dragging = false;
-                }, true);
-            this.toolbar.addEventListener('mousemove',
-                function (e) {
+                    if (moose.popup) {
+                        moose.popup.style.display = 'none';
+                        moose.popup = null;
+                    }
 
-                }, true);
-            this.canvas.onmousedown = function (e) {
-                if (moose.popup) {
-                    moose.popup.style.display = 'none';
-                    moose.popup = null;
-                }
+                    var point = { x: e.clientX, y: e.clientY };
+                    if (e.shiftKey) {
+                        moose.zoom(moose.getScale() * 1.2, moose.getScale(), point.x, point.y);
+                    } else if (e.ctrlKey) {
+                        moose.zoom(moose.getScale() * 0.8, moose.getScale(), point.x, point.y);
+                    } else {
+                        moose.startDrawingShape(point);
+                    }
+                });
 
-                var point = { x: e.clientX, y: e.clientY };
-                if (e.shiftKey) {
-                    moose.zoom(moose.getScale() * 1.2, moose.getScale(), point.x, point.y);
-                } else if (e.ctrlKey) {
-                    moose.zoom(moose.getScale() * 0.8, moose.getScale(), point.x, point.y);
-                } else {
-                    moose.startDrawingShape(point);
-                }
-            }
-            this.canvas.addEventListener('mousemove',function (e) {
+            this.canvas.addEventListener('mousemove', function (e) {
                 //var moose = this.moose;
                 this.moose.debugInfo();
                 var currentPoint = { x: e.clientX, y: e.clientY };
@@ -1204,8 +1215,9 @@ var Draw = (function () {
                 }
             });
 
-            this.canvas.addEventListener('mouseup',function (e) {
+            this.canvas.addEventListener('mouseup', function (e) {
                 var moose = this.moose;
+
                 if (moose.isDrawing) {
                     e.preventDefault();
 
@@ -1213,7 +1225,7 @@ var Draw = (function () {
                     moose.drawStop(moose);
                 }
             });
-            this.canvas.addEventListener('mouseout',function (e) {
+            this.canvas.addEventListener('mouseout', function (e) {
                 var moose = this.moose;
                 if (moose.isDrawing) {
                     e.preventDefault();
@@ -1282,9 +1294,12 @@ var Draw = (function () {
             if (!this.rasterizedImage) {
                 this.rasterizedImage = new Image;
                 this.rasterizedImage.onload = function () {
-                    moose.ctx.clearRect(0, 0, moose.width, moose.height);
+                    moose.ctx.clearRect(-1000, -1000, moose.width + 2000, moose.height + 2000);
                     moose.ctx.drawImage(moose.rasterizedImage, 0, 0);
                 };
+            } else {
+                moose.ctx.clearRect(-1000, -1000, moose.width + 2000, moose.height + 2000);
+                moose.ctx.drawImage(moose.rasterizedImage, 0, 0);
             }
             this.rasterizedImage.src = this.raster;
         },
@@ -1294,13 +1309,17 @@ var Draw = (function () {
         redraw: function () {
             var toolSize = this.toolSize;
             var foreColor = this.foreColor;
-            this.ctx.clearRect(0, 0, this.width, this.height);
+            this.bufferCtx.clearRect(0, 0, this.width, this.height);
             for (var s = 0; s < this.shapes.length; s++) {
-                this.drawShapeToCanvas(this.shapes[s], this.ctx);
+                this.drawShapeToCanvas(this.shapes[s], this.bufferCtx);
             }
+            this.ctx.clearRect(-1000, -1000, this.width + 2000, this.height + 2000);
+            this.ctx.drawImage(this.buffer,0,0);
             this.raster = this.buffer.toDataURL('image/png');
             this.toolSize = toolSize;
             this.foreColor = foreColor;
+            this.rasterize();
+            this.drawRasterized();
         },
         drawDot: function (x, y, color) {
             this.ctx.fillStyle = color;
@@ -1318,6 +1337,7 @@ var Draw = (function () {
             var can_post = this.clientToCanvas({ x: clientX, y: clientY });
             var delta = { x: can_post.x - can.x, y: can_post.y - can.y };
             this.transform.translate(delta.x, delta.y);
+
             var m = this.transform.m;
             this.ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
             this.position.x = m[4];
@@ -1364,9 +1384,11 @@ var Draw = (function () {
                     function (ev) {
                         var moose = ev.target.moose;
                     });
-            moose.hammertime.on("panleft panright tap press",
+            moose.hammertime.on("pan",
                     function (ev) {
                         var moose = ev.target.moose;
+                        //moose.transform.translate(ev.deltaX, ev.deltaY);
+
                     });
         }
 
