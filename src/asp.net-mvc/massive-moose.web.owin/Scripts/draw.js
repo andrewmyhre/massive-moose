@@ -98,6 +98,7 @@ var Draw = (function () {
             this.offsetAtPinchStart = { x: 0, y: 0 };
             this.offset = { x: 0, y: 0 };
             this.zoomEnabled = true;
+            this.quality = opts.quality || 2;
             this.transform = new Transform();
 
             this.popup = null;
@@ -105,28 +106,33 @@ var Draw = (function () {
             this.isPinching = false;
 
             this.canvas = document.createElement('canvas');
+            this.canvas.id = 'canvas';
             this.ctx = this.canvas.getContext('2d');
             this.ctx.lineJoin = this.ctx.lineCap = 'round';
 
             this.buffer = document.createElement('canvas');
+            this.buffer.id = 'buffer';
             this.bufferCtx = this.buffer.getContext('2d');
             this.bufferCtx.lineJoin = this.bufferCtx.lineCap = 'round';
 
-            this.raster = null;
+            this.cv_raster = document.createElement('canvas');
+            this.cv_raster_ctx = this.cv_raster.getContext('2d');
+            this.cv_raster.id = 'raster';
+            this.cv_raster_ctx.lineJoin = this.cv_raster_ctx.lineCap = 'round';
 
-            this.canvas.style['background-color'] = 'white';
+            this.raster_data = null;
+
             this.canvas.moose = this;
             this.currentShape = null;
             this.shapes = [];
             this.shapeHistory = [];
             this.historyIndex = 0;
 
-            this.canvas.width = this.buffer.width = this.width = opts.width;
-            this.canvas.height = this.buffer.height = this.height = opts.height;
+            this.cv_raster.width = this.buffer.width = this.width = opts.width;
+            this.cv_raster.height = this.buffer.height = this.height = opts.height;
             this.position = { x: 0, y: 0 };
 
             this.buffer.moose = this;
-            this.buffer.lineJoin = this.buffer.lineCap = 'round';
 
             this.toolSize = 10;
             this.foreColor = { h: 100, s: 1, l: 0.5, a: 1 };
@@ -154,9 +160,6 @@ var Draw = (function () {
             if (this.scale < 1) {
                 this.scale = 1;
             }
-            this.canvas.width = 1600;
-            this.canvas.height = 900;
-            //this.ctx.scale(1 / this.scale, 1 / this.scale);
 
             if (this.zoomEnabled) {
                 this.bindHammerTime(this);
@@ -164,11 +167,6 @@ var Draw = (function () {
         },
         getScale: function () {
             return this.transform.m[0];
-        },
-        setScale: function (scale) {
-            this.transform.scale(scale);
-            var m = this.transform.m;
-            this.ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
         },
         setDocumentViewportScale: function (scale) {
             this.viewport.setAttribute('content', 'width=device-width, initial-scale=' + scale);
@@ -179,8 +177,34 @@ var Draw = (function () {
                 console.warn("Trying to bind to a DOM element more than once is unsupported.");
                 return;
             }
+
             this.containerEl = containerEl;
-            this.containerEl.appendChild(this.canvas);
+
+            this.buffer.style.position = 'absolute';
+            this.buffer.style.top = '0';
+            this.buffer.style.left = '0';
+            this.buffer.style['z-index'] = '2';
+            this.buffer.style['border'] = '1px solid blue';
+
+            this.canvas.style.position = 'absolute';
+            this.canvas.style.top = '200px';
+            this.canvas.style.left = '0';
+            this.canvas.style['z-index'] = '3';
+            this.canvas.style['border'] = '1px solid blue';
+
+            this.cv_raster.style.position = 'absolute';
+            this.cv_raster.style.top = '0';
+            this.cv_raster.style.left = '0';
+            this.cv_raster.style['z-index'] = '1';
+            this.cv_raster.style['border'] = '1px solid lime';
+
+            this.canvas.width = 1600 * this.quality;
+            this.canvas.height = 900 * this.quality;
+
+            //            this.containerEl.appendChild(this.canvas);
+            this.containerEl.appendChild(this.cv_raster);
+            this.containerEl.appendChild(this.buffer);
+
             this.containerEl.style['background-color'] = "#aaaaaa"
             this.containerEl.style['overflow'] = 'hidden';
             this.containerEl.style['position'] = 'absolute';
@@ -188,6 +212,8 @@ var Draw = (function () {
             this.containerEl.style['left'] = '0px';
             this.containerEl.style['width'] = this.width;
             this.containerEl.style['height'] = this.height;
+
+
             if (this.debugElement)
                 this.containerEl.appendChild(this.debugElement);
 
@@ -203,19 +229,24 @@ var Draw = (function () {
             if (s < 1) {
                 s = 1;
             }
-            this.raster = null;
+            this.raster_data = null;
             this.setDocumentViewportScale(1 / s);
 
             this.transform = new Transform();
+            //this.transform.scale(2, 2);
             var m = this.transform.m;
-            this.ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
+
+            this.ctx.transform(this.quality, 0, 0, this.quality, 0, 0);
+            this.bufferCtx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
+            this.cv_raster_ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
 
             this.sessionData = data;
             this.containerEl.style.display = 'block';
             this.enableToolbar();
 
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            this.bufferCtx.clearRect(0, 0, this.buffer.width, this.buffer.height);
+            this.cv_raster_ctx.clearRect(0, 0, this.cv_raster.width, this.cv_raster.height);
 
             this.setToolbarPosition('top');
             this.toolbar.children[0].className = this.isFullscreen() ? 'toolbar toolbar-sm' : 'toolbar toolbar-bg';
@@ -253,7 +284,7 @@ var Draw = (function () {
         },
         close: function () {
             this.isDrawing = false;
-            this.raster = null;
+            this.raster_data = null;
             this.containerEl.style.display = 'none';
             this.shapes = [];
             if (this.isFullscreen()) {
@@ -266,7 +297,7 @@ var Draw = (function () {
             if (this.onExportImage) {
                 try {
                     this.onExportImage(this.sessionData,
-                        this.buffer.toDataURL('image/png'),
+                        this.canvas.toDataURL('image/png'),
                         JSON.stringify(this.shapes));
                     return;
                 } catch (ex) {
@@ -315,12 +346,12 @@ var Draw = (function () {
                 onPointerDrag: function (moose, pt, targetContext) {
                     var dist = utils.distanceBetween(this.lastPoint, pt);
                     var angle = utils.angleBetween(this.lastPoint, pt);
-                    var ctx = targetContext || moose.ctx;
+                    var ctx = targetContext || moose.bufferCtx;
 
                     var fc = moose.foreColor;
 
                     var toolSize = pt.toolSize || moose.toolSize;
-                    for (var i = 0; i < dist; i += toolSize / 4) {
+                    for (var i = 0; i <= dist; i += toolSize / 4) {
 
                         x = this.lastPoint.x + (Math.sin(angle) * i);
                         y = this.lastPoint.y + (Math.cos(angle) * i);
@@ -344,14 +375,17 @@ var Draw = (function () {
                             y - toolSize,
                             toolSize * 2,
                             toolSize * 2);
+                        if (dist == 0) break;
                     }
                     this.lastPoint = pt;
                     return pt;
                 },
                 onPointerStop: function (moose) {
                     this.lastPoint = null;
-                    moose.addHistory(moose.currentShape);
-                    moose.saveShape(moose.currentShape, moose.bufferCtx);
+                    var s = moose.currentShape;
+                    moose.saveShape(s, moose.buffer);
+                    moose.addHistory(s);
+                    s = null;
                 }
             },
             {
@@ -386,7 +420,7 @@ var Draw = (function () {
                 onPointerDrag: function (moose, pt, targetContext) {
                     var dist = utils.distanceBetween(this.lastPoint, pt);
                     var angle = utils.angleBetween(this.lastPoint, pt);
-                    var ctx = targetContext || moose.ctx
+                    var ctx = targetContext || moose.bufferCtx
 
                     var fc = moose.foreColor;
                     this.sizeChangeWait--;
@@ -409,7 +443,7 @@ var Draw = (function () {
                     else
                         this.actualInkSize += (toolSize - this.actualInkSize) / (this.sizeChangeWait / 2);
 
-                    for (var i = 0; i < dist; i += this.actualInkSize / 4) {
+                    for (var i = 0; i <= dist; i += this.actualInkSize / 4) {
 
                         x = this.lastPoint.x + (Math.sin(angle) * i);
                         y = this.lastPoint.y + (Math.cos(angle) * i);
@@ -433,6 +467,7 @@ var Draw = (function () {
                             y - this.actualInkSize,
                             this.actualInkSize * 2,
                             this.actualInkSize * 2);
+                        if (dist == 0) break;
                     }
 
                     var pointData =
@@ -449,8 +484,10 @@ var Draw = (function () {
                 },
                 onPointerStop: function (moose) {
                     this.lastPoint = null;
-                    moose.addHistory(moose.currentShape);
-                    moose.saveShape(moose.currentShape, moose.bufferCtx);
+                    var s = moose.currentShape;
+                    moose.saveShape(s, moose.buffer);
+                    moose.addHistory(s);
+                    s = null;
                 }
             }
         ],
@@ -773,7 +810,7 @@ var Draw = (function () {
                         input.type = 'range';
                         input.name = 'toolSize';
                         input.value = moose.toolSize;
-                        input.min = 0.5;
+                        input.min = 1;
                         input.max = 200;
                         input.attributes['step'] = '1';
                         input.defaultValue = moose.toolSize;
@@ -849,7 +886,7 @@ var Draw = (function () {
             t.className = 'toolbar-container';
             t.style.setProperty('top', '0px');
             t.style.setProperty('left', '0px');
-            t.style['z-index'] = 1;
+            t.style['z-index'] = 10;
 
             var tb = document.createElement('div');
             tb.attributes['id'] = 'toolbar';
@@ -990,6 +1027,7 @@ var Draw = (function () {
             if (this.transform) {
                 d += this.transform.toString() + '<br/>';
             }
+            d += 'shapes:' + this.shapes.length;
             if (this.debug) {
                 this.writeDebug(d);
             }
@@ -1018,7 +1056,7 @@ var Draw = (function () {
         },
         drawMove: function (pt, tool, context) {
             var t = tool || this.selectedTool;
-            var ctx = context || this.ctx;
+            var ctx = context || this.bufferCtx;
             pt = this.clientToCanvas(pt);
             var ptData = t.onPointerDrag(this, pt);
             this.lastPoint = ptData;
@@ -1032,9 +1070,47 @@ var Draw = (function () {
             }
             this.currentShape.points.push(ptData);
         },
-        drawStop: function () {
+        drawStop: function (pt, tool, context) {
+            this.drawMove(pt,tool,context);
+
+
             this.selectedTool.onPointerStop(this);
-            this.rasterize();
+
+            this.flush();
+            //this.rasterize();
+        },
+        flush: function () {
+            this.writeDebug('flushing buffer');
+            var m = this.transform.m;
+            var x = -m[4] / m[0], y = -m[5] / m[3], w = this.width / m[0], h = this.height / m[3];
+            this.ctx.drawImage(this.buffer, x, y, w, h);
+            this.bufferCtx.clearRect(0, 0, this.width, this.height);
+            this.updateRaster();
+        },
+        updateRaster: function () {
+            this.cv_raster_ctx.clearRect(0, 0, this.width, this.height);
+            var m = this.transform.m;
+            this.cv_raster_ctx.drawImage(this.canvas, 0, 0, this.width, this.height);
+        },
+        zoom: function (newScale, oldScale, clientX, clientY) {
+            if (newScale < 1) newScale = 1;
+            if (newScale > 32) newScale = 32;
+
+            var scaler = this.getScale() > newScale ? oldScale : newScale;
+            var can = this.clientToCanvas({ x: clientX, y: clientY });
+            this.transform.scale(newScale / oldScale, newScale / oldScale);
+            var can_post = this.clientToCanvas({ x: clientX, y: clientY });
+            var delta = { x: can_post.x - can.x, y: can_post.y - can.y };
+            this.transform.translate(delta.x, delta.y);
+
+            var m = this.transform.m;
+            this.bufferCtx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
+            this.cv_raster_ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
+            //this.ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
+            this.position.x = m[4];
+            this.position.y = m[5];
+
+            this.updateRaster();
         },
         drawShapeToCanvas: function (shape, context) {
             if (!this.shapes) this.shapes = [];
@@ -1058,14 +1134,14 @@ var Draw = (function () {
             }
         },
         saveShape: function (shape, context) {
-            this.drawShapeToCanvas(shape, context);
+            //this.drawShapeToCanvas(shape, context);
             this.shapes.push(shape);
             this.currentShape = null;
         },
         drawShapesToCanvas: function () {
             if (!this.shapes) this.shapes = [];
             for (var s = 0; s < this.shapes.length; s++) {
-                this.saveShape(this.shapes[s]);
+                this.saveShape(this.shapes[s], this.bufferCtx);
             }
         },
         buildPalette: function () {
@@ -1169,7 +1245,7 @@ var Draw = (function () {
             document.body.addEventListener('touchend', moose.toolbar.endmove, true);
 
             window.addEventListener('mouseup', moose.toolbar.endmove, true);
-            this.canvas.addEventListener('mouseup', moose.toolbar.endmove, true);
+            this.buffer.addEventListener('mouseup', moose.toolbar.endmove, true);
 
 
             this.toolbar.addEventListener('click', function (e) {
@@ -1179,7 +1255,7 @@ var Draw = (function () {
                 }
             }, false);
 
-            this.canvas.addEventListener('mousedown',
+            this.buffer.addEventListener('mousedown',
                 function (e) {
                     if (moose.popup) {
                         moose.popup.style.display = 'none';
@@ -1196,9 +1272,8 @@ var Draw = (function () {
                     }
                 });
 
-            this.canvas.addEventListener('mousemove', function (e) {
+            this.buffer.addEventListener('mousemove', function (e) {
                 //var moose = this.moose;
-                this.moose.debugInfo();
                 var currentPoint = { x: e.clientX, y: e.clientY };
 
                 if (this.moose.mouseOut) {
@@ -1210,7 +1285,6 @@ var Draw = (function () {
                     e.preventDefault();
 
                     if (this.moose.mouseOut) {
-                        this.moose.lastPoint =
                         this.moose.mouseOut = false;
                     }
 
@@ -1218,27 +1292,28 @@ var Draw = (function () {
                 }
             });
 
-            this.canvas.addEventListener('mouseup', function (e) {
+            this.buffer.addEventListener('mouseup', function (e) {
                 var moose = this.moose;
-
+                var currentPoint = { x: e.clientX, y: e.clientY };
                 if (moose.isDrawing) {
                     e.preventDefault();
 
                     moose.isDrawing = false;
-                    moose.drawStop(moose);
+                    moose.drawStop(currentPoint);
                 }
             });
-            this.canvas.addEventListener('mouseout', function (e) {
+            this.buffer.addEventListener('mouseout', function (e) {
                 var moose = this.moose;
                 if (moose.isDrawing) {
                     e.preventDefault();
 
                     moose.mouseOut = true;
                     moose.isDrawing = false;
-                    moose.selectedTool.onPointerStop(moose);
+                    moose.selectedTool.onPointerStop(moose.lastPoint);
                 }
             });
-            this.canvas.addEventListener('touchmove',
+
+            this.buffer.addEventListener('touchmove',
                 function (e) {
                     var moose = this.moose;
                     if (moose.isDrawing) {
@@ -1250,17 +1325,19 @@ var Draw = (function () {
                         }
                     }
                 });
-            this.canvas.addEventListener('touchend',
+            this.buffer.addEventListener('touchend',
                 function (e) {
                     var moose = this.moose;
                     if (moose.isDrawing) {
                         e.preventDefault();
+                        var touches = e.changedTouches;
+                        moose.writeDebug('touch end:' + touches.length);
 
                         moose.isDrawing = false;
                         moose.drawStop(moose);
                     }
                 });
-            this.canvas.addEventListener('touchstart',
+            this.buffer.addEventListener('touchstart',
                 function (e) {
                     var moose = this.moose;
                     if (moose.popup) {
@@ -1292,64 +1369,43 @@ var Draw = (function () {
             };
         },
         drawRasterized: function () {
-            if (this.raster == null) return;
+            if (this.raster_data == null) return;
             var moose = this;
             if (!this.rasterizedImage) {
                 this.rasterizedImage = new Image;
                 this.rasterizedImage.onload = function () {
-                    moose.ctx.clearRect(-1000, -1000, moose.width + 2000, moose.height + 2000);
-                    moose.ctx.drawImage(moose.rasterizedImage, 0, 0);
+                    moose.bufferCtx.clearRect(-1000, -1000, moose.width + 2000, moose.height + 2000);
+                    moose.bufferCtx.drawImage(moose.rasterizedImage, 0, 0);
                 };
             } else {
-                moose.ctx.clearRect(-1000, -1000, moose.width + 2000, moose.height + 2000);
-                moose.ctx.drawImage(moose.rasterizedImage, 0, 0);
+                moose.bufferCtx.clearRect(-1000, -1000, moose.width + 2000, moose.height + 2000);
+                moose.bufferCtx.drawImage(moose.rasterizedImage, 0, 0);
             }
-            this.rasterizedImage.src = this.raster;
+            this.rasterizedImage.src = this.raster_data;
         },
         rasterize: function () {
-            this.raster = this.buffer.toDataURL('image/png');
+            this.raster_data = this.buffer.toDataURL('image/png');
         },
         redraw: function () {
             var toolSize = this.toolSize;
             var foreColor = this.foreColor;
-            this.bufferCtx.clearRect(0, 0, this.width, this.height);
+            this.ctx.clearRect(0, 0, this.width, this.height);
             for (var s = 0; s < this.shapes.length; s++) {
-                this.drawShapeToCanvas(this.shapes[s], this.bufferCtx);
+                this.drawShapeToCanvas(this.shapes[s], this.ctx);
             }
-            this.ctx.clearRect(-1000, -1000, this.width + 2000, this.height + 2000);
-            this.ctx.drawImage(this.buffer,0,0);
-            this.raster = this.buffer.toDataURL('image/png');
             this.toolSize = toolSize;
             this.foreColor = foreColor;
-            this.rasterize();
-            this.drawRasterized();
+            this.flush();
+            //this.drawRasterized();
         },
         drawDot: function (x, y, color) {
-            this.ctx.fillStyle = color;
-            this.ctx.beginPath();
-            this.ctx.arc(x, y, 6, 0, Math.PI / 2, true);
-            this.ctx.fill();
-        },
-        zoom: function (newScale, oldScale, clientX, clientY) {
-            if (newScale < 1) newScale = 1;
-            if (newScale > 32) newScale = 32;
-
-            var scaler = this.getScale() > newScale ? oldScale : newScale;
-            var can = this.clientToCanvas({ x: clientX, y: clientY });
-            this.transform.scale(newScale / oldScale, newScale / oldScale);
-            var can_post = this.clientToCanvas({ x: clientX, y: clientY });
-            var delta = { x: can_post.x - can.x, y: can_post.y - can.y };
-            this.transform.translate(delta.x, delta.y);
-
-            var m = this.transform.m;
-            this.ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
-            this.position.x = m[4];
-            this.position.y = m[5];
-
-            this.drawRasterized();
+            this.bufferCtx.fillStyle = color;
+            this.bufferCtx.beginPath();
+            this.bufferCtx.arc(x, y, 6, 0, Math.PI / 2, true);
+            this.bufferCtx.fill();
         },
         bindHammerTime: function (moose) {
-            moose.hammertime = new Hammer(this.canvas);
+            moose.hammertime = new Hammer(this.buffer);
             moose.hammertime.moose = moose;
             moose.hammertime.on('pan',
                     function (ev) {
@@ -1359,11 +1415,12 @@ var Draw = (function () {
             moose.hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL });
             moose.hammertime.on('pinchstart',
                     function (ev) {
-                        if (this.isDrawing) {
-                            this.lastPoint = null;
-                            this.isDrawing = false;
-                        }
                         var moose = ev.target.moose;
+                        if (moose.isDrawing) {
+                            moose.lastPoint = null;
+                            moose.isDrawing = false;
+                            moose.writeDebug('stop drawing');
+                        }
                         moose.pinchDeltaLastFrame = { x: 0, y: 0 };
                         moose.scaleAtPinchStart = moose.getScale()
                         moose.offsetAtPinchStart = moose.offset;
@@ -1371,12 +1428,13 @@ var Draw = (function () {
             moose.hammertime.on('pinchmove',
                     function (ev) {
                         try {
-                            if (this.isDrawing) {
-                                this.lastPoint = null;
-                                this.isDrawing = false;
+                            var moose = ev.target.moose;
+                            if (moose.isDrawing) {
+                                moose.lastPoint = null;
+                                moose.isDrawing = false;
+                                moose.writeDebug('stop drawing');
                             }
 
-                            var moose = ev.target.moose;
                             var newScale = moose.scaleAtPinchStart * (ev.scale);
                             var pt = { x: ev.center.x + (window.pageXOffset), y: ev.center.y + (window.pageYOffset) };
                             moose.zoom(newScale, moose.getScale(), pt.x, pt.y);
@@ -1395,8 +1453,6 @@ var Draw = (function () {
             moose.hammertime.on("pan",
                     function (ev) {
                         var moose = ev.target.moose;
-                        //moose.transform.translate(ev.deltaX, ev.deltaY);
-
                     });
         }
 
