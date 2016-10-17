@@ -101,6 +101,8 @@ var Draw = (function () {
             this.quality = opts.quality || 2;
             this.transform = new Transform();
 
+            this.diagnostics = new Map();
+
             this.popup = null;
 
             this.isPinching = false;
@@ -114,6 +116,7 @@ var Draw = (function () {
             this.buffer.id = 'buffer';
             this.bufferCtx = this.buffer.getContext('2d');
             this.bufferCtx.lineJoin = this.bufferCtx.lineCap = 'round';
+            this.bufferSize = 10;
 
             this.cv_raster = document.createElement('canvas');
             this.cv_raster_ctx = this.cv_raster.getContext('2d');
@@ -126,7 +129,7 @@ var Draw = (function () {
             this.currentShape = null;
             this.shapes = [];
             this.shapeHistory = [];
-            this.historyIndex = 0;
+            this.historyIndex = -1;
 
             this.cv_raster.width = this.buffer.width = this.width = opts.width;
             this.cv_raster.height = this.buffer.height = this.height = opts.height;
@@ -340,8 +343,9 @@ var Draw = (function () {
                     };
                     return el;
                 },
-                onPointerStart: function (moose, pt) {
+                onPointerStart: function (moose, pt, targetContext) {
                     this.lastPoint = pt;
+                    return this.onPointerDrag(moose, pt, targetContext);
                 },
                 onPointerDrag: function (moose, pt, targetContext) {
                     var dist = utils.distanceBetween(this.lastPoint, pt);
@@ -382,10 +386,6 @@ var Draw = (function () {
                 },
                 onPointerStop: function (moose) {
                     this.lastPoint = null;
-                    var s = moose.currentShape;
-                    moose.saveShape(s, moose.buffer);
-                    moose.addHistory(s);
-                    s = null;
                 }
             },
             {
@@ -408,7 +408,7 @@ var Draw = (function () {
                     };
                     return el;
                 },
-                onPointerStart: function (moose, pt) {
+                onPointerStart: function (moose, pt, targetContext) {
                     this.lastPoint = pt;
 
                     this.sizeVariation = pt.sizeVariation || (Math.random() * 1) + 0.5;
@@ -416,6 +416,7 @@ var Draw = (function () {
                     this.blotWait = pt.blotWait || utils.getRandomInt(100, 300);
                     this.actualInkSize = pt.actualInkSize || 1;
 
+                    return this.onPointerDrag(moose, pt, targetContext)
                 },
                 onPointerDrag: function (moose, pt, targetContext) {
                     var dist = utils.distanceBetween(this.lastPoint, pt);
@@ -484,10 +485,6 @@ var Draw = (function () {
                 },
                 onPointerStop: function (moose) {
                     this.lastPoint = null;
-                    var s = moose.currentShape;
-                    moose.saveShape(s, moose.buffer);
-                    moose.addHistory(s);
-                    s = null;
                 }
             }
         ],
@@ -849,31 +846,36 @@ var Draw = (function () {
             }
         },
         {
-            name: 'zoom-in',
-            enabled: this.zoomEnabled,
+            name: 'toggle buffer',
+            enabled: true,
             initialize: function (moose) {
                 var el = document.createElement('button');
                 el.className = 'btn btn-default';
-                el.innerHTML = 'zoom in';
+                el.innerHTML = 'buffer';
                 el.onclick = function (e) {
-                    var newScale = moose.getScale() * 2;
-                    moose.zoom(newScale, moose.getScale(), 0.5, 0.5);
+                    if (document.getElementById('buffer').style.display == 'none') {
+                        document.getElementById('buffer').style.display = 'inline-block';
+                    } else {
+                        document.getElementById('buffer').style.display = 'none';
+                    }
                 };
                 this.el = el;
                 return el;
             }
         },
         {
-            name: 'zoom-out',
-            enabled: this.zoomEnabled,
+            name: 'toggle raster',
+            enabled: true,
             initialize: function (moose) {
                 var el = document.createElement('button');
                 el.className = 'btn btn-default';
-                el.innerHTML = 'zoom out';
+                el.innerHTML = 'raster';
                 el.onclick = function (e) {
-                    var newScale = moose.getScale() / 2;
-                    if (newScale == moose.getScale()) return;
-                    moose.zoom(newScale, moose.getScale(), 0.5, 0.5);
+                    if (document.getElementById('raster').style.display == 'none') {
+                        document.getElementById('raster').style.display = 'inline-block';
+                    } else {
+                        document.getElementById('raster').style.display = 'none';
+                    }
                 };
                 this.el = el;
                 return el;
@@ -1003,31 +1005,78 @@ var Draw = (function () {
             return false;
         },
         undo: function () {
-            if (this.shapes.length == 0) return;
-            this.shapes.pop();
+            if (this.historyIndex <= -1)
+                return;
+
+            var t0 = performance.now();
+            if (this.shapes.length > 0) {
+                this.shapes.pop();
+                this.redrawBuffer();
+            }
+
+            var redraw = false;
+            if (this.shapes.length == 0 && this.historyIndex > 0) {
+                // copy previous x shapes from history into the buffer
+                for (var i = 0; i < this.bufferSize; i++) {
+                    if (this.historyIndex - this.bufferSize + i < 0) continue;
+                    this.shapes.push(this.shapeHistory[this.historyIndex-this.bufferSize+i]);
+                    console.log('pull shape ' + (this.historyIndex - this.bufferSize + i) + ' from history. shapes.length=' + this.shapes.length);
+                }
+                redraw = true;
+            }
             this.historyIndex--;
-            this.redraw();
+            if (redraw) this.redraw();
+            this.debugInfo();
+            var t1 = performance.now();
+            this.diagnostics.set('undo', t1 - t0);
         },
         redo: function () {
-            if (this.historyIndex == this.shapeHistory.length) return;
-            this.shapes.push(this.shapeHistory[this.historyIndex++]);
-            this.redraw();
+            if (this.historyIndex >= this.shapeHistory.length - 1) return;
+            var t0 = performance.now();
+            this.shapes.push(this.shapeHistory[++this.historyIndex]);
+            this.redrawBuffer();
+            if (this.shapes.length >= this.bufferSize) {
+                this.flush();
+            }
+            this.debugInfo();
+            var t1 = performance.now();
+            this.diagnostics.set('redo', t1 - t0);
         },
         addHistory: function (shape) {
-            if (this.historyIndex < this.shapeHistory.length) {
-                this.shapeHistory = this.shapeHistory.slice(this.historyIndex - 1);
+            var t0 = performance.now();
+            var redraw = false;
+            if (this.historyIndex < (this.shapeHistory.length - 1)) {
+                console.log('decapitating history. ' + this.shapeHistory.length + ' items in history');
+                this.shapeHistory = this.shapeHistory.slice(0,this.historyIndex+1);
+                console.log('sliced history up to ' + (this.historyIndex + 1));
+                this.shapes = [];
+                redraw = true;
             }
             this.shapeHistory.push(shape);
-            this.historyIndex = this.shapeHistory.length;
+            console.log('adding a shape to history. history has ' + this.shapeHistory.length + ' items');
+            this.historyIndex = this.shapeHistory.length - 1;
+            if (redraw) {
+                console.log('redrawing. history index = ' + this.historyIndex);
+                this.redraw();
+            }
+            this.debugInfo();
+            var t1 = performance.now();
+            this.diagnostics.set('add history', t1 - t0);
         },
         debugInfo: function (e) {
             var d = '';
             if (e) { d += 's:' + Math.round(e.screenX) + ',' + Math.round(e.screenY) + ' c:' + Math.round(e.clientX) + ',' + Math.round(e.clientY) + '<br/>'; }
             //d += 'scale:' + this.getScale() + ' p:' + (Math.round(this.position.x)) + ',' + Math.round(this.position.y) + ' o:' + window.pageXOffset + ',' + window.pageYOffset + '<br/>';
             if (this.transform) {
-                d += this.transform.toString() + '<br/>';
+                //d += this.transform.toString() + '<br/>';
             }
-            d += 'shapes:' + this.shapes.length;
+            //d += 'shapes:' + this.shapes.length;
+            d += 'b:'+this.shapes.length + ' h:' + this.shapeHistory.length + '(' + this.historyIndex + ')';
+
+            this.diagnostics.forEach(function(value, key) {
+                d += ', ' + key + ':' + Math.round(value) + 'ms';
+            });
+
             if (this.debug) {
                 this.writeDebug(d);
             }
@@ -1041,8 +1090,9 @@ var Draw = (function () {
 
             return p;
         },
-        startDrawingShape: function (point) {
+        startDrawingShape: function (point,context) {
             this.isDrawing = true;
+            var ctx = context || this.bufferCtx;
             point = this.clientToCanvas(point);
             this.lastPoint = point;
             var tool = this.selectedTool || this.tools[0];
@@ -1052,7 +1102,9 @@ var Draw = (function () {
                 points: [],
                 toolName: tool.name
             }
-            tool.onPointerStart(this, point);
+            var ptData = tool.onPointerStart(this, point, ctx);
+            this.lastPoint = ptData;
+            this.currentShape.points.push(ptData);
         },
         drawMove: function (pt, tool, context) {
             var t = tool || this.selectedTool;
@@ -1071,21 +1123,31 @@ var Draw = (function () {
             this.currentShape.points.push(ptData);
         },
         drawStop: function (pt, tool, context) {
-            this.drawMove(pt,tool,context);
-
-
             this.selectedTool.onPointerStop(this);
 
-            this.flush();
+            var s = this.currentShape;
+            this.saveShape(s, this.buffer);
+            this.addHistory(s);
+            s = null;
+
+            if (this.shapes.length >= this.bufferSize) {
+                this.flush();
+            }
+            this.debugInfo();
             //this.rasterize();
         },
         flush: function () {
-            this.writeDebug('flushing buffer');
+            var t0= performance.now();
+            console.log('flushing ' + this.shapes.length + ' shapes from buffer');
             var m = this.transform.m;
             var x = -m[4] / m[0], y = -m[5] / m[3], w = this.width / m[0], h = this.height / m[3];
             this.ctx.drawImage(this.buffer, x, y, w, h);
             this.bufferCtx.clearRect(0, 0, this.width, this.height);
             this.updateRaster();
+            this.shapes = [];
+            var t1 = performance.now();
+            this.diagnostics.set('flush',(t1 - t0));
+            this.debugInfo();
         },
         updateRaster: function () {
             this.cv_raster_ctx.clearRect(0, 0, this.width, this.height);
@@ -1093,6 +1155,9 @@ var Draw = (function () {
             this.cv_raster_ctx.drawImage(this.canvas, 0, 0, this.width, this.height);
         },
         zoom: function (newScale, oldScale, clientX, clientY) {
+            var t0 = performance.now();
+            this.flush();
+
             if (newScale < 1) newScale = 1;
             if (newScale > 32) newScale = 32;
 
@@ -1111,6 +1176,8 @@ var Draw = (function () {
             this.position.y = m[5];
 
             this.updateRaster();
+            var t1 = performance.now();
+            this.diagnostics.set('zoom', t1 - t0);
         },
         drawShapeToCanvas: function (shape, context) {
             if (!this.shapes) this.shapes = [];
@@ -1124,7 +1191,7 @@ var Draw = (function () {
             }
             this.foreColor = shape.foreColor;
             this.toolSize = shape.toolSize;
-            tool.onPointerStart(this, lastPoint);
+            tool.onPointerStart(this, lastPoint, context);
             if (shape.points.length <= 0) return;
 
             for (var p = 1; p < shape.points.length; p++) {
@@ -1132,9 +1199,9 @@ var Draw = (function () {
                 tool.onPointerDrag(this, pt, context);
                 lastPoint = pt;
             }
+            tool.onPointerStop(this, pt, context);
         },
-        saveShape: function (shape, context) {
-            //this.drawShapeToCanvas(shape, context);
+        saveShape: function (shape) {
             this.shapes.push(shape);
             this.currentShape = null;
         },
@@ -1143,6 +1210,62 @@ var Draw = (function () {
             for (var s = 0; s < this.shapes.length; s++) {
                 this.saveShape(this.shapes[s], this.bufferCtx);
             }
+        },
+        drawRasterized: function () {
+            if (this.raster_data == null) return;
+            var moose = this;
+            if (!this.rasterizedImage) {
+                this.rasterizedImage = new Image;
+                this.rasterizedImage.onload = function () {
+                    moose.bufferCtx.clearRect(-1000, -1000, moose.width + 2000, moose.height + 2000);
+                    moose.bufferCtx.drawImage(moose.rasterizedImage, 0, 0);
+                };
+            } else {
+                moose.bufferCtx.clearRect(-1000, -1000, moose.width + 2000, moose.height + 2000);
+                moose.bufferCtx.drawImage(moose.rasterizedImage, 0, 0);
+            }
+            this.rasterizedImage.src = this.raster_data;
+        },
+        rasterize: function () {
+            this.raster_data = this.buffer.toDataURL('image/png');
+        },
+        redrawBuffer: function () {
+            var t0 = performance.now();
+            var toolSize = this.toolSize;
+            var foreColor = this.foreColor;
+            this.bufferCtx.clearRect(0, 0, this.width, this.height);
+            for (var s = 0; s < this.shapes.length; s++) {
+                this.drawShapeToCanvas(this.shapes[s], this.bufferCtx);
+            }
+            this.toolSize = toolSize;
+            this.foreColor = foreColor;
+            var t1 = performance.now();
+            this.diagnostics.set('redraw buffer',t1 - t0);
+        },
+        redraw: function () {
+            var t0 = performance.now();
+            var toolSize = this.toolSize;
+            var foreColor = this.foreColor;
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            var redrawCount = (this.historyIndex + 1) - this.shapes.length; // number of items in history up to head minus total items in buffer
+            console.log('history index = ' + this.historyIndex);
+            console.log('drawing first ' + redrawCount + " items from history");
+            for (var s = 0; s < redrawCount; s++) {
+                console.log('redraw shape ' + s + ' to canvas')
+                this.drawShapeToCanvas(this.shapeHistory[s], this.ctx);
+            }
+            this.updateRaster();
+            this.redrawBuffer();
+            this.toolSize = toolSize;
+            this.foreColor = foreColor;
+            var t1 = performance.now();
+            this.diagnostics.set('redraw', t1 - t0);
+        },
+        drawDot: function (x, y, color) {
+            this.bufferCtx.fillStyle = color;
+            this.bufferCtx.beginPath();
+            this.bufferCtx.arc(x, y, 6, 0, Math.PI / 2, true);
+            this.bufferCtx.fill();
         },
         buildPalette: function () {
             var p = [];
@@ -1367,42 +1490,6 @@ var Draw = (function () {
             Shape = function () {
                 return this;
             };
-        },
-        drawRasterized: function () {
-            if (this.raster_data == null) return;
-            var moose = this;
-            if (!this.rasterizedImage) {
-                this.rasterizedImage = new Image;
-                this.rasterizedImage.onload = function () {
-                    moose.bufferCtx.clearRect(-1000, -1000, moose.width + 2000, moose.height + 2000);
-                    moose.bufferCtx.drawImage(moose.rasterizedImage, 0, 0);
-                };
-            } else {
-                moose.bufferCtx.clearRect(-1000, -1000, moose.width + 2000, moose.height + 2000);
-                moose.bufferCtx.drawImage(moose.rasterizedImage, 0, 0);
-            }
-            this.rasterizedImage.src = this.raster_data;
-        },
-        rasterize: function () {
-            this.raster_data = this.buffer.toDataURL('image/png');
-        },
-        redraw: function () {
-            var toolSize = this.toolSize;
-            var foreColor = this.foreColor;
-            this.ctx.clearRect(0, 0, this.width, this.height);
-            for (var s = 0; s < this.shapes.length; s++) {
-                this.drawShapeToCanvas(this.shapes[s], this.ctx);
-            }
-            this.toolSize = toolSize;
-            this.foreColor = foreColor;
-            this.flush();
-            //this.drawRasterized();
-        },
-        drawDot: function (x, y, color) {
-            this.bufferCtx.fillStyle = color;
-            this.bufferCtx.beginPath();
-            this.bufferCtx.arc(x, y, 6, 0, Math.PI / 2, true);
-            this.bufferCtx.fill();
         },
         bindHammerTime: function (moose) {
             moose.hammertime = new Hammer(this.buffer);
