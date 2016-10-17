@@ -519,7 +519,7 @@ var Draw = (function () {
         toolbarItems: [
             {
                 name: 'toggleToolbarSize',
-                enabled: true,
+                enabled: function () { return true; },
                 showWhenCollapsed: true,
                 collapsed: false,
                 initialize: function (moose) {
@@ -533,7 +533,7 @@ var Draw = (function () {
 
                             for (var i = 0; i < moose.toolbarItems.length; i++) {
                                 var ti = moose.toolbarItems[i];
-                                if (!ti.enabled) continue;
+                                if (!ti.enabled()) continue;
                                 if ($this.collapsed) {
                                     ti.el.style.setProperty("display", "inline-block", "important");
                                 } else if (!ti.showWhenCollapsed) {
@@ -560,7 +560,7 @@ var Draw = (function () {
             },
             {
                 name: 'moveToolbar',
-                enabled: false,
+                enabled: function() { return true; },
                 showWhenCollapsed: true,
                 initialize: function (moose, toolbarElement) {
                     var $this = this;
@@ -585,7 +585,7 @@ var Draw = (function () {
             },
         {
             name: 'save',
-            enabled: true,
+            enabled: function () { return true; },
             initialize: function (moose) {
                 var el = document.createElement('button');
                 el.className = 'btn btn-primary';
@@ -600,7 +600,7 @@ var Draw = (function () {
         },
         {
             name: 'cancel',
-            enabled: true,
+            enabled: function () { return true; },
             initialize: function (moose) {
                 var el = document.createElement('button');
                 el.className = 'btn btn-danger';
@@ -615,7 +615,7 @@ var Draw = (function () {
         },
             {
                 name: 'undo',
-                enabled: true,
+                enabled: function () { return true; },
                 initialize: function (moose) {
                     this.el = document.createElement('button');
                     this.el.className = 'btn btn-default';
@@ -630,7 +630,7 @@ var Draw = (function () {
             },
             {
                 name: 'redo',
-                enabled: true,
+                enabled: function () { return true; },
                 initialize: function (moose) {
                     this.el = document.createElement('button');
                     this.el.className = 'btn btn-default';
@@ -645,7 +645,7 @@ var Draw = (function () {
             },
         {
             name: 'fullscreen',
-            enabled: true,
+            enabled: function () { return true; },
             initialize: function (moose) {
                 var el = document.createElement('button');
                 el.className = 'btn btn-default';
@@ -665,7 +665,7 @@ var Draw = (function () {
         },
             {
                 name: 'selectTool',
-                enabled: true,
+                enabled: function () { return true; },
                 showWhenCollapsed: false,
                 selectedTool: null,
                 resetToDefaults: function () {
@@ -731,7 +731,7 @@ var Draw = (function () {
             },
         {
             name: 'pickColor',
-            enabled: true,
+            enabled: function () { return true; },
             showWhenCollapsed: false,
             opened: false,
             resetToDefaults: function () {
@@ -818,7 +818,7 @@ var Draw = (function () {
         },
         {
             name: 'toolSize',
-            enabled: true,
+            enabled: function() { return true; },
             showWhenCollapsed: false,
             resetToDefaults: function () {
                 this.moose.toolSize = 10;
@@ -887,9 +887,13 @@ var Draw = (function () {
         },
         {
             name: 'toggle canvas',
-            enabled: true,
+            enabled: function() {
+                 return this.moose.debug;
+            },
             initialize: function (moose) {
                 var el = document.createElement('button');
+                this.moose = moose;
+                if (!moose.debug) return null;
                 el.className = 'btn btn-default';
                 el.innerHTML = 'canvas';
                 el.addEventListener('click', function (e) {
@@ -906,9 +910,11 @@ var Draw = (function () {
         },
         {
             name: 'toggle buffer',
-            enabled: true,
+            enabled: function () { return this.moose.debug; },
             initialize: function (moose) {
                 var el = document.createElement('button');
+                this.moose = moose;
+                if (!moose.debug) return null;
                 el.className = 'btn btn-default';
                 el.innerHTML = 'buffer';
                 el.addEventListener('click', function (e) {
@@ -925,9 +931,11 @@ var Draw = (function () {
         },
         {
             name: 'toggle raster',
-            enabled: true,
+            enabled: function () { return this.moose.debug; },
             initialize: function (moose) {
                 var el = document.createElement('button');
+                this.moose = moose;
+                if (!moose.debug) return null;
                 el.className = 'btn btn-default';
                 el.innerHTML = 'raster';
                 el.addEventListener('click', function (e) {
@@ -944,9 +952,11 @@ var Draw = (function () {
         },
         {
             name: 'toggle imported',
-            enabled: true,
+            enabled: function () { return this.moose.debug; },
             initialize: function (moose) {
                 var el = document.createElement('button');
+                this.moose = moose;
+                if (!moose.debug) return null;
                 el.className = 'btn btn-default';
                 el.innerHTML = 'imported';
                 el.addEventListener('click', function (e) {
@@ -977,8 +987,8 @@ var Draw = (function () {
 
             for (var i = 0; i < this.toolbarItems.length; i++) {
                 var ti = this.toolbarItems[i];
-                if (!ti || !ti.enabled) continue;
                 var el = ti.initialize(this, t);
+                if (!ti || !ti.enabled()) continue;
                 el.className += ' toolbar-item btn-toolbar';
                 tb.appendChild(el);
             }
@@ -1020,7 +1030,7 @@ var Draw = (function () {
         disableToolbar: function () {
             for (var i = 0; i < this.toolbarItems.length; i++) {
                 var ti = this.toolbarItems[i];
-                if (!ti.enabled) continue;
+                if (!ti.enabled()) continue;
 
                 ti.el.disabled = true;
             }
@@ -1029,7 +1039,7 @@ var Draw = (function () {
         enableToolbar: function () {
             for (var i = 0; i < this.toolbarItems.length; i++) {
                 var ti = this.toolbarItems[i];
-                if (!ti.enabled) continue;
+                if (!ti.enabled()) continue;
 
                 ti.el.disabled = false;
             }
