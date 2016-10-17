@@ -82,7 +82,6 @@ var Draw = (function () {
                 opts = arg1;
             }
 
-            this.debug = opts.debug;
             this.onExportImage = opts.onExportImage;
             this.onCanceled = opts.onCanceled;
 
@@ -90,6 +89,7 @@ var Draw = (function () {
 
             this.viewportScale = 1;
             this.opts = opts || {};
+            this.debug = opts.debug || false;
             this.isDrawing = false;
             this.lastPoint = null;
             this.mouseOut = false;
@@ -122,6 +122,11 @@ var Draw = (function () {
             this.cv_raster_ctx = this.cv_raster.getContext('2d');
             this.cv_raster.id = 'raster';
             this.cv_raster_ctx.lineJoin = this.cv_raster_ctx.lineCap = 'round';
+
+            this.cv_imported = document.createElement('canvas');
+            this.cv_imported_ctx = this.cv_imported.getContext('2d');
+            this.cv_imported.id = 'imported';
+            this.cv_imported_ctx.lineJoin = this.cv_imported_ctx.lineCap = 'round';
 
             this.raster_data = null;
 
@@ -183,28 +188,45 @@ var Draw = (function () {
 
             this.containerEl = containerEl;
 
-            this.buffer.style.position = 'absolute';
-            this.buffer.style.top = '0';
-            this.buffer.style.left = '0';
-            this.buffer.style['z-index'] = '2';
-            this.buffer.style['border'] = '1px solid blue';
-
             this.canvas.style.position = 'absolute';
             this.canvas.style.top = '200px';
             this.canvas.style.left = '0';
-            this.canvas.style['z-index'] = '3';
+            this.canvas.style['z-index'] = '1';
             this.canvas.style['border'] = '1px solid blue';
+
+            this.cv_imported.style.position = 'absolute';
+            this.cv_imported.style.top = '0';
+            this.cv_imported.style.left = '0';
+            this.cv_imported.style['z-index'] = '1';
+            this.cv_imported.style['border'] = '1px solid lime';
+            this.cv_imported.width = 1600;
+            this.cv_imported.height = 900;
 
             this.cv_raster.style.position = 'absolute';
             this.cv_raster.style.top = '0';
             this.cv_raster.style.left = '0';
-            this.cv_raster.style['z-index'] = '1';
+            this.cv_raster.style['z-index'] = '2';
             this.cv_raster.style['border'] = '1px solid lime';
+
+            this.buffer.style.position = 'absolute';
+            this.buffer.style.top = '0';
+            this.buffer.style.left = '0';
+            this.buffer.style['z-index'] = '3';
+            this.buffer.style['border'] = '1px solid blue';
+
 
             this.canvas.width = 1600 * this.quality;
             this.canvas.height = 900 * this.quality;
 
-            //            this.containerEl.appendChild(this.canvas);
+            var m = this.transform.m;
+            this.ctx.transform(this.quality, 0, 0, this.quality, 0, 0);
+            this.bufferCtx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
+            this.cv_raster_ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
+
+            if (this.debug) {
+                this.containerEl.appendChild(this.canvas);
+                this.containerEl.appendChild(this.cv_imported);
+            }
             this.containerEl.appendChild(this.cv_raster);
             this.containerEl.appendChild(this.buffer);
 
@@ -237,12 +259,6 @@ var Draw = (function () {
 
             this.transform = new Transform();
             //this.transform.scale(2, 2);
-            var m = this.transform.m;
-
-            this.ctx.transform(this.quality, 0, 0, this.quality, 0, 0);
-            this.bufferCtx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
-            this.cv_raster_ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
-
             this.sessionData = data;
             this.containerEl.style.display = 'block';
             this.enableToolbar();
@@ -250,6 +266,7 @@ var Draw = (function () {
             this.ctx.clearRect(0, 0, this.width, this.height);
             this.bufferCtx.clearRect(0, 0, this.buffer.width, this.buffer.height);
             this.cv_raster_ctx.clearRect(0, 0, this.cv_raster.width, this.cv_raster.height);
+            this.cv_imported_ctx.clearRect(0, 0, this.cv_imported.width, this.cv_imported.height);
 
             this.setToolbarPosition('top');
             this.toolbar.children[0].className = this.isFullscreen() ? 'toolbar toolbar-sm' : 'toolbar toolbar-bg';
@@ -260,26 +277,31 @@ var Draw = (function () {
                 }
             }
 
+            this.shapeHistory = [];
+            this.shapes = [];
+            this.historyIndex = -1;
+            this.importedShapes = [];
+
             this.isDrawing = false;
             this.zoom(1, 1, 0, 0);
             window.scrollTo(0, 0);
-
         },
         importDrawingData: function (data) {
             var t = this.selectedTool, ts = this.toolSize, fc = this.foreColor;
             var snapshot = JSON.parse(data);
 
             if (snapshot && snapshot.length) {
+                this.importedShapes = snapshot;
                 for (var i = 0; i < snapshot.length; i++) {
                     try {
-                        this.shapes.push(snapshot[i]);
-                        this.saveShape(snapshot[i], this.ctx);
-                        this.saveShape(snapshot[i], this.bufferCtx);
+                        console.log('import shape with ' + snapshot[i].points.length + ' points');
+                        this.drawShapeToCanvas(snapshot[i], this.cv_imported_ctx);
                     } catch (ex) {
+                        console.log(ex.message);
                         this.writeDebug(ex.message);
                     }
                 }
-                this.rasterize();
+                this.redraw();
             }
             this.selectedTool = t;
             this.toolSize = ts;
@@ -297,8 +319,12 @@ var Draw = (function () {
         },
         onSave: function () {
             this.disableToolbar();
+            this.flush();
+            this.redraw();
             if (this.onExportImage) {
                 try {
+                    // copy all history up to historyIndex to this.shapes
+                    this.shapes = this.importedShapes.concat(this.shapeHistory.slice(0, this.historyIndex + 1));
                     this.onExportImage(this.sessionData,
                         this.canvas.toDataURL('image/png'),
                         JSON.stringify(this.shapes));
@@ -337,10 +363,11 @@ var Draw = (function () {
                         el.style.border = '1px solid #888';
                     }
                     el.className = 'btn btn-default btn-brush';
-                    el.onclick = function (e) {
+                    el.addEventListener('click', function (e) {
                         if (onSelected)
                             onSelected($this);
-                    };
+                        return true;
+                    });
                     return el;
                 },
                 onPointerStart: function (moose, pt, targetContext) {
@@ -402,10 +429,11 @@ var Draw = (function () {
                         el.style.border = '1px solid #888';
                     }
                     el.className = 'btn btn-default btn-brush';
-                    el.onclick = function (e) {
+                    el.addEventListener('click', function (e) {
                         if (onSelected)
                             onSelected($this);
-                    };
+                        return true;
+                    });
                     return el;
                 },
                 onPointerStart: function (moose, pt, targetContext) {
@@ -500,29 +528,31 @@ var Draw = (function () {
                     el.style.float = 'left';
                     el.className = 'btn btn-info';
                     el.innerHTML = '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
-                    el.onclick = function (e) {
+                    el.addEventListener('click',
+                        function(e) {
 
-                        for (var i = 0; i < moose.toolbarItems.length; i++) {
-                            var ti = moose.toolbarItems[i];
-                            if (!ti.enabled) continue;
-                            if ($this.collapsed) {
-                                ti.el.style.setProperty("display", "inline-block", "important");
-                            } else if (!ti.showWhenCollapsed) {
-                                ti.el.style.display = 'none';
+                            for (var i = 0; i < moose.toolbarItems.length; i++) {
+                                var ti = moose.toolbarItems[i];
+                                if (!ti.enabled) continue;
+                                if ($this.collapsed) {
+                                    ti.el.style.setProperty("display", "inline-block", "important");
+                                } else if (!ti.showWhenCollapsed) {
+                                    ti.el.style.display = 'none';
+                                }
                             }
-                        }
-                        $this.collapsed = !$this.collapsed;
-                        if ($this.collapsed) {
-                            $this.el
-                                .innerHTML =
-                                '<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>';
-                        } else {
-                            $this.el
-                                .innerHTML =
-                                '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
-                        }
-                        moose.toolbar.fitOnScreen();
-                    }
+                            $this.collapsed = !$this.collapsed;
+                            if ($this.collapsed) {
+                                $this.el
+                                    .innerHTML =
+                                    '<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>';
+                            } else {
+                                $this.el
+                                    .innerHTML =
+                                    '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
+                            }
+                            moose.toolbar.fitOnScreen();
+                            return true;
+                        });
 
                     this.el = el;
                     return el;
@@ -538,15 +568,17 @@ var Draw = (function () {
                     var el = document.createElement('button');
                     el.className = 'btn btn-default';
                     el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
-                    el.onclick = function (e) {
-                        if (moose.toolbarPosition == 'top') {
-                            $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-top"></span>';
-                            moose.setToolbarPosition('bottom');
-                        } else {
-                            $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
-                            moose.setToolbarPosition('top');
-                        }
-                    }
+                    el.addEventListener('click',
+                        function(e) {
+                            if (moose.toolbarPosition == 'top') {
+                                $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-top"></span>';
+                                moose.setToolbarPosition('bottom');
+                            } else {
+                                $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
+                                moose.setToolbarPosition('top');
+                            }
+                            return true;
+                        });
                     this.el = el;
                     return el;
                 }
@@ -558,9 +590,10 @@ var Draw = (function () {
                 var el = document.createElement('button');
                 el.className = 'btn btn-primary';
                 el.innerHTML = '<span class="glyphicon glyphicon-floppy-disk"></span>';
-                el.onclick = function (e) {
+                el.addEventListener('click', function (e) {
                     moose.onSave();
-                };
+                    return true;
+                });
                 this.el = el;
                 return el;
             }
@@ -573,9 +606,10 @@ var Draw = (function () {
                 el.className = 'btn btn-danger';
                 el.innerHTML = '<span class="glyphicon glyphicon-remove"></span>';
                 this.el = el;
-                el.onclick = function (e) {
+                el.addEventListener('click', function (e) {
                     moose.onCancel();
-                };
+                    return true;
+                });
                 return el;
             }
         },
@@ -586,9 +620,11 @@ var Draw = (function () {
                     this.el = document.createElement('button');
                     this.el.className = 'btn btn-default';
                     this.el.innerHTML = '<span class="glyphicon glyphicon-arrow-left"></span>';
-                    this.el.onclick = function () {
-                        moose.undo();
-                    }
+                    this.el.addEventListener('click',
+                        function(e) {
+                            moose.undo();
+                            return true;
+                        });
                     return this.el;
                 }
             },
@@ -599,9 +635,11 @@ var Draw = (function () {
                     this.el = document.createElement('button');
                     this.el.className = 'btn btn-default';
                     this.el.innerHTML = '<span class="glyphicon glyphicon-arrow-right"></span>';
-                    this.el.onclick = function () {
-                        moose.redo();
-                    }
+                    this.el.addEventListener('click',
+                        function() {
+                            moose.redo();
+                            return true;
+                        });
                     return this.el;
                 }
             },
@@ -613,14 +651,15 @@ var Draw = (function () {
                 el.className = 'btn btn-default';
                 this.el = el;
                 el.innerHTML = '<span class="glyphicon glyphicon-fullscreen"></span>';
-                el.onclick = function (e) {
+                el.addEventListener('click', function (e) {
                     if (moose.isFullscreen()) {
                         moose.exitFullscreen();
                     } else {
                         moose.enterFullscreen();
                     }
                     moose.toolbar.fitOnScreen();
-                };
+                    return true;
+                });
                 return el;
             }
         },
@@ -760,12 +799,13 @@ var Draw = (function () {
                         cel.style.backgroundColor = utils.toHslaString(col);
                         cel.style.display = 'inline-block';
                         row.appendChild(cel);
-                        cel.onclick = function (e) {
+                        cel.addEventListener('click', function (e) {
                             moose.setForeColor(utils.fromRgbString(this.style.backgroundColor));
                             $this.el.style.backgroundColor = this.style.backgroundColor;
                             $this.picker.style.display = 'none';
                             $this.opened = false;
-                        };
+                            return true;
+                        });
                     }
                     colorPicker.appendChild(row);
                 }
@@ -846,19 +886,39 @@ var Draw = (function () {
             }
         },
         {
+            name: 'toggle canvas',
+            enabled: true,
+            initialize: function (moose) {
+                var el = document.createElement('button');
+                el.className = 'btn btn-default';
+                el.innerHTML = 'canvas';
+                el.addEventListener('click', function (e) {
+                    if (document.getElementById('canvas').style.display == 'none') {
+                        document.getElementById('canvas').style.display = 'inline-block';
+                    } else {
+                        document.getElementById('canvas').style.display = 'none';
+                    }
+                    return true;
+                });
+                this.el = el;
+                return el;
+            }
+        },
+        {
             name: 'toggle buffer',
             enabled: true,
             initialize: function (moose) {
                 var el = document.createElement('button');
                 el.className = 'btn btn-default';
                 el.innerHTML = 'buffer';
-                el.onclick = function (e) {
+                el.addEventListener('click', function (e) {
                     if (document.getElementById('buffer').style.display == 'none') {
                         document.getElementById('buffer').style.display = 'inline-block';
                     } else {
                         document.getElementById('buffer').style.display = 'none';
                     }
-                };
+                    return true;
+                });
                 this.el = el;
                 return el;
             }
@@ -870,13 +930,33 @@ var Draw = (function () {
                 var el = document.createElement('button');
                 el.className = 'btn btn-default';
                 el.innerHTML = 'raster';
-                el.onclick = function (e) {
+                el.addEventListener('click', function (e) {
                     if (document.getElementById('raster').style.display == 'none') {
                         document.getElementById('raster').style.display = 'inline-block';
                     } else {
                         document.getElementById('raster').style.display = 'none';
                     }
-                };
+                    return true;
+                });
+                this.el = el;
+                return el;
+            }
+        },
+        {
+            name: 'toggle imported',
+            enabled: true,
+            initialize: function (moose) {
+                var el = document.createElement('button');
+                el.className = 'btn btn-default';
+                el.innerHTML = 'imported';
+                el.addEventListener('click', function (e) {
+                    if (document.getElementById('imported').style.display == 'none') {
+                        document.getElementById('imported').style.display = 'inline-block';
+                    } else {
+                        document.getElementById('imported').style.display = 'none';
+                    }
+                    return true;
+                });
                 this.el = el;
                 return el;
             }
@@ -885,13 +965,14 @@ var Draw = (function () {
         createToolbar: function () {
             var t = document.createElement('div');
 
+            t.id = 'toolbar-container';
             t.className = 'toolbar-container';
             t.style.setProperty('top', '0px');
             t.style.setProperty('left', '0px');
             t.style['z-index'] = 10;
 
             var tb = document.createElement('div');
-            tb.attributes['id'] = 'toolbar';
+            tb.id = 'toolbar';
             tb.className = this.isFullscreen() ? 'toolbar toolbar-sm' : 'toolbar toolbar-bg';
 
             for (var i = 0; i < this.toolbarItems.length; i++) {
@@ -1152,6 +1233,7 @@ var Draw = (function () {
         updateRaster: function () {
             this.cv_raster_ctx.clearRect(0, 0, this.width, this.height);
             var m = this.transform.m;
+            this.cv_raster_ctx.drawImage(this.cv_imported, 0, 0, this.width, this.height);
             this.cv_raster_ctx.drawImage(this.canvas, 0, 0, this.width, this.height);
         },
         zoom: function (newScale, oldScale, clientX, clientY) {
@@ -1250,6 +1332,7 @@ var Draw = (function () {
             var redrawCount = (this.historyIndex + 1) - this.shapes.length; // number of items in history up to head minus total items in buffer
             console.log('history index = ' + this.historyIndex);
             console.log('drawing first ' + redrawCount + " items from history");
+            this.ctx.drawImage(this.cv_imported, 0, 0, this.cv_imported.width, this.cv_imported.height);
             for (var s = 0; s < redrawCount; s++) {
                 console.log('redraw shape ' + s + ' to canvas')
                 this.drawShapeToCanvas(this.shapeHistory[s], this.ctx);

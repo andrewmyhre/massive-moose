@@ -41,6 +41,7 @@
             onCanceled: function(sessionData) {
                 sessionData.wallInstance.cancelSession(sessionData);
             },
+            quality:2,
             debug:@(System.Configuration.ConfigurationManager.AppSettings["drawing_debug"] ?? "false")
         });
 
