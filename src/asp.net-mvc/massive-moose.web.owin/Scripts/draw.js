@@ -82,7 +82,6 @@ var Draw = (function () {
                 opts = arg1;
             }
 
-            this.debug = opts.debug;
             this.onExportImage = opts.onExportImage;
             this.onCanceled = opts.onCanceled;
 
@@ -90,6 +89,7 @@ var Draw = (function () {
 
             this.viewportScale = 1;
             this.opts = opts || {};
+            this.debug = opts.debug || false;
             this.isDrawing = false;
             this.lastPoint = null;
             this.mouseOut = false;
@@ -98,35 +98,49 @@ var Draw = (function () {
             this.offsetAtPinchStart = { x: 0, y: 0 };
             this.offset = { x: 0, y: 0 };
             this.zoomEnabled = true;
+            this.quality = opts.quality || 2;
             this.transform = new Transform();
+
+            this.diagnostics = new Map();
 
             this.popup = null;
 
             this.isPinching = false;
 
             this.canvas = document.createElement('canvas');
+            this.canvas.id = 'canvas';
             this.ctx = this.canvas.getContext('2d');
             this.ctx.lineJoin = this.ctx.lineCap = 'round';
 
             this.buffer = document.createElement('canvas');
+            this.buffer.id = 'buffer';
             this.bufferCtx = this.buffer.getContext('2d');
             this.bufferCtx.lineJoin = this.bufferCtx.lineCap = 'round';
+            this.bufferSize = 10;
 
-            this.raster = null;
+            this.cv_raster = document.createElement('canvas');
+            this.cv_raster_ctx = this.cv_raster.getContext('2d');
+            this.cv_raster.id = 'raster';
+            this.cv_raster_ctx.lineJoin = this.cv_raster_ctx.lineCap = 'round';
 
-            this.canvas.style['background-color'] = 'white';
+            this.cv_imported = document.createElement('canvas');
+            this.cv_imported_ctx = this.cv_imported.getContext('2d');
+            this.cv_imported.id = 'imported';
+            this.cv_imported_ctx.lineJoin = this.cv_imported_ctx.lineCap = 'round';
+
+            this.raster_data = null;
+
             this.canvas.moose = this;
             this.currentShape = null;
             this.shapes = [];
             this.shapeHistory = [];
-            this.historyIndex = 0;
+            this.historyIndex = -1;
 
-            this.canvas.width = this.buffer.width = this.width = opts.width;
-            this.canvas.height = this.buffer.height = this.height = opts.height;
+            this.cv_raster.width = this.buffer.width = this.width = opts.width;
+            this.cv_raster.height = this.buffer.height = this.height = opts.height;
             this.position = { x: 0, y: 0 };
 
             this.buffer.moose = this;
-            this.buffer.lineJoin = this.buffer.lineCap = 'round';
 
             this.toolSize = 10;
             this.foreColor = { h: 100, s: 1, l: 0.5, a: 1 };
@@ -154,9 +168,6 @@ var Draw = (function () {
             if (this.scale < 1) {
                 this.scale = 1;
             }
-            this.canvas.width = 1600;
-            this.canvas.height = 900;
-            //this.ctx.scale(1 / this.scale, 1 / this.scale);
 
             if (this.zoomEnabled) {
                 this.bindHammerTime(this);
@@ -164,11 +175,6 @@ var Draw = (function () {
         },
         getScale: function () {
             return this.transform.m[0];
-        },
-        setScale: function (scale) {
-            this.transform.scale(scale);
-            var m = this.transform.m;
-            this.ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
         },
         setDocumentViewportScale: function (scale) {
             this.viewport.setAttribute('content', 'width=device-width, initial-scale=' + scale);
@@ -179,8 +185,51 @@ var Draw = (function () {
                 console.warn("Trying to bind to a DOM element more than once is unsupported.");
                 return;
             }
+
             this.containerEl = containerEl;
-            this.containerEl.appendChild(this.canvas);
+
+            this.canvas.style.position = 'absolute';
+            this.canvas.style.top = '200px';
+            this.canvas.style.left = '0';
+            this.canvas.style['z-index'] = '1';
+            this.canvas.style['border'] = '1px solid blue';
+
+            this.cv_imported.style.position = 'absolute';
+            this.cv_imported.style.top = '0';
+            this.cv_imported.style.left = '0';
+            this.cv_imported.style['z-index'] = '1';
+            this.cv_imported.style['border'] = '1px solid lime';
+            this.cv_imported.width = 1600;
+            this.cv_imported.height = 900;
+
+            this.cv_raster.style.position = 'absolute';
+            this.cv_raster.style.top = '0';
+            this.cv_raster.style.left = '0';
+            this.cv_raster.style['z-index'] = '2';
+            this.cv_raster.style['border'] = '1px solid lime';
+
+            this.buffer.style.position = 'absolute';
+            this.buffer.style.top = '0';
+            this.buffer.style.left = '0';
+            this.buffer.style['z-index'] = '3';
+            this.buffer.style['border'] = '1px solid blue';
+
+
+            this.canvas.width = 1600 * this.quality;
+            this.canvas.height = 900 * this.quality;
+
+            var m = this.transform.m;
+            this.ctx.transform(this.quality, 0, 0, this.quality, 0, 0);
+            this.bufferCtx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
+            this.cv_raster_ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
+
+            if (this.debug) {
+                this.containerEl.appendChild(this.canvas);
+                this.containerEl.appendChild(this.cv_imported);
+            }
+            this.containerEl.appendChild(this.cv_raster);
+            this.containerEl.appendChild(this.buffer);
+
             this.containerEl.style['background-color'] = "#aaaaaa"
             this.containerEl.style['overflow'] = 'hidden';
             this.containerEl.style['position'] = 'absolute';
@@ -188,6 +237,8 @@ var Draw = (function () {
             this.containerEl.style['left'] = '0px';
             this.containerEl.style['width'] = this.width;
             this.containerEl.style['height'] = this.height;
+
+
             if (this.debugElement)
                 this.containerEl.appendChild(this.debugElement);
 
@@ -203,19 +254,19 @@ var Draw = (function () {
             if (s < 1) {
                 s = 1;
             }
-            this.raster = null;
+            this.raster_data = null;
             this.setDocumentViewportScale(1 / s);
 
             this.transform = new Transform();
-            var m = this.transform.m;
-            this.ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
-
+            //this.transform.scale(2, 2);
             this.sessionData = data;
             this.containerEl.style.display = 'block';
             this.enableToolbar();
 
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            this.bufferCtx.clearRect(0, 0, this.buffer.width, this.buffer.height);
+            this.cv_raster_ctx.clearRect(0, 0, this.cv_raster.width, this.cv_raster.height);
+            this.cv_imported_ctx.clearRect(0, 0, this.cv_imported.width, this.cv_imported.height);
 
             this.setToolbarPosition('top');
             this.toolbar.children[0].className = this.isFullscreen() ? 'toolbar toolbar-sm' : 'toolbar toolbar-bg';
@@ -226,26 +277,31 @@ var Draw = (function () {
                 }
             }
 
+            this.shapeHistory = [];
+            this.shapes = [];
+            this.historyIndex = -1;
+            this.importedShapes = [];
+
             this.isDrawing = false;
             this.zoom(1, 1, 0, 0);
             window.scrollTo(0, 0);
-
         },
         importDrawingData: function (data) {
             var t = this.selectedTool, ts = this.toolSize, fc = this.foreColor;
             var snapshot = JSON.parse(data);
 
             if (snapshot && snapshot.length) {
+                this.importedShapes = snapshot;
                 for (var i = 0; i < snapshot.length; i++) {
                     try {
-                        this.shapes.push(snapshot[i]);
-                        this.saveShape(snapshot[i], this.ctx);
-                        this.saveShape(snapshot[i], this.bufferCtx);
+                        console.log('import shape with ' + snapshot[i].points.length + ' points');
+                        this.drawShapeToCanvas(snapshot[i], this.cv_imported_ctx);
                     } catch (ex) {
+                        console.log(ex.message);
                         this.writeDebug(ex.message);
                     }
                 }
-                this.rasterize();
+                this.redraw();
             }
             this.selectedTool = t;
             this.toolSize = ts;
@@ -253,7 +309,7 @@ var Draw = (function () {
         },
         close: function () {
             this.isDrawing = false;
-            this.raster = null;
+            this.raster_data = null;
             this.containerEl.style.display = 'none';
             this.shapes = [];
             if (this.isFullscreen()) {
@@ -263,10 +319,14 @@ var Draw = (function () {
         },
         onSave: function () {
             this.disableToolbar();
+            this.flush();
+            this.redraw();
             if (this.onExportImage) {
                 try {
+                    // copy all history up to historyIndex to this.shapes
+                    this.shapes = this.importedShapes.concat(this.shapeHistory.slice(0, this.historyIndex + 1));
                     this.onExportImage(this.sessionData,
-                        this.buffer.toDataURL('image/png'),
+                        this.canvas.toDataURL('image/png'),
                         JSON.stringify(this.shapes));
                     return;
                 } catch (ex) {
@@ -303,24 +363,26 @@ var Draw = (function () {
                         el.style.border = '1px solid #888';
                     }
                     el.className = 'btn btn-default btn-brush';
-                    el.onclick = function (e) {
+                    el.addEventListener('click', function (e) {
                         if (onSelected)
                             onSelected($this);
-                    };
+                        return true;
+                    });
                     return el;
                 },
-                onPointerStart: function (moose, pt) {
+                onPointerStart: function (moose, pt, targetContext) {
                     this.lastPoint = pt;
+                    return this.onPointerDrag(moose, pt, targetContext);
                 },
                 onPointerDrag: function (moose, pt, targetContext) {
                     var dist = utils.distanceBetween(this.lastPoint, pt);
                     var angle = utils.angleBetween(this.lastPoint, pt);
-                    var ctx = targetContext || moose.ctx;
+                    var ctx = targetContext || moose.bufferCtx;
 
                     var fc = moose.foreColor;
 
                     var toolSize = pt.toolSize || moose.toolSize;
-                    for (var i = 0; i < dist; i += toolSize / 4) {
+                    for (var i = 0; i <= dist; i += toolSize / 4) {
 
                         x = this.lastPoint.x + (Math.sin(angle) * i);
                         y = this.lastPoint.y + (Math.cos(angle) * i);
@@ -344,14 +406,13 @@ var Draw = (function () {
                             y - toolSize,
                             toolSize * 2,
                             toolSize * 2);
+                        if (dist == 0) break;
                     }
                     this.lastPoint = pt;
                     return pt;
                 },
                 onPointerStop: function (moose) {
                     this.lastPoint = null;
-                    moose.addHistory(moose.currentShape);
-                    moose.saveShape(moose.currentShape, moose.bufferCtx);
                 }
             },
             {
@@ -368,13 +429,14 @@ var Draw = (function () {
                         el.style.border = '1px solid #888';
                     }
                     el.className = 'btn btn-default btn-brush';
-                    el.onclick = function (e) {
+                    el.addEventListener('click', function (e) {
                         if (onSelected)
                             onSelected($this);
-                    };
+                        return true;
+                    });
                     return el;
                 },
-                onPointerStart: function (moose, pt) {
+                onPointerStart: function (moose, pt, targetContext) {
                     this.lastPoint = pt;
 
                     this.sizeVariation = pt.sizeVariation || (Math.random() * 1) + 0.5;
@@ -382,11 +444,12 @@ var Draw = (function () {
                     this.blotWait = pt.blotWait || utils.getRandomInt(100, 300);
                     this.actualInkSize = pt.actualInkSize || 1;
 
+                    return this.onPointerDrag(moose, pt, targetContext)
                 },
                 onPointerDrag: function (moose, pt, targetContext) {
                     var dist = utils.distanceBetween(this.lastPoint, pt);
                     var angle = utils.angleBetween(this.lastPoint, pt);
-                    var ctx = targetContext || moose.ctx
+                    var ctx = targetContext || moose.bufferCtx
 
                     var fc = moose.foreColor;
                     this.sizeChangeWait--;
@@ -409,7 +472,7 @@ var Draw = (function () {
                     else
                         this.actualInkSize += (toolSize - this.actualInkSize) / (this.sizeChangeWait / 2);
 
-                    for (var i = 0; i < dist; i += this.actualInkSize / 4) {
+                    for (var i = 0; i <= dist; i += this.actualInkSize / 4) {
 
                         x = this.lastPoint.x + (Math.sin(angle) * i);
                         y = this.lastPoint.y + (Math.cos(angle) * i);
@@ -433,6 +496,7 @@ var Draw = (function () {
                             y - this.actualInkSize,
                             this.actualInkSize * 2,
                             this.actualInkSize * 2);
+                        if (dist == 0) break;
                     }
 
                     var pointData =
@@ -449,8 +513,6 @@ var Draw = (function () {
                 },
                 onPointerStop: function (moose) {
                     this.lastPoint = null;
-                    moose.addHistory(moose.currentShape);
-                    moose.saveShape(moose.currentShape, moose.bufferCtx);
                 }
             }
         ],
@@ -466,29 +528,31 @@ var Draw = (function () {
                     el.style.float = 'left';
                     el.className = 'btn btn-info';
                     el.innerHTML = '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
-                    el.onclick = function (e) {
+                    el.addEventListener('click',
+                        function(e) {
 
-                        for (var i = 0; i < moose.toolbarItems.length; i++) {
-                            var ti = moose.toolbarItems[i];
-                            if (!ti.enabled) continue;
-                            if ($this.collapsed) {
-                                ti.el.style.setProperty("display", "inline-block", "important");
-                            } else if (!ti.showWhenCollapsed) {
-                                ti.el.style.display = 'none';
+                            for (var i = 0; i < moose.toolbarItems.length; i++) {
+                                var ti = moose.toolbarItems[i];
+                                if (!ti.enabled) continue;
+                                if ($this.collapsed) {
+                                    ti.el.style.setProperty("display", "inline-block", "important");
+                                } else if (!ti.showWhenCollapsed) {
+                                    ti.el.style.display = 'none';
+                                }
                             }
-                        }
-                        $this.collapsed = !$this.collapsed;
-                        if ($this.collapsed) {
-                            $this.el
-                                .innerHTML =
-                                '<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>';
-                        } else {
-                            $this.el
-                                .innerHTML =
-                                '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
-                        }
-                        moose.toolbar.fitOnScreen();
-                    }
+                            $this.collapsed = !$this.collapsed;
+                            if ($this.collapsed) {
+                                $this.el
+                                    .innerHTML =
+                                    '<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>';
+                            } else {
+                                $this.el
+                                    .innerHTML =
+                                    '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
+                            }
+                            moose.toolbar.fitOnScreen();
+                            return true;
+                        });
 
                     this.el = el;
                     return el;
@@ -504,15 +568,17 @@ var Draw = (function () {
                     var el = document.createElement('button');
                     el.className = 'btn btn-default';
                     el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
-                    el.onclick = function (e) {
-                        if (moose.toolbarPosition == 'top') {
-                            $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-top"></span>';
-                            moose.setToolbarPosition('bottom');
-                        } else {
-                            $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
-                            moose.setToolbarPosition('top');
-                        }
-                    }
+                    el.addEventListener('click',
+                        function(e) {
+                            if (moose.toolbarPosition == 'top') {
+                                $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-top"></span>';
+                                moose.setToolbarPosition('bottom');
+                            } else {
+                                $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
+                                moose.setToolbarPosition('top');
+                            }
+                            return true;
+                        });
                     this.el = el;
                     return el;
                 }
@@ -524,9 +590,10 @@ var Draw = (function () {
                 var el = document.createElement('button');
                 el.className = 'btn btn-primary';
                 el.innerHTML = '<span class="glyphicon glyphicon-floppy-disk"></span>';
-                el.onclick = function (e) {
+                el.addEventListener('click', function (e) {
                     moose.onSave();
-                };
+                    return true;
+                });
                 this.el = el;
                 return el;
             }
@@ -539,9 +606,10 @@ var Draw = (function () {
                 el.className = 'btn btn-danger';
                 el.innerHTML = '<span class="glyphicon glyphicon-remove"></span>';
                 this.el = el;
-                el.onclick = function (e) {
+                el.addEventListener('click', function (e) {
                     moose.onCancel();
-                };
+                    return true;
+                });
                 return el;
             }
         },
@@ -552,9 +620,11 @@ var Draw = (function () {
                     this.el = document.createElement('button');
                     this.el.className = 'btn btn-default';
                     this.el.innerHTML = '<span class="glyphicon glyphicon-arrow-left"></span>';
-                    this.el.onclick = function () {
-                        moose.undo();
-                    }
+                    this.el.addEventListener('click',
+                        function(e) {
+                            moose.undo();
+                            return true;
+                        });
                     return this.el;
                 }
             },
@@ -565,9 +635,11 @@ var Draw = (function () {
                     this.el = document.createElement('button');
                     this.el.className = 'btn btn-default';
                     this.el.innerHTML = '<span class="glyphicon glyphicon-arrow-right"></span>';
-                    this.el.onclick = function () {
-                        moose.redo();
-                    }
+                    this.el.addEventListener('click',
+                        function() {
+                            moose.redo();
+                            return true;
+                        });
                     return this.el;
                 }
             },
@@ -579,14 +651,15 @@ var Draw = (function () {
                 el.className = 'btn btn-default';
                 this.el = el;
                 el.innerHTML = '<span class="glyphicon glyphicon-fullscreen"></span>';
-                el.onclick = function (e) {
+                el.addEventListener('click', function (e) {
                     if (moose.isFullscreen()) {
                         moose.exitFullscreen();
                     } else {
                         moose.enterFullscreen();
                     }
                     moose.toolbar.fitOnScreen();
-                };
+                    return true;
+                });
                 return el;
             }
         },
@@ -726,12 +799,13 @@ var Draw = (function () {
                         cel.style.backgroundColor = utils.toHslaString(col);
                         cel.style.display = 'inline-block';
                         row.appendChild(cel);
-                        cel.onclick = function (e) {
+                        cel.addEventListener('click', function (e) {
                             moose.setForeColor(utils.fromRgbString(this.style.backgroundColor));
                             $this.el.style.backgroundColor = this.style.backgroundColor;
                             $this.picker.style.display = 'none';
                             $this.opened = false;
-                        };
+                            return true;
+                        });
                     }
                     colorPicker.appendChild(row);
                 }
@@ -773,7 +847,7 @@ var Draw = (function () {
                         input.type = 'range';
                         input.name = 'toolSize';
                         input.value = moose.toolSize;
-                        input.min = 0.5;
+                        input.min = 1;
                         input.max = 200;
                         input.attributes['step'] = '1';
                         input.defaultValue = moose.toolSize;
@@ -812,32 +886,77 @@ var Draw = (function () {
             }
         },
         {
-            name: 'zoom-in',
-            enabled: this.zoomEnabled,
+            name: 'toggle canvas',
+            enabled: true,
             initialize: function (moose) {
                 var el = document.createElement('button');
                 el.className = 'btn btn-default';
-                el.innerHTML = 'zoom in';
-                el.onclick = function (e) {
-                    var newScale = moose.getScale() * 2;
-                    moose.zoom(newScale, moose.getScale(), 0.5, 0.5);
-                };
+                el.innerHTML = 'canvas';
+                el.addEventListener('click', function (e) {
+                    if (document.getElementById('canvas').style.display == 'none') {
+                        document.getElementById('canvas').style.display = 'inline-block';
+                    } else {
+                        document.getElementById('canvas').style.display = 'none';
+                    }
+                    return true;
+                });
                 this.el = el;
                 return el;
             }
         },
         {
-            name: 'zoom-out',
-            enabled: this.zoomEnabled,
+            name: 'toggle buffer',
+            enabled: true,
             initialize: function (moose) {
                 var el = document.createElement('button');
                 el.className = 'btn btn-default';
-                el.innerHTML = 'zoom out';
-                el.onclick = function (e) {
-                    var newScale = moose.getScale() / 2;
-                    if (newScale == moose.getScale()) return;
-                    moose.zoom(newScale, moose.getScale(), 0.5, 0.5);
-                };
+                el.innerHTML = 'buffer';
+                el.addEventListener('click', function (e) {
+                    if (document.getElementById('buffer').style.display == 'none') {
+                        document.getElementById('buffer').style.display = 'inline-block';
+                    } else {
+                        document.getElementById('buffer').style.display = 'none';
+                    }
+                    return true;
+                });
+                this.el = el;
+                return el;
+            }
+        },
+        {
+            name: 'toggle raster',
+            enabled: true,
+            initialize: function (moose) {
+                var el = document.createElement('button');
+                el.className = 'btn btn-default';
+                el.innerHTML = 'raster';
+                el.addEventListener('click', function (e) {
+                    if (document.getElementById('raster').style.display == 'none') {
+                        document.getElementById('raster').style.display = 'inline-block';
+                    } else {
+                        document.getElementById('raster').style.display = 'none';
+                    }
+                    return true;
+                });
+                this.el = el;
+                return el;
+            }
+        },
+        {
+            name: 'toggle imported',
+            enabled: true,
+            initialize: function (moose) {
+                var el = document.createElement('button');
+                el.className = 'btn btn-default';
+                el.innerHTML = 'imported';
+                el.addEventListener('click', function (e) {
+                    if (document.getElementById('imported').style.display == 'none') {
+                        document.getElementById('imported').style.display = 'inline-block';
+                    } else {
+                        document.getElementById('imported').style.display = 'none';
+                    }
+                    return true;
+                });
                 this.el = el;
                 return el;
             }
@@ -846,13 +965,14 @@ var Draw = (function () {
         createToolbar: function () {
             var t = document.createElement('div');
 
+            t.id = 'toolbar-container';
             t.className = 'toolbar-container';
             t.style.setProperty('top', '0px');
             t.style.setProperty('left', '0px');
-            t.style['z-index'] = 1;
+            t.style['z-index'] = 10;
 
             var tb = document.createElement('div');
-            tb.attributes['id'] = 'toolbar';
+            tb.id = 'toolbar';
             tb.className = this.isFullscreen() ? 'toolbar toolbar-sm' : 'toolbar toolbar-bg';
 
             for (var i = 0; i < this.toolbarItems.length; i++) {
@@ -966,30 +1086,78 @@ var Draw = (function () {
             return false;
         },
         undo: function () {
-            if (this.shapes.length == 0) return;
-            this.shapes.pop();
+            if (this.historyIndex <= -1)
+                return;
+
+            var t0 = performance.now();
+            if (this.shapes.length > 0) {
+                this.shapes.pop();
+                this.redrawBuffer();
+            }
+
+            var redraw = false;
+            if (this.shapes.length == 0 && this.historyIndex > 0) {
+                // copy previous x shapes from history into the buffer
+                for (var i = 0; i < this.bufferSize; i++) {
+                    if (this.historyIndex - this.bufferSize + i < 0) continue;
+                    this.shapes.push(this.shapeHistory[this.historyIndex-this.bufferSize+i]);
+                    console.log('pull shape ' + (this.historyIndex - this.bufferSize + i) + ' from history. shapes.length=' + this.shapes.length);
+                }
+                redraw = true;
+            }
             this.historyIndex--;
-            this.redraw();
+            if (redraw) this.redraw();
+            this.debugInfo();
+            var t1 = performance.now();
+            this.diagnostics.set('undo', t1 - t0);
         },
         redo: function () {
-            if (this.historyIndex == this.shapeHistory.length) return;
-            this.shapes.push(this.shapeHistory[this.historyIndex++]);
-            this.redraw();
+            if (this.historyIndex >= this.shapeHistory.length - 1) return;
+            var t0 = performance.now();
+            this.shapes.push(this.shapeHistory[++this.historyIndex]);
+            this.redrawBuffer();
+            if (this.shapes.length >= this.bufferSize) {
+                this.flush();
+            }
+            this.debugInfo();
+            var t1 = performance.now();
+            this.diagnostics.set('redo', t1 - t0);
         },
         addHistory: function (shape) {
-            if (this.historyIndex < this.shapeHistory.length) {
-                this.shapeHistory = this.shapeHistory.slice(this.historyIndex - 1);
+            var t0 = performance.now();
+            var redraw = false;
+            if (this.historyIndex < (this.shapeHistory.length - 1)) {
+                console.log('decapitating history. ' + this.shapeHistory.length + ' items in history');
+                this.shapeHistory = this.shapeHistory.slice(0,this.historyIndex+1);
+                console.log('sliced history up to ' + (this.historyIndex + 1));
+                this.shapes = [];
+                redraw = true;
             }
             this.shapeHistory.push(shape);
-            this.historyIndex = this.shapeHistory.length;
+            console.log('adding a shape to history. history has ' + this.shapeHistory.length + ' items');
+            this.historyIndex = this.shapeHistory.length - 1;
+            if (redraw) {
+                console.log('redrawing. history index = ' + this.historyIndex);
+                this.redraw();
+            }
+            this.debugInfo();
+            var t1 = performance.now();
+            this.diagnostics.set('add history', t1 - t0);
         },
         debugInfo: function (e) {
             var d = '';
             if (e) { d += 's:' + Math.round(e.screenX) + ',' + Math.round(e.screenY) + ' c:' + Math.round(e.clientX) + ',' + Math.round(e.clientY) + '<br/>'; }
             //d += 'scale:' + this.getScale() + ' p:' + (Math.round(this.position.x)) + ',' + Math.round(this.position.y) + ' o:' + window.pageXOffset + ',' + window.pageYOffset + '<br/>';
             if (this.transform) {
-                d += this.transform.toString() + '<br/>';
+                //d += this.transform.toString() + '<br/>';
             }
+            //d += 'shapes:' + this.shapes.length;
+            d += 'b:'+this.shapes.length + ' h:' + this.shapeHistory.length + '(' + this.historyIndex + ')';
+
+            this.diagnostics.forEach(function(value, key) {
+                d += ', ' + key + ':' + Math.round(value) + 'ms';
+            });
+
             if (this.debug) {
                 this.writeDebug(d);
             }
@@ -1003,8 +1171,9 @@ var Draw = (function () {
 
             return p;
         },
-        startDrawingShape: function (point) {
+        startDrawingShape: function (point,context) {
             this.isDrawing = true;
+            var ctx = context || this.bufferCtx;
             point = this.clientToCanvas(point);
             this.lastPoint = point;
             var tool = this.selectedTool || this.tools[0];
@@ -1014,11 +1183,13 @@ var Draw = (function () {
                 points: [],
                 toolName: tool.name
             }
-            tool.onPointerStart(this, point);
+            var ptData = tool.onPointerStart(this, point, ctx);
+            this.lastPoint = ptData;
+            this.currentShape.points.push(ptData);
         },
         drawMove: function (pt, tool, context) {
             var t = tool || this.selectedTool;
-            var ctx = context || this.ctx;
+            var ctx = context || this.bufferCtx;
             pt = this.clientToCanvas(pt);
             var ptData = t.onPointerDrag(this, pt);
             this.lastPoint = ptData;
@@ -1032,9 +1203,63 @@ var Draw = (function () {
             }
             this.currentShape.points.push(ptData);
         },
-        drawStop: function () {
+        drawStop: function (pt, tool, context) {
             this.selectedTool.onPointerStop(this);
-            this.rasterize();
+
+            var s = this.currentShape;
+            this.saveShape(s, this.buffer);
+            this.addHistory(s);
+            s = null;
+
+            if (this.shapes.length >= this.bufferSize) {
+                this.flush();
+            }
+            this.debugInfo();
+            //this.rasterize();
+        },
+        flush: function () {
+            var t0= performance.now();
+            console.log('flushing ' + this.shapes.length + ' shapes from buffer');
+            var m = this.transform.m;
+            var x = -m[4] / m[0], y = -m[5] / m[3], w = this.width / m[0], h = this.height / m[3];
+            this.ctx.drawImage(this.buffer, x, y, w, h);
+            this.bufferCtx.clearRect(0, 0, this.width, this.height);
+            this.updateRaster();
+            this.shapes = [];
+            var t1 = performance.now();
+            this.diagnostics.set('flush',(t1 - t0));
+            this.debugInfo();
+        },
+        updateRaster: function () {
+            this.cv_raster_ctx.clearRect(0, 0, this.width, this.height);
+            var m = this.transform.m;
+            this.cv_raster_ctx.drawImage(this.cv_imported, 0, 0, this.width, this.height);
+            this.cv_raster_ctx.drawImage(this.canvas, 0, 0, this.width, this.height);
+        },
+        zoom: function (newScale, oldScale, clientX, clientY) {
+            var t0 = performance.now();
+            this.flush();
+
+            if (newScale < 1) newScale = 1;
+            if (newScale > 32) newScale = 32;
+
+            var scaler = this.getScale() > newScale ? oldScale : newScale;
+            var can = this.clientToCanvas({ x: clientX, y: clientY });
+            this.transform.scale(newScale / oldScale, newScale / oldScale);
+            var can_post = this.clientToCanvas({ x: clientX, y: clientY });
+            var delta = { x: can_post.x - can.x, y: can_post.y - can.y };
+            this.transform.translate(delta.x, delta.y);
+
+            var m = this.transform.m;
+            this.bufferCtx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
+            this.cv_raster_ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
+            //this.ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
+            this.position.x = m[4];
+            this.position.y = m[5];
+
+            this.updateRaster();
+            var t1 = performance.now();
+            this.diagnostics.set('zoom', t1 - t0);
         },
         drawShapeToCanvas: function (shape, context) {
             if (!this.shapes) this.shapes = [];
@@ -1048,7 +1273,7 @@ var Draw = (function () {
             }
             this.foreColor = shape.foreColor;
             this.toolSize = shape.toolSize;
-            tool.onPointerStart(this, lastPoint);
+            tool.onPointerStart(this, lastPoint, context);
             if (shape.points.length <= 0) return;
 
             for (var p = 1; p < shape.points.length; p++) {
@@ -1056,17 +1281,74 @@ var Draw = (function () {
                 tool.onPointerDrag(this, pt, context);
                 lastPoint = pt;
             }
+            tool.onPointerStop(this, pt, context);
         },
-        saveShape: function (shape, context) {
-            this.drawShapeToCanvas(shape, context);
+        saveShape: function (shape) {
             this.shapes.push(shape);
             this.currentShape = null;
         },
         drawShapesToCanvas: function () {
             if (!this.shapes) this.shapes = [];
             for (var s = 0; s < this.shapes.length; s++) {
-                this.saveShape(this.shapes[s]);
+                this.saveShape(this.shapes[s], this.bufferCtx);
             }
+        },
+        drawRasterized: function () {
+            if (this.raster_data == null) return;
+            var moose = this;
+            if (!this.rasterizedImage) {
+                this.rasterizedImage = new Image;
+                this.rasterizedImage.onload = function () {
+                    moose.bufferCtx.clearRect(-1000, -1000, moose.width + 2000, moose.height + 2000);
+                    moose.bufferCtx.drawImage(moose.rasterizedImage, 0, 0);
+                };
+            } else {
+                moose.bufferCtx.clearRect(-1000, -1000, moose.width + 2000, moose.height + 2000);
+                moose.bufferCtx.drawImage(moose.rasterizedImage, 0, 0);
+            }
+            this.rasterizedImage.src = this.raster_data;
+        },
+        rasterize: function () {
+            this.raster_data = this.buffer.toDataURL('image/png');
+        },
+        redrawBuffer: function () {
+            var t0 = performance.now();
+            var toolSize = this.toolSize;
+            var foreColor = this.foreColor;
+            this.bufferCtx.clearRect(0, 0, this.width, this.height);
+            for (var s = 0; s < this.shapes.length; s++) {
+                this.drawShapeToCanvas(this.shapes[s], this.bufferCtx);
+            }
+            this.toolSize = toolSize;
+            this.foreColor = foreColor;
+            var t1 = performance.now();
+            this.diagnostics.set('redraw buffer',t1 - t0);
+        },
+        redraw: function () {
+            var t0 = performance.now();
+            var toolSize = this.toolSize;
+            var foreColor = this.foreColor;
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            var redrawCount = (this.historyIndex + 1) - this.shapes.length; // number of items in history up to head minus total items in buffer
+            console.log('history index = ' + this.historyIndex);
+            console.log('drawing first ' + redrawCount + " items from history");
+            this.ctx.drawImage(this.cv_imported, 0, 0, this.cv_imported.width, this.cv_imported.height);
+            for (var s = 0; s < redrawCount; s++) {
+                console.log('redraw shape ' + s + ' to canvas')
+                this.drawShapeToCanvas(this.shapeHistory[s], this.ctx);
+            }
+            this.updateRaster();
+            this.redrawBuffer();
+            this.toolSize = toolSize;
+            this.foreColor = foreColor;
+            var t1 = performance.now();
+            this.diagnostics.set('redraw', t1 - t0);
+        },
+        drawDot: function (x, y, color) {
+            this.bufferCtx.fillStyle = color;
+            this.bufferCtx.beginPath();
+            this.bufferCtx.arc(x, y, 6, 0, Math.PI / 2, true);
+            this.bufferCtx.fill();
         },
         buildPalette: function () {
             var p = [];
@@ -1169,7 +1451,7 @@ var Draw = (function () {
             document.body.addEventListener('touchend', moose.toolbar.endmove, true);
 
             window.addEventListener('mouseup', moose.toolbar.endmove, true);
-            this.canvas.addEventListener('mouseup', moose.toolbar.endmove, true);
+            this.buffer.addEventListener('mouseup', moose.toolbar.endmove, true);
 
 
             this.toolbar.addEventListener('click', function (e) {
@@ -1179,7 +1461,7 @@ var Draw = (function () {
                 }
             }, false);
 
-            this.canvas.addEventListener('mousedown',
+            this.buffer.addEventListener('mousedown',
                 function (e) {
                     if (moose.popup) {
                         moose.popup.style.display = 'none';
@@ -1196,9 +1478,8 @@ var Draw = (function () {
                     }
                 });
 
-            this.canvas.addEventListener('mousemove', function (e) {
+            this.buffer.addEventListener('mousemove', function (e) {
                 //var moose = this.moose;
-                this.moose.debugInfo();
                 var currentPoint = { x: e.clientX, y: e.clientY };
 
                 if (this.moose.mouseOut) {
@@ -1210,7 +1491,6 @@ var Draw = (function () {
                     e.preventDefault();
 
                     if (this.moose.mouseOut) {
-                        this.moose.lastPoint =
                         this.moose.mouseOut = false;
                     }
 
@@ -1218,27 +1498,28 @@ var Draw = (function () {
                 }
             });
 
-            this.canvas.addEventListener('mouseup', function (e) {
+            this.buffer.addEventListener('mouseup', function (e) {
                 var moose = this.moose;
-
+                var currentPoint = { x: e.clientX, y: e.clientY };
                 if (moose.isDrawing) {
                     e.preventDefault();
 
                     moose.isDrawing = false;
-                    moose.drawStop(moose);
+                    moose.drawStop(currentPoint);
                 }
             });
-            this.canvas.addEventListener('mouseout', function (e) {
+            this.buffer.addEventListener('mouseout', function (e) {
                 var moose = this.moose;
                 if (moose.isDrawing) {
                     e.preventDefault();
 
                     moose.mouseOut = true;
                     moose.isDrawing = false;
-                    moose.selectedTool.onPointerStop(moose);
+                    moose.selectedTool.onPointerStop(moose.lastPoint);
                 }
             });
-            this.canvas.addEventListener('touchmove',
+
+            this.buffer.addEventListener('touchmove',
                 function (e) {
                     var moose = this.moose;
                     if (moose.isDrawing) {
@@ -1250,17 +1531,19 @@ var Draw = (function () {
                         }
                     }
                 });
-            this.canvas.addEventListener('touchend',
+            this.buffer.addEventListener('touchend',
                 function (e) {
                     var moose = this.moose;
                     if (moose.isDrawing) {
                         e.preventDefault();
+                        var touches = e.changedTouches;
+                        moose.writeDebug('touch end:' + touches.length);
 
                         moose.isDrawing = false;
                         moose.drawStop(moose);
                     }
                 });
-            this.canvas.addEventListener('touchstart',
+            this.buffer.addEventListener('touchstart',
                 function (e) {
                     var moose = this.moose;
                     if (moose.popup) {
@@ -1291,65 +1574,8 @@ var Draw = (function () {
                 return this;
             };
         },
-        drawRasterized: function () {
-            if (this.raster == null) return;
-            var moose = this;
-            if (!this.rasterizedImage) {
-                this.rasterizedImage = new Image;
-                this.rasterizedImage.onload = function () {
-                    moose.ctx.clearRect(-1000, -1000, moose.width + 2000, moose.height + 2000);
-                    moose.ctx.drawImage(moose.rasterizedImage, 0, 0);
-                };
-            } else {
-                moose.ctx.clearRect(-1000, -1000, moose.width + 2000, moose.height + 2000);
-                moose.ctx.drawImage(moose.rasterizedImage, 0, 0);
-            }
-            this.rasterizedImage.src = this.raster;
-        },
-        rasterize: function () {
-            this.raster = this.buffer.toDataURL('image/png');
-        },
-        redraw: function () {
-            var toolSize = this.toolSize;
-            var foreColor = this.foreColor;
-            this.bufferCtx.clearRect(0, 0, this.width, this.height);
-            for (var s = 0; s < this.shapes.length; s++) {
-                this.drawShapeToCanvas(this.shapes[s], this.bufferCtx);
-            }
-            this.ctx.clearRect(-1000, -1000, this.width + 2000, this.height + 2000);
-            this.ctx.drawImage(this.buffer,0,0);
-            this.raster = this.buffer.toDataURL('image/png');
-            this.toolSize = toolSize;
-            this.foreColor = foreColor;
-            this.rasterize();
-            this.drawRasterized();
-        },
-        drawDot: function (x, y, color) {
-            this.ctx.fillStyle = color;
-            this.ctx.beginPath();
-            this.ctx.arc(x, y, 6, 0, Math.PI / 2, true);
-            this.ctx.fill();
-        },
-        zoom: function (newScale, oldScale, clientX, clientY) {
-            if (newScale < 1) newScale = 1;
-            if (newScale > 32) newScale = 32;
-
-            var scaler = this.getScale() > newScale ? oldScale : newScale;
-            var can = this.clientToCanvas({ x: clientX, y: clientY });
-            this.transform.scale(newScale / oldScale, newScale / oldScale);
-            var can_post = this.clientToCanvas({ x: clientX, y: clientY });
-            var delta = { x: can_post.x - can.x, y: can_post.y - can.y };
-            this.transform.translate(delta.x, delta.y);
-
-            var m = this.transform.m;
-            this.ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
-            this.position.x = m[4];
-            this.position.y = m[5];
-
-            this.drawRasterized();
-        },
         bindHammerTime: function (moose) {
-            moose.hammertime = new Hammer(this.canvas);
+            moose.hammertime = new Hammer(this.buffer);
             moose.hammertime.moose = moose;
             moose.hammertime.on('pan',
                     function (ev) {
@@ -1359,11 +1585,12 @@ var Draw = (function () {
             moose.hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL });
             moose.hammertime.on('pinchstart',
                     function (ev) {
-                        if (this.isDrawing) {
-                            this.lastPoint = null;
-                            this.isDrawing = false;
-                        }
                         var moose = ev.target.moose;
+                        if (moose.isDrawing) {
+                            moose.lastPoint = null;
+                            moose.isDrawing = false;
+                            moose.writeDebug('stop drawing');
+                        }
                         moose.pinchDeltaLastFrame = { x: 0, y: 0 };
                         moose.scaleAtPinchStart = moose.getScale()
                         moose.offsetAtPinchStart = moose.offset;
@@ -1371,12 +1598,13 @@ var Draw = (function () {
             moose.hammertime.on('pinchmove',
                     function (ev) {
                         try {
-                            if (this.isDrawing) {
-                                this.lastPoint = null;
-                                this.isDrawing = false;
+                            var moose = ev.target.moose;
+                            if (moose.isDrawing) {
+                                moose.lastPoint = null;
+                                moose.isDrawing = false;
+                                moose.writeDebug('stop drawing');
                             }
 
-                            var moose = ev.target.moose;
                             var newScale = moose.scaleAtPinchStart * (ev.scale);
                             var pt = { x: ev.center.x + (window.pageXOffset), y: ev.center.y + (window.pageYOffset) };
                             moose.zoom(newScale, moose.getScale(), pt.x, pt.y);
@@ -1395,8 +1623,6 @@ var Draw = (function () {
             moose.hammertime.on("pan",
                     function (ev) {
                         var moose = ev.target.moose;
-                        //moose.transform.translate(ev.deltaX, ev.deltaY);
-
                     });
         }
 
