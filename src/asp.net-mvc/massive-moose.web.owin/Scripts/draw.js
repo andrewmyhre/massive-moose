@@ -142,7 +142,7 @@ var Draw = (function () {
 
             this.buffer.moose = this;
 
-            this.toolSize = 10;
+            this.toolSize = 20;
             this.foreColor = { h: 100, s: 1, l: 0.5, a: 1 };
 
             if (this.debug) {
@@ -386,8 +386,7 @@ var Draw = (function () {
                         x = this.lastPoint.x + (Math.sin(angle) * i);
                         y = this.lastPoint.y + (Math.cos(angle) * i);
 
-                        var radgrad = ctx
-                            .createRadialGradient(x, y, toolSize / 2, x, y, toolSize);
+                        var radgrad = ctx.createRadialGradient(x, y, toolSize / 4, x, y, toolSize/2);
 
                         var centerColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
                         var midColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
@@ -477,7 +476,7 @@ var Draw = (function () {
                         y = this.lastPoint.y + (Math.cos(angle) * i);
 
                         var radgrad = ctx
-                            .createRadialGradient(x, y, this.actualInkSize / 2, x, y, this.actualInkSize);
+                            .createRadialGradient(x, y, this.actualInkSize / 4, x, y, this.actualInkSize/2);
 
                         var centerColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
                         var midColor = { h: fc.h, s: fc.s, l: fc.l, a: fc.a };
@@ -833,9 +832,19 @@ var Draw = (function () {
                 this.moose.toolSize = 10;
                 this.el.innerHTML = 'Size:' + this.moose.toolSize;
             },
+            updatePreview:function() {
+                var ctx =this.el.previewCanvas.getContext('2d');
+                ctx.beginPath();
+                ctx.clearRect(0, 0, 200, 200);
+                ctx.ellipse(100, 100, this.moose.toolSize / 2, this.moose.toolSize / 2, 45 * Math.PI / 180, 0, 2 * Math.PI);
+                ctx.fillStyle = utils.toHslaString(this.moose.foreColor);
+                ctx.fill();
+  
+            },
             initialize: function (moose) {
                 this.moose = moose;
                 var el = document.createElement('button');
+                el.parent = this;
                 el.className = 'btn btn-default';
                 el.innerHTML = 'Size:' + moose.toolSize;
                 el.style['margin-right'] = '1em';
@@ -849,8 +858,6 @@ var Draw = (function () {
                         el.popup.style.padding = "10px";
                         el.popup.style.border = "2px solid blue";
                         el.popup.style.position = 'absolute';
-                        el.popup.style.top = '50px';
-                        el.popup.style.left = '50px';
                         el.popup.style['z-index'] = 104;
                         var input = document.createElement('input');
                         input.type = 'range';
@@ -863,29 +870,41 @@ var Draw = (function () {
                         input.oninput = input.onchange = function (e) {
                             moose.toolSize = input.value;
                             el.innerHTML = 'Size:' + moose.toolSize;
+                            el.parent.updatePreview();
+
                         };
                         input.style.width = '500px';
                         input.style.setProperty("display", "inline-block", "important");
                         input.style['position'] = 'relative';
                         input.style['top'] = '5px';
+                        input.style['margin'] = '1em 0 1em 0';
                         el.popup.appendChild(input);
+
+                        var preview = document.createElement('canvas');
+                        preview.width = 200;
+                        preview.height = 200;
+                        preview.style.position = 'relative';
+                        preview.style.display = 'block';
+                        preview.style.margin = 'auto';
+                        preview.className = 'tool-size-preview';
+                        el.previewCanvas = preview;
+                        el.popup.appendChild(preview);
+
                         moose.containerEl.appendChild(el.popup);
+
+
                     } else {
                         if (moose.closePopups() == el.popup) {
                             return;
                         }
                     }
 
-                    var r = this.getClientRects();
-                    el.popup.style.left = r[0].left + 'px';
-                    if (window.innerHeight - r[0].bottom < r[0].top) {
-                        el.popup.style.top = (r[0].top - 98) + 'px';
-                    } else {
-                        el.popup.style.top = (r[0].top + 128) + 'px';
-                    }
-
-
                     el.popup.style.display = 'block';
+                    var pr = el.popup.getClientRects();
+                    el.popup.style.left = ((window.innerWidth / 2) - (pr[0].width / 2)) + 'px';
+                    el.popup.style.top = ((window.innerHeight / 2) - (pr[0].height / 2)) + 'px';
+
+                    el.parent.updatePreview();
                     moose.setPopup(el.popup);
                 }, true);
 
