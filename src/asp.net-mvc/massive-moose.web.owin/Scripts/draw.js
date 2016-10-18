@@ -1016,12 +1016,15 @@ var Draw = (function () {
 
             for (var i = 0; i < this.toolbarItems.length; i++) {
                 var ti = this.toolbarItems[i];
+                ti.moose = this;
                 var el = ti.initialize(this, t);
                 if (!ti || !ti.enabled()) continue;
                 el.className += ' toolbar-item btn-toolbar';
                 el.toolbarItem = ti;
                 el.addEventListener('click',
                     function (e) {
+                        e.preventDefault();
+                        console.log('clicked ' + this.toolbarItem.name);
                         return false;
                     });
                 tb.appendChild(el);
@@ -1411,10 +1414,7 @@ var Draw = (function () {
             var moose = this;
 
             moose.toolbar.move = function (e) {
-                moose.diagnostics.set('touch', 'toolbar move');
                 if (moose.toolbar.dragging) {
-                    e.stopPropagation();
-                    e.preventDefault();
 
                     var touches = e.changedTouches;
                     var pos = { x: e.clientX, y: e.clientY };
@@ -1441,10 +1441,14 @@ var Draw = (function () {
                     moose.toolbar.lastDragPosition = newPos;
 
                     if (!moose.toolbar.dragActivated) {
-                        moose.diagnostics.set('touch', 'dragging, not activated');
+                        console.log('dragging, not activated:'+pos.x+','+pos.y);
                         return;
                     }
-                    moose.diagnostics.set('touch', 'dragging, activated');
+
+                    e.stopPropagation();
+                    e.preventDefault();
+
+                    console.log('dragging, activated:' + pos.x + ',' + pos.y);
                     moose.disableToolbar();
                     moose.closePopups();
 
@@ -1471,18 +1475,14 @@ var Draw = (function () {
                 moose.toolbar.dragInitialPosition = pos;
                 moose.toolbar.dragPosition = { x: pos.x - r[0].left, y: pos.y - r[0].top };
                 moose.toolbar.lastDragPosition = moose.toolbar.dragPosition;
-                moose.diagnostics.set('touch', 'startmove ' + pos.x + ',' + pos.y);
-                e.preventDefault();
+                console.log('toolbar startmove: '+pos.x+','+pos.y);
+                return false;
             };
             moose.toolbar.endmove = function (e) {
-                if (moose.toolbar.dragging) {
-                    e.preventDefault();
-                    moose.toolbar.dragging = false;
-                    moose.enableToolbar();
-                    moose.diagnostics.set('touch', 'ended dragging toolbar');
-                    return;
-                }
-                moose.diagnostics.set('touch', 'ended');
+                moose.enableToolbar();
+                moose.toolbar.dragging = false;
+                moose.toolbar.dragActivated = false;
+                console.log('toolbar endmove');
             };
             moose.toolbar.fitOnScreen = function () {
                 var r = moose.toolbar.getClientRects();
