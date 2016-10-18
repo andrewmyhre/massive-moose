@@ -236,7 +236,7 @@ var Draw = (function () {
             this.containerEl.appendChild(this.cv_raster);
             this.containerEl.appendChild(this.buffer);
 
-            this.containerEl.style['background-color'] = "#ffffff"
+            this.containerEl.style['background-color'] = "#aaaaaa"
             this.containerEl.style['overflow'] = 'hidden';
             this.containerEl.style['position'] = 'absolute';
             this.containerEl.style['top'] = '0px';
@@ -606,30 +606,39 @@ var Draw = (function () {
                 name: 'undo',
                 enabled: function () { return true; },
                 initialize: function (moose) {
-                    this.el = document.createElement('button');
-                    this.el.className = 'btn btn-default';
-                    this.el.innerHTML = '<span class="glyphicon glyphicon-arrow-left"></span>';
-                    this.el.addEventListener('click',
-                        function (e) {
-                            moose.undo();
-                            return true;
-                        });
-                    return this.el;
+                    var el = document.createElement('button');
+                    this.el = el;
+                    this.moose = moose;
+                    el.className = 'btn btn-default';
+                    el.innerHTML = '<span class="glyphicon glyphicon-arrow-left"></span>';
+                    el.toolbarItem = this;
+                    return el;
+                },
+                activate: function () {
+                    try {
+                        this.moose.writeDebug('undo activate');
+                        this.moose.undo();
+                    } catch (ex) {
+                        alert(ex.message);
+                    }
                 }
+
             },
             {
                 name: 'redo',
                 enabled: function () { return true; },
                 initialize: function (moose) {
-                    this.el = document.createElement('button');
-                    this.el.className = 'btn btn-default';
-                    this.el.innerHTML = '<span class="glyphicon glyphicon-arrow-right"></span>';
-                    this.el.addEventListener('click',
-                        function () {
-                            moose.redo();
-                            return true;
-                        });
-                    return this.el;
+                    var el = document.createElement('button');
+                    this.el = el;
+                    this.moose = moose;
+                    el.toolbarItem = this;
+                    el.className = 'btn btn-default';
+                    el.innerHTML = '<span class="glyphicon glyphicon-arrow-right"></span>';
+                    return el;
+                },
+                activate: function () {
+                    this.moose.writeDebug('redo activate');
+                    this.moose.redo();
                 }
             },
         {
@@ -852,6 +861,8 @@ var Draw = (function () {
                 el.btnLabel.style.lineHeight = '0em';
                 el.appendChild(btnLabel);
 
+                el.style['margin-right'] = '1em';
+
                 el.addEventListener('click', function (e) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -1025,8 +1036,16 @@ var Draw = (function () {
                 el.toolbarItem = ti;
                 el.addEventListener('click',
                     function (e) {
-                        e.preventDefault();
-                        console.log('clicked ' + this.toolbarItem.name);
+                        this.toolbarItem.moose.writeDebug('clicked ' + this.toolbarItem.name);
+                        if (this.toolbarItem.activate) {
+                            this.toolbarItem.moose.writeDebug('activate ' + this.toolbarItem.name);
+                            try {
+                                this.toolbarItem.activate();
+                            } catch (ex) {
+                                this.toolbarItem.moose.writeDebug(ex.message);
+                            }
+                            return true;
+                        }
                         return false;
                     });
                 tb.appendChild(el);
