@@ -1008,6 +1008,7 @@ var Draw = (function () {
             t.style.setProperty('top', '0px');
             t.style.setProperty('left', '0px');
             t.style['z-index'] = 10;
+            t.moose=this;
 
             var tb = document.createElement('div');
             tb.id = 'toolbar';
@@ -1410,6 +1411,7 @@ var Draw = (function () {
             var moose = this;
 
             moose.toolbar.move = function (e) {
+                 moose.diagnostics.set('touch','toolbar move');
                 if (moose.toolbar.dragging) {
                     //e.stopPropagation();
                     //e.preventDefault();
@@ -1438,10 +1440,12 @@ var Draw = (function () {
                     }
 
                     moose.toolbar.lastDragPosition = newPos;
-
+                    
                     if (!moose.toolbar.dragActivated) {
+                        moose.diagnostics.set('touch','dragging, not activated');
                         return;
                     }
+                    moose.diagnostics.set('touch','dragging, activated');
                     moose.disableToolbar();
                     moose.closePopups();
 
@@ -1468,12 +1472,16 @@ var Draw = (function () {
                 moose.toolbar.dragInitialPosition = pos;
                 moose.toolbar.dragPosition = { x: pos.x - r[0].left, y: pos.y - r[0].top };
                 moose.toolbar.lastDragPosition = moose.toolbar.dragPosition;
+                moose.diagnostics.set('touch','startmove ' + pos.x + ',' + pos.y);
             };
             moose.toolbar.endmove = function (e) {
                 if (moose.toolbar.dragging) {
                     moose.toolbar.dragging = false;
                     moose.enableToolbar();
+                    moose.diagnostics.set('touch','ended dragging toolbar');
+                    return;
                 }
+                moose.diagnostics.set('touch','ended');
             };
             moose.toolbar.fitOnScreen = function () {
                 var r = moose.toolbar.getClientRects();
@@ -1496,14 +1504,12 @@ var Draw = (function () {
                 moose.toolbar.style.top = moose.toolbar.position.y + 'px';
             };
             this.toolbar.addEventListener('mousedown', moose.toolbar.startmove, true);
-            //this.toolbar.addEventListener('mouseup', moose.toolbar.endmove, true);
-            //this.toolbar.addEventListener('touchstart', moose.toolbar.startmove, true);
             document.body.addEventListener('mousemove', moose.toolbar.move, true);
 
-            //document.body.addEventListener('mousemove', moose.toolbar.move, true);
-            //document.body.addEventListener('mouseup', moose.toolbar.endmove, true);
-            //document.body.addEventListener('touchmove', moose.toolbar.move, true);
-            //document.body.addEventListener('touchend', moose.toolbar.endmove, true);
+            this.toolbar.addEventListener('touchstart', moose.toolbar.startmove);
+            this.toolbar.addEventListener('touchmove', moose.toolbar.move);
+            document.body.addEventListener('touchmove', moose.toolbar.move, true);
+            document.body.addEventListener('touchend', moose.toolbar.endmove, true);
 
             window.addEventListener('mouseup', moose.toolbar.endmove, true);
             this.buffer.addEventListener('mouseup', moose.toolbar.endmove, true);
@@ -1598,6 +1604,7 @@ var Draw = (function () {
                         moose.drawStop(moose);
                     }
                 });
+            
             this.buffer.addEventListener('touchstart',
                 function (e) {
                     var moose = this.moose;
@@ -1618,12 +1625,9 @@ var Draw = (function () {
                         moose.isDrawing = true;
                         var point = { x: (touches[0].clientX), y: (touches[0].clientY) };
                         moose.startDrawingShape(point);
-                        document.addEventListener('touchmove', moose.touchMoveListener);
-                        document.addEventListener('touchend', moose.touchEndListener);
-                        document.addEventListener('touchcancel', moose.touchEndListener);
                     }
                 });
-
+                
             var Shape;
             Shape = function () {
                 return this;
