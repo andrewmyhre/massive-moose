@@ -1212,7 +1212,7 @@ var Draw = (function () {
             if (e) { d += 's:' + Math.round(e.screenX) + ',' + Math.round(e.screenY) + ' c:' + Math.round(e.clientX) + ',' + Math.round(e.clientY) + '<br/>'; }
             //d += 'scale:' + this.getScale() + ' p:' + (Math.round(this.position.x)) + ',' + Math.round(this.position.y) + ' o:' + window.pageXOffset + ',' + window.pageYOffset + '<br/>';
             if (this.transform) {
-                //d += this.transform.toString() + '<br/>';
+                d += this.transform.toString() + '<br/>';
             }
             //d += 'shapes:' + this.shapes.length;
             d += 'b:' + this.shapes.length + ' h:' + this.shapeHistory.length + '(' + this.historyIndex + ')';
@@ -1311,6 +1311,22 @@ var Draw = (function () {
             var can_post = this.clientToCanvas({ x: clientX, y: clientY });
             var delta = { x: can_post.x - can.x, y: can_post.y - can.y };
             this.transform.translate(delta.x, delta.y);
+
+            if (this.transform.m[4] > 0)
+                this.transform.m[4] = 0;
+            if (this.transform.m[5] > 0)
+                this.transform.m[5] = 0;
+
+            var w = ((1600 * this.transform.m[0]) - window.innerWidth),
+            h = ((900 * this.transform.m[3]) - window.innerHeight);
+            this.diagnostics.set('max x', -w);
+            this.diagnostics.set('max y', -h);
+            if (this.transform.m[4] < -w) {
+                this.transform.m[4] = -w;
+            }
+            if (this.transform.m[5] < -h) {
+                this.transform.m[5] = -h;
+            }
 
             var m = this.transform.m;
             this.bufferCtx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
