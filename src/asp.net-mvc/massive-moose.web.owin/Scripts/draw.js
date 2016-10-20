@@ -198,13 +198,11 @@ var Draw = (function () {
             this.canvas.style.top = '200px';
             this.canvas.style.left = '0';
             this.canvas.style['z-index'] = '1';
-            this.canvas.style['border'] = '1px solid blue';
 
             this.cv_imported.style.position = 'absolute';
             this.cv_imported.style.top = '0';
             this.cv_imported.style.left = '0';
             this.cv_imported.style['z-index'] = '1';
-            this.cv_imported.style['border'] = '1px solid lime';
             this.cv_imported.width = 1600;
             this.cv_imported.height = 900;
 
@@ -212,13 +210,11 @@ var Draw = (function () {
             this.cv_raster.style.top = '0';
             this.cv_raster.style.left = '0';
             this.cv_raster.style['z-index'] = '2';
-            this.cv_raster.style['border'] = '1px solid lime';
 
             this.buffer.style.position = 'absolute';
             this.buffer.style.top = '0';
             this.buffer.style.left = '0';
             this.buffer.style['z-index'] = '3';
-            this.buffer.style['border'] = '1px solid blue';
 
 
             this.canvas.width = 1600 * this.quality;
@@ -236,7 +232,7 @@ var Draw = (function () {
             this.containerEl.appendChild(this.cv_raster);
             this.containerEl.appendChild(this.buffer);
 
-            this.containerEl.style['background-color'] = "#aaaaaa"
+            this.containerEl.style['background-color'] = "#ffffff"
             this.containerEl.style['overflow'] = 'hidden';
             this.containerEl.style['position'] = 'absolute';
             this.containerEl.style['top'] = '0px';
@@ -891,7 +887,6 @@ var Draw = (function () {
                         input.style['position'] = 'relative';
                         input.style['top'] = '5px';
                         input.style['margin'] = '1em 0 1em 0';
-                        el.popup.appendChild(input);
 
                         var preview = document.createElement('canvas');
                         preview.width = 200;
@@ -902,6 +897,7 @@ var Draw = (function () {
                         preview.className = 'tool-size-preview';
                         el.previewCanvas = preview;
                         el.popup.appendChild(preview);
+                        el.popup.appendChild(input);
 
                         moose.containerEl.appendChild(el.popup);
                         el.parent.update();
