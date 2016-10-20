@@ -258,7 +258,7 @@ var Draw = (function () {
                 s = 1;
             }
             this.raster_data = null;
-            this.setDocumentViewportScale(1 / s);
+            this.setDocumentViewportScale(1 / window.devicePixelRatio);
 
             this.transform = new Transform();
             //this.transform.scale(2, 2);
@@ -325,7 +325,7 @@ var Draw = (function () {
                 this.exitFullscreen();
             }
         },
-        disableCanvas: function() {
+        disableCanvas: function () {
             if (!this.disableLayer) {
                 this.disableLayer = document.createElement('div');
                 this.disableLayer.style['z-index'] = '1000';
@@ -336,9 +336,9 @@ var Draw = (function () {
                 this.disableLayer.style.height = '100%';
                 this.containerEl.appendChild(this.disableLayer);
             }
-            this.disableLayer.style.display='block';  
+            this.disableLayer.style.display = 'block';
         },
-        enableCanvas:function() {
+        enableCanvas: function () {
             if (this.disableLayer) {
                 this.disableLayer.style.display = 'none';
             }
@@ -350,7 +350,7 @@ var Draw = (function () {
             if (!this.saveDialog) {
                 this.saveDialog = document.createElement('div');
                 this.saveDialog.style.position = 'absolute';
-                
+
                 this.saveDialog.style['z-index'] = '1001';
                 this.saveDialog.style.display = 'none';
                 this.saveDialog.className = 'dialog';
@@ -365,26 +365,26 @@ var Draw = (function () {
             var r = this.saveDialog.getClientRects();
             this.saveDialog.style.left = ((window.innerWidth / 2) - (r[0].width / 2)) + 'px';
             this.saveDialog.style.top = ((window.innerHeight / 2) - (r[0].height / 2)) + 'px';
-            
+
             var $this = this;
             setTimeout(this.beginSaveAsync, 10,
                 this,
                 $this.opts.onExportImageSucceeded,
-                function(ex) {
+                function (ex) {
                     $this.saveDialog.children[0].innerHTML = "<div>Oops! We're so sorry, there was a problem saving your image. Try again in a minute!</div>";
                     var btnCloseDialog = document.createElement('button');
                     btnCloseDialog.className = 'btn btn-default';
                     btnCloseDialog.innerHTML = 'Close';
                     btnCloseDialog.addEventListener('click',
-                        function() {
+                        function () {
                             $this.saveDialog.style.display = 'none';
                             $this.enableToolbar();
                             $this.enableCanvas();
                         });
                     $this.saveDialog.children[0].appendChild(btnCloseDialog);
-                     var r = $this.saveDialog.getClientRects();
-                     $this.saveDialog.style.left = ((window.innerWidth / 2) - (r[0].width / 2)) + 'px';
-                     $this.saveDialog.style.top = ((window.innerHeight / 2) - (r[0].height / 2)) + 'px';
+                    var r = $this.saveDialog.getClientRects();
+                    $this.saveDialog.style.left = ((window.innerWidth / 2) - (r[0].width / 2)) + 'px';
+                    $this.saveDialog.style.top = ((window.innerHeight / 2) - (r[0].height / 2)) + 'px';
                 });
         },
         beginSaveAsync: function (moose, onSuccess, onFailure) {
@@ -590,7 +590,7 @@ var Draw = (function () {
                 enabled: function () { return true; },
                 showWhenCollapsed: true,
                 collapsed: false,
-                activate: function() {
+                activate: function () {
                     for (var i = 0; i < this.moose.toolbarItems.length; i++) {
                         var ti = this.moose.toolbarItems[i];
                         if (!ti.enabled()) continue;
@@ -625,7 +625,7 @@ var Draw = (function () {
         {
             name: 'save',
             enabled: function () { return true; },
-            activate: function() {
+            activate: function () {
                 this.moose.onSave();
             },
             initialize: function (moose) {
@@ -803,15 +803,12 @@ var Draw = (function () {
                             $this.picker.style.position = 'absolute';
                             $this.picker.style.top = '0px';
                             $this.picker.style.left = '0px';
-                            if (!moose.isFullscreen()) {
-                                $this.picker.style.width = window.innerWidth + 'px';
-                                $this.picker.style.height = window.innerHeight + 'px';
-                            } else {
-                                $this.picker.style.width = window.innerWidth + 'px';
-                                $this.picker.style.height = window.innerHeight + 'px';
-                            }
+                            $this.picker.style.width = '100%';
+                            $this.picker.style.height = '100%';
                             $this.picker.style['z-index'] = 102;
                             $this.opened = true;
+
+                            var r = $this.picker.getClientRects();
                         } else {
                             $this.picker.style.display = 'none';
                             $this.opened = false;
@@ -826,12 +823,13 @@ var Draw = (function () {
                 colorPicker.style.position = 'absolute';
                 colorPicker.style.top = '0';
                 colorPicker.style.left = '1';
+                colorPicker.style.width = screen.availwidth + 'px';
                 colorPicker.style.height = screen.availHeight + 'px';
                 colorPicker.style['z-index'] = 1;
                 var step = 50;
                 for (var py = 0; py < 10; py++) {
                     var row = document.createElement('div');
-                    row.style.width = screen.availWidth + 'px';
+                    row.style.width = '100%';
                     row.style.height = '10%';
                     for (var px = 0; px < 10; px++) {
                         var cel = document.createElement('button');
