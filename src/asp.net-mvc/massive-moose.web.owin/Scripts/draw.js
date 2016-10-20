@@ -804,10 +804,10 @@ var Draw = (function () {
                             $this.picker.style.top = '0px';
                             $this.picker.style.left = '0px';
                             if (!moose.isFullscreen()) {
-                                $this.picker.style.width = (window.innerWidth * window.devicePixelRatio) + 'px';
+                                $this.picker.style.width = window.innerWidth + 'px';
                                 $this.picker.style.height = window.innerHeight + 'px';
                             } else {
-                                $this.picker.style.width = (window.innerWidth * window.devicePixelRatio) + 'px';
+                                $this.picker.style.width = window.innerWidth + 'px';
                                 $this.picker.style.height = window.innerHeight + 'px';
                             }
                             $this.picker.style['z-index'] = 102;
