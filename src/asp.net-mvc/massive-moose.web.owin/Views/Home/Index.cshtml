@@ -38,6 +38,9 @@
             onExportImage: function(sessionData, imageData, json) {
                 sessionData.wallInstance.endSession(sessionData, imageData, json);
             },
+            onExportImageSucceeded: function(moose) {
+                
+            },
             onCanceled: function(sessionData) {
                 sessionData.wallInstance.cancelSession(sessionData);
             },
