@@ -1488,7 +1488,9 @@ var Draw = (function () {
             this.pallette = p;
         },
         writeDebug: function (log) {
-            this.debugElement.innerHTML = log;
+            if (this.debugElement) {
+                this.debugElement.innerHTML = log;
+            }
         },
         setForeColor: function (col) {
             this.foreColor = col;
