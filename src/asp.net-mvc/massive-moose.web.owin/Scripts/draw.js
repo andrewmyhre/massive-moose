@@ -83,6 +83,7 @@ var Draw = (function () {
             }
 
             this.onExportImage = opts.onExportImage;
+            this.onExportImageSucceeded = opts.onExportImageSucceeded;
             this.onCanceled = opts.onCanceled;
 
             this.viewport = document.querySelector("meta[name=viewport]");
@@ -279,6 +280,12 @@ var Draw = (function () {
                 }
             }
 
+            if (this.saveDialog) {
+                this.saveDialog.style.display = 'none';
+            }
+            this.enableCanvas();
+            this.enableToolbar();
+
             this.shapeHistory = [];
             this.shapes = [];
             this.historyIndex = -1;
@@ -318,23 +325,84 @@ var Draw = (function () {
                 this.exitFullscreen();
             }
         },
+        disableCanvas: function() {
+            if (!this.disableLayer) {
+                this.disableLayer = document.createElement('div');
+                this.disableLayer.style['z-index'] = '1000';
+                this.disableLayer.style.position = 'absolute';
+                this.disableLayer.style.top = '0';
+                this.disableLayer.style.left = '0';
+                this.disableLayer.style.width = '100%';
+                this.disableLayer.style.height = '100%';
+                this.containerEl.appendChild(this.disableLayer);
+            }
+            this.disableLayer.style.display='block';  
+        },
+        enableCanvas:function() {
+            if (this.disableLayer) {
+                this.disableLayer.style.display = 'none';
+            }
+        },
         onSave: function () {
             this.disableToolbar();
-            this.flush();
-            this.redraw();
-            if (this.onExportImage) {
+            this.disableCanvas();
+
+            if (!this.saveDialog) {
+                this.saveDialog = document.createElement('div');
+                this.saveDialog.style.position = 'absolute';
+                
+                this.saveDialog.style['z-index'] = '1001';
+                this.saveDialog.style.display = 'none';
+                this.saveDialog.className = 'dialog';
+                var body = document.createElement('div');
+                body.className = 'panel-body';
+                body.innerHTML = '<div>Saving...</div><div><img src="/Content/progress.gif" /></div>';
+                body.style.fontSize = '2em';
+                this.saveDialog.appendChild(body);
+                this.containerEl.appendChild(this.saveDialog);
+            }
+            this.saveDialog.style.display = 'block';
+            var r = this.saveDialog.getClientRects();
+            this.saveDialog.style.left = ((window.innerWidth / 2) - (r[0].width / 2)) + 'px';
+            this.saveDialog.style.top = ((window.innerHeight / 2) - (r[0].height / 2)) + 'px';
+            
+            var $this = this;
+            setTimeout(this.beginSaveAsync, 10,
+                this,
+                $this.opts.onExportImageSucceeded,
+                function(ex) {
+                    $this.saveDialog.children[0].innerHTML = "<div>Oops! We're so sorry, there was a problem saving your image. Try again in a minute!</div>";
+                    var btnCloseDialog = document.createElement('button');
+                    btnCloseDialog.className = 'btn btn-default';
+                    btnCloseDialog.innerHTML = 'Close';
+                    btnCloseDialog.addEventListener('click',
+                        function() {
+                            $this.saveDialog.style.display = 'none';
+                            $this.enableToolbar();
+                            $this.enableCanvas();
+                        });
+                    $this.saveDialog.children[0].appendChild(btnCloseDialog);
+                     var r = $this.saveDialog.getClientRects();
+                     $this.saveDialog.style.left = ((window.innerWidth / 2) - (r[0].width / 2)) + 'px';
+                     $this.saveDialog.style.top = ((window.innerHeight / 2) - (r[0].height / 2)) + 'px';
+                });
+        },
+        beginSaveAsync: function (moose, onSuccess, onFailure) {
+            moose.flush();
+            moose.redraw();
+            if (moose.onExportImage) {
                 try {
                     // copy all history up to historyIndex to this.shapes
-                    this.shapes = this.importedShapes.concat(this.shapeHistory.slice(0, this.historyIndex + 1));
-                    this.onExportImage(this.sessionData,
-                        this.canvas.toDataURL('image/png'),
-                        JSON.stringify(this.shapes));
-                    return;
+                    moose.shapes = moose.importedShapes.concat(moose.shapeHistory.slice(0, moose.historyIndex + 1));
+                    var imageData = moose.canvas.toDataURL('image/png');
+                    var jsonData = JSON.stringify(moose.shapes);
+                    moose.onExportImage(moose.sessionData, imageData, jsonData);
+                    onSuccess(moose);
                 } catch (ex) {
-                    this.writeDebug(ex.message);
+                    moose.writeDebug(ex.message);
+                    onFailure(ex);
                 }
             }
-            this.enableToolbar();
         },
         onCancel: function () {
             this.disableToolbar();
@@ -571,14 +639,14 @@ var Draw = (function () {
         {
             name: 'save',
             enabled: function () { return true; },
+            activate: function() {
+                this.moose.onSave();
+            },
             initialize: function (moose) {
                 var el = document.createElement('button');
+                this.moose = moose;
                 el.className = 'btn btn-primary';
                 el.innerHTML = '<span class="glyphicon glyphicon-floppy-disk"></span>';
-                el.addEventListener('click', function (e) {
-                    moose.onSave();
-                    return true;
-                });
                 this.el = el;
                 return el;
             }
@@ -586,15 +654,15 @@ var Draw = (function () {
         {
             name: 'cancel',
             enabled: function () { return true; },
+            activate: function () {
+                this.moose.onCancel();
+            },
             initialize: function (moose) {
                 var el = document.createElement('button');
+                this.moose = moose;
                 el.className = 'btn btn-danger';
                 el.innerHTML = '<span class="glyphicon glyphicon-remove"></span>';
                 this.el = el;
-                el.addEventListener('click', function (e) {
-                    moose.onCancel();
-                    return true;
-                });
                 return el;
             }
         },
@@ -1034,6 +1102,7 @@ var Draw = (function () {
                     function (e) {
                         this.toolbarItem.moose.writeDebug('clicked ' + this.toolbarItem.name);
                         if (this.toolbarItem.activate) {
+                            this.toolbarItem.moose.toolbar.dragging = false;
                             this.toolbarItem.moose.writeDebug('activate ' + this.toolbarItem.name);
                             try {
                                 this.toolbarItem.activate();
@@ -1479,14 +1548,12 @@ var Draw = (function () {
                     moose.toolbar.lastDragPosition = newPos;
 
                     if (!moose.toolbar.dragActivated) {
-                        console.log('dragging, not activated:' + pos.x + ',' + pos.y);
                         return;
                     }
 
                     e.stopPropagation();
                     e.preventDefault();
 
-                    console.log('dragging, activated:' + pos.x + ',' + pos.y);
                     moose.disableToolbar();
                     moose.closePopups();
 
@@ -1513,14 +1580,12 @@ var Draw = (function () {
                 moose.toolbar.dragInitialPosition = pos;
                 moose.toolbar.dragPosition = { x: pos.x - r[0].left, y: pos.y - r[0].top };
                 moose.toolbar.lastDragPosition = moose.toolbar.dragPosition;
-                console.log('toolbar startmove: ' + pos.x + ',' + pos.y);
                 return false;
             };
             moose.toolbar.endmove = function (e) {
                 moose.enableToolbar();
                 moose.toolbar.dragging = false;
                 moose.toolbar.dragActivated = false;
-                console.log('toolbar endmove');
             };
             moose.toolbar.fitOnScreen = function () {
                 var r = moose.toolbar.getClientRects();
@@ -1543,15 +1608,17 @@ var Draw = (function () {
                 moose.toolbar.style.top = moose.toolbar.position.y + 'px';
             };
             this.toolbar.addEventListener('mousedown', moose.toolbar.startmove, true);
-            document.body.addEventListener('mousemove', moose.toolbar.move, true);
-
             this.toolbar.addEventListener('touchstart', moose.toolbar.startmove);
-            this.toolbar.addEventListener('touchmove', moose.toolbar.move);
-            document.body.addEventListener('touchmove', moose.toolbar.move, true);
-            document.body.addEventListener('touchend', moose.toolbar.endmove, true);
 
-            window.addEventListener('mouseup', moose.toolbar.endmove, true);
+            this.toolbar.addEventListener('mousemove', moose.toolbar.move, true);
+            this.buffer.addEventListener('mousemove', moose.toolbar.move, true);
+            this.toolbar.addEventListener('touchmove', moose.toolbar.move);
+            this.buffer.addEventListener('touchmove', moose.toolbar.move, true);
+
+            this.toolbar.addEventListener('touchend', moose.toolbar.endmove, true);
+            this.buffer.addEventListener('touchend', moose.toolbar.endmove, true);
             this.buffer.addEventListener('mouseup', moose.toolbar.endmove, true);
+            this.toolbar.addEventListener('mouseup', moose.toolbar.endmove, true);
 
 
             this.toolbar.addEventListener('click', function (e) {

@@ -188,3 +188,9 @@ input[type=range]:focus::-ms-fill-upper {
     height: 1.5em;
     z-index: 1000;
 }
+.dialog {
+    background-color: #fff;
+    border-radius: 10px;
+    border: 2px solid blue;
+    padding: 15px;
+}

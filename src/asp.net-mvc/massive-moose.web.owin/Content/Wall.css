@@ -252,3 +252,8 @@ button.tool svg circle {
         border: 2px solid blue;
         padding: 15px;
     }
+    .dialog {
+        border-radius: 10px;
+        border: 2px solid blue;
+        padding: 15px;
+    }
