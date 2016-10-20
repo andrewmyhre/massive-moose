@@ -590,48 +590,34 @@ var Draw = (function () {
                 enabled: function () { return true; },
                 showWhenCollapsed: true,
                 collapsed: false,
+                activate: function() {
+                    for (var i = 0; i < this.moose.toolbarItems.length; i++) {
+                        var ti = this.moose.toolbarItems[i];
+                        if (!ti.enabled()) continue;
+                        if (this.collapsed) {
+                            ti.el.style.setProperty("display", "inline-block", "important");
+                        } else if (!ti.showWhenCollapsed) {
+                            ti.el.style.setProperty("display", "none", "important");
+                        }
+                    }
+                    this.collapsed = !this.collapsed;
+                    if (this.collapsed) {
+                        this.el
+                            .innerHTML =
+                            '<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>';
+                    } else {
+                        this.el
+                            .innerHTML =
+                            '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
+                    }
+                    this.moose.toolbar.fitOnScreen();
+                },
                 initialize: function (moose) {
-                    var $this = this;
+                    this.moose = moose;
                     var el = document.createElement('button');
                     el.style.float = 'left';
                     el.className = 'btn btn-info';
                     el.innerHTML = '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
-                    el.addEventListener('click',
-                        function (e) {
-
-                            e = e || window.event // cross-browser event
-
-                            if (e.stopPropagation) {
-                                // W3C standard variant
-                                e.stopPropagation()
-                            } else {
-                                // IE variant
-                                e.cancelBubble = true
-                            }
-
-                            for (var i = 0; i < moose.toolbarItems.length; i++) {
-                                var ti = moose.toolbarItems[i];
-                                if (!ti.enabled()) continue;
-                                if ($this.collapsed) {
-                                    ti.el.style.setProperty("display", "inline-block", "important");
-                                } else if (!ti.showWhenCollapsed) {
-                                    ti.el.style.display = 'none';
-                                }
-                            }
-                            $this.collapsed = !$this.collapsed;
-                            if ($this.collapsed) {
-                                $this.el
-                                    .innerHTML =
-                                    '<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>';
-                            } else {
-                                $this.el
-                                    .innerHTML =
-                                    '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
-                            }
-                            moose.toolbar.fitOnScreen();
-                            return true;
-                        });
-
                     this.el = el;
                     return el;
                 }
@@ -1589,7 +1575,7 @@ var Draw = (function () {
             };
             moose.toolbar.fitOnScreen = function () {
                 var r = moose.toolbar.getClientRects();
-                var pos = { x: r[0].left, y: r[0].height };
+                var pos = { x: r[0].left, y: r[0].top };
                 if (pos.x + r[0].width > screen.availWidth) {
                     pos.x = screen.availWidth - r[0].width;
                 }
