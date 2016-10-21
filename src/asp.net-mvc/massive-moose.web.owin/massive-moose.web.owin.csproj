@@ -366,6 +366,7 @@
     <Content Include="Scripts\literallycanvas\tools\Rectangle.js" />
     <Content Include="Scripts\literallycanvas\tools\SelectShape.js" />
     <Content Include="Scripts\literallycanvas\tools\Text.js" />
+    <Content Include="Scripts\sendbuffer.js" />
     <Content Include="Scripts\transform.js" />
     <Content Include="Scripts\wall.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />

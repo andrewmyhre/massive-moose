@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Drawing;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -9,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Cors;
+using System.Web.Mvc;
 using System.Xml;
 using log4net;
 using NHibernate.Criterion;
@@ -33,8 +35,8 @@ namespace massive_moose.api.Controllers
             _wallOperations = wallOperations;
             _log = log;
         }
-        [HttpGet]
-        [Route("v1/image/sessions")]
+        [System.Web.Http.HttpGet]
+        [System.Web.Http.Route("v1/image/sessions")]
         public IEnumerable<DrawingSession> ActiveSessions()
         {
             using (var session = SessionFactory.Instance.OpenSession())
@@ -46,8 +48,8 @@ namespace massive_moose.api.Controllers
             }
         }
         
-        [HttpGet]
-        [Route("v1/walls")]
+        [System.Web.Http.HttpGet]
+        [System.Web.Http.Route("v1/walls")]
         public IEnumerable<Wall> Walls()
         {
             using (var session = SessionFactory.Instance.OpenSession())
@@ -58,8 +60,8 @@ namespace massive_moose.api.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("v1/wall")]
+        [System.Web.Http.HttpGet]
+        [System.Web.Http.Route("v1/wall")]
         [EnableCors(origins: "*", headers: "*", methods: "*")]
         public IEnumerable<Brick> Wall()
         {
@@ -71,8 +73,8 @@ namespace massive_moose.api.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("v1/release/{token}")]
+        [System.Web.Http.HttpPost]
+        [System.Web.Http.Route("v1/release/{token}")]
         [EnableCors(origins: "*", headers: "*", methods: "*")]
         public IHttpActionResult Release(Guid token)
         {
@@ -95,8 +97,8 @@ namespace massive_moose.api.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("v1/{wallKey}/draw/{addressX}/{addressY}")]
+        [System.Web.Http.HttpPost]
+        [System.Web.Http.Route("v1/{wallKey}/draw/{addressX}/{addressY}")]
         [EnableCors(origins: "*", headers: "*", methods: "*")]
         public IHttpActionResult Begin(int addressX, int addressY, string wallKey=null)
         {
@@ -139,8 +141,8 @@ namespace massive_moose.api.Controllers
         }
 
 
-        [HttpPost]
-        [Route("v1/save/{token}")]
+        [System.Web.Http.HttpPost]
+        [System.Web.Http.Route("v1/save/{token}")]
         public async Task<IHttpActionResult> SaveImage(Guid token, [FromBody] BrickUpdate update)
         {
             if (!ModelState.IsValid || update == null)
@@ -181,8 +183,8 @@ namespace massive_moose.api.Controllers
                 }
             }
         }
-        [HttpPost]
-        [Route("v1/draw/{token}")]
+        [System.Web.Http.HttpPost]
+        [System.Web.Http.Route("v1/draw/{token}")]
         [EnableCors(origins: "*", headers: "*", methods: "*")]
         public async Task<IHttpActionResult> Receive(Guid token)
         {
@@ -296,8 +298,8 @@ namespace massive_moose.api.Controllers
             ThumbnailCache.Set(outputPath, thumbnailImageData);
         }
 
-        [HttpGet]
-        [Route("v1/image/{wallKey}/{addressX}/{addressY}")]
+        [System.Web.Http.HttpGet]
+        [System.Web.Http.Route("v1/image/{wallKey}/{addressX}/{addressY}")]
         public HttpResponseMessage ViewImage(string wallKey, int addressX, int addressY)
         {
             HttpResponseMessage result = new HttpResponseMessage();
@@ -326,8 +328,8 @@ namespace massive_moose.api.Controllers
 
         
 
-        [HttpGet]
-        [Route("v1/image/t/{wallKey}/{addressX}/{addressY}")]
+        [System.Web.Http.HttpGet]
+        [System.Web.Http.Route("v1/image/t/{wallKey}/{addressX}/{addressY}")]
         public HttpResponseMessage ViewThumbnail(int addressX, int addressY, string wallKey=null)
         {
             HttpResponseMessage result = new HttpResponseMessage();
@@ -371,8 +373,8 @@ namespace massive_moose.api.Controllers
             return result;
         }
 
-        [HttpGet]
-        [Route("v1/background/{filename}")]
+        [System.Web.Http.HttpGet]
+        [System.Web.Http.Route("v1/background/{filename}")]
         public HttpResponseMessage GetBackgroundImage(string filename)
         {
             try

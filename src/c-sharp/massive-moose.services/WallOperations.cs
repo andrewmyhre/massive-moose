@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using FluentNHibernate.Utils;
@@ -12,6 +13,8 @@ using massive_moose.services.models.drawing;
 using massive_moose.services.viewmodels;
 using massive_moose.services.caching;
 using massive_moose.caching;
+using System.Drawing.Imaging;
+using System.Drawing;
 
 namespace massive_moose.services
 {
@@ -187,6 +190,22 @@ namespace massive_moose.services
                 brick.AddressX,
                 brick.AddressY);
         }
+
+        public byte[] GetThumbnailImage(Brick brick)
+        {
+            string thumbnailImagePath = string.Format("{0}/b_{1}-{2}-{3}_1.png",
+                ConfigurationManager.AppSettings["storageContainer"],
+                brick.Wall.InviteCode, brick.AddressX, brick.AddressY);
+            return _fileStorage.Get(thumbnailImagePath);
+        }
+        public byte[] GetImage(Brick brick)
+        {
+            string fullSizeImagePath = string.Format("{0}/b_{1}-{2}-{3}.png",
+                    ConfigurationManager.AppSettings["storageContainer"],
+                    brick.Wall.InviteCode, brick.AddressX, brick.AddressY);
+            return _fileStorage.Get(fullSizeImagePath);
+        }
+
         public string GetImageUrl(string inviteCode, int addressX, int addressY)
         {
             return string.Format("{0}/v1/image/{1}/{2}/{3}",
@@ -242,6 +261,65 @@ namespace massive_moose.services
             }
 
             return wall;
+        }
+
+        public byte[] GetFullWallImage(string wallKey)
+        {
+            var wallImageFilename = string.Format("{0}/w_{1}.png",
+                ConfigurationManager.AppSettings["storageContainer"],
+                wallKey);
+            if (_fileStorage.Exists(wallImageFilename))
+            {
+                return _fileStorage.Get(wallImageFilename);
+            }
+            else
+            {
+                return UpdateFullWallImage(wallKey, wallImageFilename);
+            }
+        }
+
+        private byte[] UpdateFullWallImage(string wallKey, string wallImageFilename)
+        {
+            int thumbnailWidth = 0, thumbnailHeight = 0;
+            int.TryParse(ConfigurationManager.AppSettings["thumbnailWidth"], out thumbnailWidth);
+            int.TryParse(ConfigurationManager.AppSettings["thumbnailHeight"], out thumbnailHeight);
+
+            using (System.Drawing.Image newImage = new Bitmap(thumbnailWidth*12, thumbnailHeight*12))
+            {
+                using (var session = SessionFactory.Instance.OpenSession())
+                {
+                    var wall = GetWallByKeyOrDefault(wallKey, session);
+                    if (wall == null)
+                    {
+                        return null;
+                    }
+
+                    int width = 12;
+                    int height = 12;
+
+                    for (int y = 0; y < height; y++)
+                    {
+                        for (int x = 0; x < width; x++)
+                        {
+                            var brick =
+                                wall.Bricks.SingleOrDefault(b => b.AddressX == (x - 6) && b.AddressY == (y - 6));
+                            if (brick == null)
+                                continue;
+
+                            Image img = Image.FromStream(new System.IO.MemoryStream(GetThumbnailImage(brick)));
+                            using (Graphics g = Graphics.FromImage(newImage))
+                            {
+                                g.DrawImage(img, new System.Drawing.Point((thumbnailWidth*x), (thumbnailHeight*y)));
+                            }
+                        }
+                    }
+
+                    var outstream = new System.IO.MemoryStream();
+                    newImage.Save(outstream, ImageFormat.Png);
+                    _fileStorage.Store(wallImageFilename, outstream.ToArray(), true);
+                    return outstream.ToArray();
+                }
+            }
         }
 
         private BrickViewModel[,] GetLatestWallSnapshot(int originX, int originY, string wallKey, ISession session)

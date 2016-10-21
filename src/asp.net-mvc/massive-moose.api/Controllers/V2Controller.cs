@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -11,6 +12,9 @@ using System.Net.Http.Headers;
 using massive_moose.services.viewmodels;
 using NHibernate;
 using System.Text;
+using System.Web.Mvc;
+using System.Configuration;
+using System.Drawing.Imaging;
 
 namespace massive_moose.api.Controllers
 {
@@ -28,8 +32,8 @@ namespace massive_moose.api.Controllers
             _sessionFactory = sessionFactory;
         }
 
-        [HttpGet] 
-        [Route("v2/wall/{wallKey}/{originX}/{originY}")]
+        [System.Web.Http.HttpGet] 
+        [System.Web.Http.Route("v2/wall/{wallKey}/{originX}/{originY}")]
         [EnableCors(origins: "*", headers: "*", methods: "*")]
         public BrickViewModel[,] Wall(int originX, int originY, string wallKey = null)
         {
@@ -39,8 +43,8 @@ namespace massive_moose.api.Controllers
             }
         }
 
-        [AcceptVerbs("HEAD")]
-        [Route("v2/wall/{wallKey}/{originX}/{originY}/{etag?}")]
+        [System.Web.Http.AcceptVerbs("HEAD")]
+        [System.Web.Http.Route("v2/wall/{wallKey}/{originX}/{originY}/{etag?}")]
         [EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders:"ETag")]
         public HttpResponseMessage WallETag(int originX, int originY, string etag=null, string wallKey = null)
         {
@@ -81,7 +85,7 @@ namespace massive_moose.api.Controllers
             }
         }
 
-        [Route("v2/wall/history/image/{historyItemId}")]
+        [System.Web.Http.Route("v2/wall/history/image/{historyItemId}")]
         public HttpResponseMessage GetHistoricImage(int historyItemId)
         {
             using (var session = _sessionFactory.OpenSession())
@@ -94,7 +98,7 @@ namespace massive_moose.api.Controllers
             }
         }
 
-        [Route("v2/wall/history/image/t/{historyItemId}")]
+        [System.Web.Http.Route("v2/wall/history/image/t/{historyItemId}")]
         public HttpResponseMessage GetHistoricThumbnailImage(int historyItemId)
         {
             using (var session = _sessionFactory.OpenSession())
@@ -106,5 +110,26 @@ namespace massive_moose.api.Controllers
                 return result;
             }
         }
+
+        [System.Web.Http.HttpGet]
+        [System.Web.Http.Route("v2/wall/{wallKey}/img")]
+        [EnableCors(origins: "*", headers: "*", methods: "*")]
+        public HttpResponseMessage WallImage(string wallKey = null)
+        {
+            HttpResponseMessage result = new HttpResponseMessage();
+
+            var image = _wallOperations.GetFullWallImage(wallKey);
+            if (image == null)
+            {
+                result.StatusCode = HttpStatusCode.NotFound;
+            }
+            else
+            {
+                result.Content = new ByteArrayContent(image);
+                result.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("image/png");
+            }
+            return result;
+        }
+
     }
 }
