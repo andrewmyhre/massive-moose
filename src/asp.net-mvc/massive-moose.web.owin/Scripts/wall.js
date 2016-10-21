@@ -349,6 +349,11 @@
             if (this.onCloseProgress) {
                 this.onCloseProgress();
             }
+            if (!this._brickInUse)
+            {
+                return;
+            }
+
             var $this = this;
             var xhr = this.xhr;
             xhr.open('POST', this._baseApiUrl + '/v1/release/' + this._brickInUse.sessionToken);

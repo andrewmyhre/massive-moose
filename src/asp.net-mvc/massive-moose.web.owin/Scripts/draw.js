@@ -83,6 +83,7 @@ var Draw = (function () {
             }
 
             this.onExportImage = opts.onExportImage;
+            this.onExportImageSucceeded = opts.onExportImageSucceeded;
             this.onCanceled = opts.onCanceled;
 
             this.viewport = document.querySelector("meta[name=viewport]");
@@ -143,7 +144,7 @@ var Draw = (function () {
             this.buffer.moose = this;
 
             this.toolSize = 20;
-            this.foreColor = { h: 100, s: 1, l: 0.5, a: 1 };
+            this.foreColor = { h: 0, s: 0, l: 0, a: 1 };
 
             if (this.debug) {
                 this.debugElement = this.createDebugElement();
@@ -172,6 +173,12 @@ var Draw = (function () {
             if (this.zoomEnabled) {
                 this.bindHammerTime(this);
             }
+
+            this.diagnostics.set('screen width', screen.availWidth);
+            this.diagnostics.set('screen height', screen.availHeight);
+            this.diagnostics.set('window width', window.innerWidth);
+            this.diagnostics.set('window height', window.innerHeight);
+            this.diagnostics.set('dpr', window.devicePixelRatio);
         },
         getScale: function () {
             return this.transform.m[0];
@@ -192,13 +199,11 @@ var Draw = (function () {
             this.canvas.style.top = '200px';
             this.canvas.style.left = '0';
             this.canvas.style['z-index'] = '1';
-            this.canvas.style['border'] = '1px solid blue';
 
             this.cv_imported.style.position = 'absolute';
             this.cv_imported.style.top = '0';
             this.cv_imported.style.left = '0';
             this.cv_imported.style['z-index'] = '1';
-            this.cv_imported.style['border'] = '1px solid lime';
             this.cv_imported.width = 1600;
             this.cv_imported.height = 900;
 
@@ -206,13 +211,11 @@ var Draw = (function () {
             this.cv_raster.style.top = '0';
             this.cv_raster.style.left = '0';
             this.cv_raster.style['z-index'] = '2';
-            this.cv_raster.style['border'] = '1px solid lime';
 
             this.buffer.style.position = 'absolute';
             this.buffer.style.top = '0';
             this.buffer.style.left = '0';
             this.buffer.style['z-index'] = '3';
-            this.buffer.style['border'] = '1px solid blue';
 
 
             this.canvas.width = 1600 * this.quality;
@@ -230,7 +233,7 @@ var Draw = (function () {
             this.containerEl.appendChild(this.cv_raster);
             this.containerEl.appendChild(this.buffer);
 
-            this.containerEl.style['background-color'] = "#aaaaaa"
+            this.containerEl.style['background-color'] = "#ffffff"
             this.containerEl.style['overflow'] = 'hidden';
             this.containerEl.style['position'] = 'absolute';
             this.containerEl.style['top'] = '0px';
@@ -255,7 +258,7 @@ var Draw = (function () {
                 s = 1;
             }
             this.raster_data = null;
-            this.setDocumentViewportScale(1 / s);
+            this.setDocumentViewportScale(1 / window.devicePixelRatio);
 
             this.transform = new Transform();
             //this.transform.scale(2, 2);
@@ -276,6 +279,12 @@ var Draw = (function () {
                     this.toolbarItems[i].resetToDefaults();
                 }
             }
+
+            if (this.saveDialog) {
+                this.saveDialog.style.display = 'none';
+            }
+            this.enableCanvas();
+            this.enableToolbar();
 
             this.shapeHistory = [];
             this.shapes = [];
@@ -316,23 +325,84 @@ var Draw = (function () {
                 this.exitFullscreen();
             }
         },
+        disableCanvas: function () {
+            if (!this.disableLayer) {
+                this.disableLayer = document.createElement('div');
+                this.disableLayer.style['z-index'] = '1000';
+                this.disableLayer.style.position = 'absolute';
+                this.disableLayer.style.top = '0';
+                this.disableLayer.style.left = '0';
+                this.disableLayer.style.width = '100%';
+                this.disableLayer.style.height = '100%';
+                this.containerEl.appendChild(this.disableLayer);
+            }
+            this.disableLayer.style.display = 'block';
+        },
+        enableCanvas: function () {
+            if (this.disableLayer) {
+                this.disableLayer.style.display = 'none';
+            }
+        },
         onSave: function () {
             this.disableToolbar();
-            this.flush();
-            this.redraw();
-            if (this.onExportImage) {
+            this.disableCanvas();
+
+            if (!this.saveDialog) {
+                this.saveDialog = document.createElement('div');
+                this.saveDialog.style.position = 'absolute';
+
+                this.saveDialog.style['z-index'] = '1001';
+                this.saveDialog.style.display = 'none';
+                this.saveDialog.className = 'dialog';
+                var body = document.createElement('div');
+                body.className = 'panel-body';
+                body.innerHTML = '<div>Saving...</div><div><img src="/Content/progress.gif" /></div>';
+                body.style.fontSize = '2em';
+                this.saveDialog.appendChild(body);
+                this.containerEl.appendChild(this.saveDialog);
+            }
+            this.saveDialog.style.display = 'block';
+            var r = this.saveDialog.getClientRects();
+            this.saveDialog.style.left = ((window.innerWidth / 2) - (r[0].width / 2)) + 'px';
+            this.saveDialog.style.top = ((window.innerHeight / 2) - (r[0].height / 2)) + 'px';
+
+            var $this = this;
+            setTimeout(this.beginSaveAsync, 10,
+                this,
+                $this.opts.onExportImageSucceeded,
+                function (ex) {
+                    $this.saveDialog.children[0].innerHTML = "<div>Oops! We're so sorry, there was a problem saving your image. Try again in a minute!</div>";
+                    var btnCloseDialog = document.createElement('button');
+                    btnCloseDialog.className = 'btn btn-default';
+                    btnCloseDialog.innerHTML = 'Close';
+                    btnCloseDialog.addEventListener('click',
+                        function () {
+                            $this.saveDialog.style.display = 'none';
+                            $this.enableToolbar();
+                            $this.enableCanvas();
+                        });
+                    $this.saveDialog.children[0].appendChild(btnCloseDialog);
+                    var r = $this.saveDialog.getClientRects();
+                    $this.saveDialog.style.left = ((window.innerWidth / 2) - (r[0].width / 2)) + 'px';
+                    $this.saveDialog.style.top = ((window.innerHeight / 2) - (r[0].height / 2)) + 'px';
+                });
+        },
+        beginSaveAsync: function (moose, onSuccess, onFailure) {
+            moose.flush();
+            moose.redraw();
+            if (moose.onExportImage) {
                 try {
                     // copy all history up to historyIndex to this.shapes
-                    this.shapes = this.importedShapes.concat(this.shapeHistory.slice(0, this.historyIndex + 1));
-                    this.onExportImage(this.sessionData,
-                        this.canvas.toDataURL('image/png'),
-                        JSON.stringify(this.shapes));
-                    return;
+                    moose.shapes = moose.importedShapes.concat(moose.shapeHistory.slice(0, moose.historyIndex + 1));
+                    var imageData = moose.canvas.toDataURL('image/png');
+                    var jsonData = JSON.stringify(moose.shapes);
+                    moose.onExportImage(moose.sessionData, imageData, jsonData);
+                    onSuccess(moose);
                 } catch (ex) {
-                    this.writeDebug(ex.message);
+                    moose.writeDebug(ex.message);
+                    onFailure(ex);
                 }
             }
-            this.enableToolbar();
         },
         onCancel: function () {
             this.disableToolbar();
@@ -520,73 +590,34 @@ var Draw = (function () {
                 enabled: function () { return true; },
                 showWhenCollapsed: true,
                 collapsed: false,
+                activate: function () {
+                    for (var i = 0; i < this.moose.toolbarItems.length; i++) {
+                        var ti = this.moose.toolbarItems[i];
+                        if (!ti.enabled()) continue;
+                        if (this.collapsed) {
+                            ti.el.style.setProperty("display", "inline-block", "important");
+                        } else if (!ti.showWhenCollapsed) {
+                            ti.el.style.setProperty("display", "none", "important");
+                        }
+                    }
+                    this.collapsed = !this.collapsed;
+                    if (this.collapsed) {
+                        this.el
+                            .innerHTML =
+                            '<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>';
+                    } else {
+                        this.el
+                            .innerHTML =
+                            '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
+                    }
+                    this.moose.toolbar.fitOnScreen();
+                },
                 initialize: function (moose) {
-                    var $this = this;
+                    this.moose = moose;
                     var el = document.createElement('button');
                     el.style.float = 'left';
                     el.className = 'btn btn-info';
                     el.innerHTML = '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
-                    el.addEventListener('click',
-                        function (e) {
-
-                            e = e || window.event // cross-browser event
-
-                            if (e.stopPropagation) {
-                                // W3C standard variant
-                                e.stopPropagation()
-                            } else {
-                                // IE variant
-                                e.cancelBubble = true
-                            }
-
-                            for (var i = 0; i < moose.toolbarItems.length; i++) {
-                                var ti = moose.toolbarItems[i];
-                                if (!ti.enabled()) continue;
-                                if ($this.collapsed) {
-                                    ti.el.style.setProperty("display", "inline-block", "important");
-                                } else if (!ti.showWhenCollapsed) {
-                                    ti.el.style.display = 'none';
-                                }
-                            }
-                            $this.collapsed = !$this.collapsed;
-                            if ($this.collapsed) {
-                                $this.el
-                                    .innerHTML =
-                                    '<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>';
-                            } else {
-                                $this.el
-                                    .innerHTML =
-                                    '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>';
-                            }
-                            moose.toolbar.fitOnScreen();
-                            return true;
-                        });
-
-                    this.el = el;
-                    return el;
-                }
-            },
-            {
-                name: 'moveToolbar',
-                enabled: function () { return true; },
-                showWhenCollapsed: true,
-                initialize: function (moose, toolbarElement) {
-                    var $this = this;
-                    $this.toolbarElement = toolbarElement;
-                    var el = document.createElement('button');
-                    el.className = 'btn btn-default';
-                    el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
-                    el.addEventListener('click',
-                        function (e) {
-                            if (moose.toolbarPosition == 'top') {
-                                $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-top"></span>';
-                                moose.setToolbarPosition('bottom');
-                            } else {
-                                $this.el.innerHTML = '<span class="glyphicon glyphicon-triangle-bottom"></span>';
-                                moose.setToolbarPosition('top');
-                            }
-                            return true;
-                        });
                     this.el = el;
                     return el;
                 }
@@ -594,14 +625,14 @@ var Draw = (function () {
         {
             name: 'save',
             enabled: function () { return true; },
+            activate: function () {
+                this.moose.onSave();
+            },
             initialize: function (moose) {
                 var el = document.createElement('button');
+                this.moose = moose;
                 el.className = 'btn btn-primary';
                 el.innerHTML = '<span class="glyphicon glyphicon-floppy-disk"></span>';
-                el.addEventListener('click', function (e) {
-                    moose.onSave();
-                    return true;
-                });
                 this.el = el;
                 return el;
             }
@@ -609,15 +640,15 @@ var Draw = (function () {
         {
             name: 'cancel',
             enabled: function () { return true; },
+            activate: function () {
+                this.moose.onCancel();
+            },
             initialize: function (moose) {
                 var el = document.createElement('button');
+                this.moose = moose;
                 el.className = 'btn btn-danger';
                 el.innerHTML = '<span class="glyphicon glyphicon-remove"></span>';
                 this.el = el;
-                el.addEventListener('click', function (e) {
-                    moose.onCancel();
-                    return true;
-                });
                 return el;
             }
         },
@@ -625,30 +656,39 @@ var Draw = (function () {
                 name: 'undo',
                 enabled: function () { return true; },
                 initialize: function (moose) {
-                    this.el = document.createElement('button');
-                    this.el.className = 'btn btn-default';
-                    this.el.innerHTML = '<span class="glyphicon glyphicon-arrow-left"></span>';
-                    this.el.addEventListener('click',
-                        function (e) {
-                            moose.undo();
-                            return true;
-                        });
-                    return this.el;
+                    var el = document.createElement('button');
+                    this.el = el;
+                    this.moose = moose;
+                    el.className = 'btn btn-default';
+                    el.innerHTML = '<span class="glyphicon glyphicon-arrow-left"></span>';
+                    el.toolbarItem = this;
+                    return el;
+                },
+                activate: function () {
+                    try {
+                        this.moose.writeDebug('undo activate');
+                        this.moose.undo();
+                    } catch (ex) {
+                        alert(ex.message);
+                    }
                 }
+
             },
             {
                 name: 'redo',
                 enabled: function () { return true; },
                 initialize: function (moose) {
-                    this.el = document.createElement('button');
-                    this.el.className = 'btn btn-default';
-                    this.el.innerHTML = '<span class="glyphicon glyphicon-arrow-right"></span>';
-                    this.el.addEventListener('click',
-                        function () {
-                            moose.redo();
-                            return true;
-                        });
-                    return this.el;
+                    var el = document.createElement('button');
+                    this.el = el;
+                    this.moose = moose;
+                    el.toolbarItem = this;
+                    el.className = 'btn btn-default';
+                    el.innerHTML = '<span class="glyphicon glyphicon-arrow-right"></span>';
+                    return el;
+                },
+                activate: function () {
+                    this.moose.writeDebug('redo activate');
+                    this.moose.redo();
                 }
             },
         {
@@ -763,15 +803,12 @@ var Draw = (function () {
                             $this.picker.style.position = 'absolute';
                             $this.picker.style.top = '0px';
                             $this.picker.style.left = '0px';
-                            if (!moose.isFullscreen()) {
-                                $this.picker.style.width = window.innerWidth + 'px';
-                                $this.picker.style.height = window.innerHeight + 'px';
-                            } else {
-                                $this.picker.style.width = window.innerWidth + 'px';
-                                $this.picker.style.height = window.innerHeight + 'px';
-                            }
+                            $this.picker.style.width = '100%';
+                            $this.picker.style.height = '100%';
                             $this.picker.style['z-index'] = 102;
                             $this.opened = true;
+
+                            var r = $this.picker.getClientRects();
                         } else {
                             $this.picker.style.display = 'none';
                             $this.opened = false;
@@ -786,12 +823,13 @@ var Draw = (function () {
                 colorPicker.style.position = 'absolute';
                 colorPicker.style.top = '0';
                 colorPicker.style.left = '1';
+                colorPicker.style.width = screen.availwidth + 'px';
                 colorPicker.style.height = screen.availHeight + 'px';
                 colorPicker.style['z-index'] = 1;
                 var step = 50;
                 for (var py = 0; py < 10; py++) {
                     var row = document.createElement('div');
-                    row.style.width = screen.availWidth + 'px';
+                    row.style.width = '100%';
                     row.style.height = '10%';
                     for (var px = 0; px < 10; px++) {
                         var cel = document.createElement('button');
@@ -829,24 +867,48 @@ var Draw = (function () {
             enabled: function () { return true; },
             showWhenCollapsed: false,
             resetToDefaults: function () {
-                this.moose.toolSize = 10;
-                this.el.innerHTML = 'Size:' + this.moose.toolSize;
+                this.moose.toolSize = 20;
             },
-            updatePreview: function () {
-                var ctx = this.el.previewCanvas.getContext('2d');
+            update: function () {
+                if (this.el.previewCanvas) {
+                    var ctx = this.el.previewCanvas.getContext('2d');
+                    ctx.beginPath();
+                    ctx.clearRect(0, 0, 200, 200);
+                    ctx.ellipse(100, 100, this.moose.toolSize / 2, this.moose.toolSize / 2, 45 * Math.PI / 180, 0, 2 * Math.PI);
+                    ctx.fillStyle = utils.toHslaString(this.moose.foreColor);
+                    ctx.fill();
+                }
+
+                var iconSize = this.moose.toolSize;
+                if (iconSize > 40) iconSize = 40;
+                var ctx = this.el.btnIcon.getContext('2d');
                 ctx.beginPath();
-                ctx.clearRect(0, 0, 200, 200);
-                ctx.ellipse(100, 100, this.moose.toolSize / 2, this.moose.toolSize / 2, 45 * Math.PI / 180, 0, 2 * Math.PI);
+                ctx.clearRect(0, 0, 40, 40);
+                ctx.ellipse(20, 20, iconSize / 2, iconSize / 2, 45 * Math.PI / 180, 0, 2 * Math.PI);
                 ctx.fillStyle = utils.toHslaString(this.moose.foreColor);
                 ctx.fill();
 
+                this.el.btnLabel.innerHTML = this.moose.toolSize;
             },
             initialize: function (moose) {
                 this.moose = moose;
                 var el = document.createElement('button');
                 el.parent = this;
                 el.className = 'btn btn-default';
-                el.innerHTML = 'Size:' + moose.toolSize;
+
+                var btnIcon = document.createElement('canvas');
+                btnIcon.width = 40;
+                btnIcon.height = 40;
+                el.btnIcon = btnIcon;
+                el.appendChild(btnIcon);
+
+                var btnLabel = document.createElement('div');
+                btnLabel.innerHTML = this.moose.toolSize;
+                el.btnLabel = btnLabel;
+                el.btnLabel.style.fontSize = '0.5em';
+                el.btnLabel.style.lineHeight = '0em';
+                el.appendChild(btnLabel);
+
                 el.style['margin-right'] = '1em';
 
                 el.addEventListener('click', function (e) {
@@ -869,8 +931,7 @@ var Draw = (function () {
                         input.defaultValue = moose.toolSize;
                         input.oninput = input.onchange = function (e) {
                             moose.toolSize = input.value;
-                            el.innerHTML = 'Size:' + moose.toolSize;
-                            el.parent.updatePreview();
+                            el.parent.update();
 
                         };
                         input.style.width = '500px';
@@ -878,7 +939,6 @@ var Draw = (function () {
                         input.style['position'] = 'relative';
                         input.style['top'] = '5px';
                         input.style['margin'] = '1em 0 1em 0';
-                        el.popup.appendChild(input);
 
                         var preview = document.createElement('canvas');
                         preview.width = 200;
@@ -889,9 +949,10 @@ var Draw = (function () {
                         preview.className = 'tool-size-preview';
                         el.previewCanvas = preview;
                         el.popup.appendChild(preview);
+                        el.popup.appendChild(input);
 
                         moose.containerEl.appendChild(el.popup);
-
+                        el.parent.update();
 
                     } else {
                         if (moose.closePopups() == el.popup) {
@@ -904,12 +965,12 @@ var Draw = (function () {
                     el.popup.style.left = ((window.innerWidth / 2) - (pr[0].width / 2)) + 'px';
                     el.popup.style.top = ((window.innerHeight / 2) - (pr[0].height / 2)) + 'px';
 
-                    el.parent.updatePreview();
+                    el.parent.update();
                     moose.setPopup(el.popup);
                 }, true);
 
                 this.el = el;
-
+                this.update();
                 return el;
             }
         },
@@ -1016,12 +1077,24 @@ var Draw = (function () {
 
             for (var i = 0; i < this.toolbarItems.length; i++) {
                 var ti = this.toolbarItems[i];
+                ti.moose = this;
                 var el = ti.initialize(this, t);
                 if (!ti || !ti.enabled()) continue;
                 el.className += ' toolbar-item btn-toolbar';
                 el.toolbarItem = ti;
                 el.addEventListener('click',
                     function (e) {
+                        this.toolbarItem.moose.writeDebug('clicked ' + this.toolbarItem.name);
+                        if (this.toolbarItem.activate) {
+                            this.toolbarItem.moose.toolbar.dragging = false;
+                            this.toolbarItem.moose.writeDebug('activate ' + this.toolbarItem.name);
+                            try {
+                                this.toolbarItem.activate();
+                            } catch (ex) {
+                                this.toolbarItem.moose.writeDebug(ex.message);
+                            }
+                            return true;
+                        }
                         return false;
                     });
                 tb.appendChild(el);
@@ -1152,7 +1225,7 @@ var Draw = (function () {
             if (redraw) this.redraw();
             this.debugInfo();
             var t1 = performance.now();
-            this.diagnostics.set('undo', t1 - t0);
+            this.diagnostics.set('undo', Math.round(t1 - t0) + 'ms');
         },
         redo: function () {
             if (this.historyIndex >= this.shapeHistory.length - 1) return;
@@ -1164,7 +1237,7 @@ var Draw = (function () {
             }
             this.debugInfo();
             var t1 = performance.now();
-            this.diagnostics.set('redo', t1 - t0);
+            this.diagnostics.set('redo', Math.round(t1 - t0) + 'ms');
         },
         addHistory: function (shape) {
             var t0 = performance.now();
@@ -1181,20 +1254,20 @@ var Draw = (function () {
             }
             this.debugInfo();
             var t1 = performance.now();
-            this.diagnostics.set('add history', t1 - t0);
+            this.diagnostics.set('add history', Math.round(t1 - t0) + 'ms');
         },
         debugInfo: function (e) {
             var d = '';
             if (e) { d += 's:' + Math.round(e.screenX) + ',' + Math.round(e.screenY) + ' c:' + Math.round(e.clientX) + ',' + Math.round(e.clientY) + '<br/>'; }
             //d += 'scale:' + this.getScale() + ' p:' + (Math.round(this.position.x)) + ',' + Math.round(this.position.y) + ' o:' + window.pageXOffset + ',' + window.pageYOffset + '<br/>';
             if (this.transform) {
-                //d += this.transform.toString() + '<br/>';
+                d += this.transform.toString() + '<br/>';
             }
             //d += 'shapes:' + this.shapes.length;
             d += 'b:' + this.shapes.length + ' h:' + this.shapeHistory.length + '(' + this.historyIndex + ')';
 
             this.diagnostics.forEach(function (value, key) {
-                d += ', ' + key + ':' + Math.round(value) + 'ms';
+                d += ', ' + key + ':' + value;
             });
 
             if (this.debug) {
@@ -1265,7 +1338,7 @@ var Draw = (function () {
             this.updateRaster();
             this.shapes = [];
             var t1 = performance.now();
-            this.diagnostics.set('flush', (t1 - t0));
+            this.diagnostics.set('flush', Math.round(t1 - t0) + 'ms');
             this.debugInfo();
         },
         updateRaster: function () {
@@ -1288,6 +1361,22 @@ var Draw = (function () {
             var delta = { x: can_post.x - can.x, y: can_post.y - can.y };
             this.transform.translate(delta.x, delta.y);
 
+            if (this.transform.m[4] > 0)
+                this.transform.m[4] = 0;
+            if (this.transform.m[5] > 0)
+                this.transform.m[5] = 0;
+
+            var w = ((1600 * this.transform.m[0]) - window.innerWidth),
+            h = ((900 * this.transform.m[3]) - window.innerHeight);
+            this.diagnostics.set('max x', -w);
+            this.diagnostics.set('max y', -h);
+            if (this.transform.m[4] < -w) {
+                this.transform.m[4] = -w;
+            }
+            if (this.transform.m[5] < -h) {
+                this.transform.m[5] = -h;
+            }
+
             var m = this.transform.m;
             this.bufferCtx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
             this.cv_raster_ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
@@ -1297,7 +1386,7 @@ var Draw = (function () {
 
             this.updateRaster();
             var t1 = performance.now();
-            this.diagnostics.set('zoom', t1 - t0);
+            this.diagnostics.set('zoom', Math.round(t1 - t0) + 'ms');
         },
         drawShapeToCanvas: function (shape, context) {
             if (!this.shapes) this.shapes = [];
@@ -1360,7 +1449,7 @@ var Draw = (function () {
             this.toolSize = toolSize;
             this.foreColor = foreColor;
             var t1 = performance.now();
-            this.diagnostics.set('redraw buffer', t1 - t0);
+            this.diagnostics.set('redraw buffer', Math.round(t1 - t0) + 'ms');
         },
         redraw: function () {
             var t0 = performance.now();
@@ -1377,7 +1466,7 @@ var Draw = (function () {
             this.toolSize = toolSize;
             this.foreColor = foreColor;
             var t1 = performance.now();
-            this.diagnostics.set('redraw', t1 - t0);
+            this.diagnostics.set('redraw', Math.round(t1 - t0) + 'ms');
         },
         drawDot: function (x, y, color) {
             this.bufferCtx.fillStyle = color;
@@ -1397,10 +1486,17 @@ var Draw = (function () {
             this.pallette = p;
         },
         writeDebug: function (log) {
-            this.debugElement.innerHTML = log;
+            if (this.debugElement) {
+                this.debugElement.innerHTML = log;
+            }
         },
         setForeColor: function (col) {
             this.foreColor = col;
+            for (var i = 0; i < this.toolbarItems.length; i++) {
+                if (this.toolbarItems[i].update) {
+                    this.toolbarItems[i].update();
+                }
+            }
         },
         createDebugElement: function () {
             var d = document.createElement('div');
@@ -1411,10 +1507,7 @@ var Draw = (function () {
             var moose = this;
 
             moose.toolbar.move = function (e) {
-                moose.diagnostics.set('touch', 'toolbar move');
                 if (moose.toolbar.dragging) {
-                    e.stopPropagation();
-                    e.preventDefault();
 
                     var touches = e.changedTouches;
                     var pos = { x: e.clientX, y: e.clientY };
@@ -1441,10 +1534,12 @@ var Draw = (function () {
                     moose.toolbar.lastDragPosition = newPos;
 
                     if (!moose.toolbar.dragActivated) {
-                        moose.diagnostics.set('touch', 'dragging, not activated');
                         return;
                     }
-                    moose.diagnostics.set('touch', 'dragging, activated');
+
+                    e.stopPropagation();
+                    e.preventDefault();
+
                     moose.disableToolbar();
                     moose.closePopups();
 
@@ -1471,22 +1566,16 @@ var Draw = (function () {
                 moose.toolbar.dragInitialPosition = pos;
                 moose.toolbar.dragPosition = { x: pos.x - r[0].left, y: pos.y - r[0].top };
                 moose.toolbar.lastDragPosition = moose.toolbar.dragPosition;
-                moose.diagnostics.set('touch', 'startmove ' + pos.x + ',' + pos.y);
-                e.preventDefault();
+                return false;
             };
             moose.toolbar.endmove = function (e) {
-                if (moose.toolbar.dragging) {
-                    e.preventDefault();
-                    moose.toolbar.dragging = false;
-                    moose.enableToolbar();
-                    moose.diagnostics.set('touch', 'ended dragging toolbar');
-                    return;
-                }
-                moose.diagnostics.set('touch', 'ended');
+                moose.enableToolbar();
+                moose.toolbar.dragging = false;
+                moose.toolbar.dragActivated = false;
             };
             moose.toolbar.fitOnScreen = function () {
                 var r = moose.toolbar.getClientRects();
-                var pos = { x: r[0].left, y: r[0].height };
+                var pos = { x: r[0].left, y: r[0].top };
                 if (pos.x + r[0].width > screen.availWidth) {
                     pos.x = screen.availWidth - r[0].width;
                 }
@@ -1505,15 +1594,17 @@ var Draw = (function () {
                 moose.toolbar.style.top = moose.toolbar.position.y + 'px';
             };
             this.toolbar.addEventListener('mousedown', moose.toolbar.startmove, true);
-            document.body.addEventListener('mousemove', moose.toolbar.move, true);
-
             this.toolbar.addEventListener('touchstart', moose.toolbar.startmove);
-            this.toolbar.addEventListener('touchmove', moose.toolbar.move);
-            document.body.addEventListener('touchmove', moose.toolbar.move, true);
-            document.body.addEventListener('touchend', moose.toolbar.endmove, true);
 
-            window.addEventListener('mouseup', moose.toolbar.endmove, true);
+            this.toolbar.addEventListener('mousemove', moose.toolbar.move, true);
+            this.buffer.addEventListener('mousemove', moose.toolbar.move, true);
+            this.toolbar.addEventListener('touchmove', moose.toolbar.move);
+            this.buffer.addEventListener('touchmove', moose.toolbar.move, true);
+
+            this.toolbar.addEventListener('touchend', moose.toolbar.endmove, true);
+            this.buffer.addEventListener('touchend', moose.toolbar.endmove, true);
             this.buffer.addEventListener('mouseup', moose.toolbar.endmove, true);
+            this.toolbar.addEventListener('mouseup', moose.toolbar.endmove, true);
 
 
             this.toolbar.addEventListener('click', function (e) {
