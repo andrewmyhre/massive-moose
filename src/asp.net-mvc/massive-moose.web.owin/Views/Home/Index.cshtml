@@ -107,56 +107,7 @@
     </script>
 }
 
-<div id="wall">
-    <table id="tblWall" style="background-image: url('@Model.BackgroundImageUrl')">
-        @for (int y = 0; y < 12; y++)
-        {
-            <tr class="@(y%2 == 1 ? "offset_row" : "row")">
-                @for (int x = 0; x < 12; x++)
-                {
-                    var brick = Model.Bricks[x, y];
-                    if (brick != null)
-                    {
-                        <td class="brick @(brick.U == 1 ? "inuse" : "free")" 
-                            data-inuse="@brick.U" 
-                            id="c@(y*12 + x)" 
-                            data-viewX="@x"
-                            data-viewY="@y"
-                            data-addressx="@brick.X"
-                            data-addressy="@brick.Y"
-                            data-updated="@brick.D"
-                            @if (brick.C == 1)
-                            {
-                                <text>style="background-image: url('@Model.GetThumbnailUrl(brick)')"</text>
-                            }>
-                            @if (brick.U == 1)
-                            {
-                                <span class="bc iu glyphicon glyphicon-ban-circle"></span>
-                            }
-                            else
-                            {
-                                <span class=""></span>
-                            }
-                        </td>
-                    }
-                    else
-                    {
-                        <td class="brick" id="c@(y*12 + x)">
-                            @if (brick.U == 1)
-                            {
-                                <span class="bc iu glyphicon glyphicon-ban-circle"></span>
-                            }
-                            else
-                            {
-                                <span class=""></span>
-                            }
-                        </td>
-                    }
-                }
-            </tr>
-        }
-    </table>
-</div>
+<div id="wall"></div>
 <div id="drawSpace" style="display:none"></div>
 
 
