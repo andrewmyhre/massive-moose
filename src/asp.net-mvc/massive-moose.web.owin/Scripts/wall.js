@@ -44,6 +44,47 @@
 
             var wall = this;
             window.onscroll = wall.updateDialogs;
+
+            this.sendBuffer = configuration.sendBuffer;
+            this.sendBuffer.addListener('sendsucceeded', this.onSendSucceeded, this);
+            this.sendBuffer.addListener('sendfailed', this.onSendFailed, this);
+        },
+        onSendSucceeded: function(buffer,type,data) {
+            //data.sessionData.data.element.style.backgroundImage = "url('http://local.api.massivemoose.com/v1/image/t/S91SJgJu/-1/-5?=999')"
+            data.sessionData.data.element.style.backgroundImage = 'url("' +
+                this._baseApiUrl +
+                '/v1/image/t' +
+                '/' +
+                this._inviteCode +
+                '/' +
+                data.sessionData.data.x +
+                '/' +
+                data.sessionData.data.y +
+                '?r=' +
+                Math.floor((Math.random() * 10000) + 1) +
+                '")';
+            var r = data.sessionData.data.element.getClientRects();
+            window.scrollTo(r[0].left, r[0].top);
+            this.setViewScale();
+
+        },
+        onSendFailed: function (buffer, type, data) {
+            console.log('image failed to save at ' + data.sessionData.data.x + ',' + data.sessionData.data.y);
+            data.sessionData.data.element.style.backgroundImage = 'url("' +
+                this._baseApiUrl +
+                '/v1/image/t' +
+                '/' +
+                this._inviteCode +
+                '/' +
+                data.sessionData.data.x +
+                '/' +
+                data.sessionData.data.y +
+                '?r=' +
+                Math.floor((Math.random() * 10000) + 1) +
+                '")';
+            var r = data.sessionData.data.element.getClientRects();
+            window.scrollTo(r[0].left, r[0].top);
+            this.setViewScale();
         },
         bindHelp: function () {
             var $this = this;

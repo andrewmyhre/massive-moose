@@ -25,11 +25,15 @@
     <!-- dependency: React.js -->
     <script type="text/javascript" src="/Scripts/hammer.min.js"></script>
     <script src="/scripts/screenfull.js"></script>
+    <script src="/scripts/sendbuffer.js"></script>
     <script src="/scripts/wall.js"></script>
     <script type="text/javascript" src="/Scripts/transform.js"></script>
     <script src="/scripts/draw.js"></script>
 
     <script type="text/javascript">
+        var sendBuffer = SendBuffer();
+        sendBuffer.initialize({ destinationUrl: '@System.Configuration.ConfigurationManager.AppSettings["MMApi"]' });
+
         var draw = Draw();
         draw.initialize(document.getElementById('drawSpace'),
         {
@@ -39,13 +43,14 @@
                 sessionData.wallInstance.endSession(sessionData, imageData, json);
             },
             onExportImageSucceeded: function(moose) {
-                
+
             },
             onCanceled: function(sessionData) {
                 sessionData.wallInstance.cancelSession(sessionData);
             },
             quality:2,
-            debug:@(System.Configuration.ConfigurationManager.AppSettings["drawing_debug"] ?? "false")
+            debug:@(System.Configuration.ConfigurationManager.AppSettings["drawing_debug"] ?? "false"),
+            sendBuffer: sendBuffer
         });
 
         Wall.initialize(document.getElementById('wall'),
@@ -77,7 +82,8 @@
                 onSessionClosed: function() {
                     window.location.hash = '';
                     draw.close();
-                }
+                },
+                sendBuffer: sendBuffer
             }
         );
 
@@ -89,7 +95,7 @@
                     newHash = newHash.substr(1);
             }
             if (newHash != hash) {
-            
+
                 if (newHash.length == 0) {
                     draw.onCancel();
                 }

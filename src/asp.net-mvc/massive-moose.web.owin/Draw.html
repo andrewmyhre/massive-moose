@@ -19,11 +19,26 @@
     <div id="drawSpace"></div>
 
 <script type="text/javascript" src="/Scripts/hammer.min.js"></script>
+    <script type="text/javascript" src="/Scripts/sendbuffer.js"></script>
     <script type="text/javascript" src="/Scripts/transform.js"></script>
     <script type="text/javascript" src="/Scripts/draw.js"></script>
     <script type="text/javascript">
         var _baseApiUrl = 'http://local.api.massivemoose.com';
         var sessionToken = '12345';
+
+        var sendBuffer = SendBuffer();
+        sendBuffer.initialize({ destinationUrl: _baseApiUrl });
+
+        sendBuffer.addListener('additem', function(data) {
+             console.log('an item was added:' + data)
+        });
+        sendBuffer.addListener('sendfailed', function (data) {
+            console.log('an item failed to send:' + data)
+        });
+        sendBuffer.addListener('sendsucceeded', function (data) {
+            console.log('an item was successfully uploaded:' + data)
+        });
+
         var draw = Draw();
         draw.initialize(document.getElementById('drawSpace'),
         {
@@ -37,7 +52,8 @@
                 console.log('hide the canvas here');
             },
             onCanceled: function () { console.log('onCanceled'); },
-            debug: true
+            debug: true,
+            sendBuffer: sendBuffer
         });
         draw.startDrawing({ data: null });
     </script>
