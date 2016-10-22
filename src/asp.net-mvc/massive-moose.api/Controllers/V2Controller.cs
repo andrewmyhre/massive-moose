@@ -130,6 +130,32 @@ namespace massive_moose.api.Controllers
             }
             return result;
         }
+        [System.Web.Http.HttpHead]
+        [System.Web.Http.Route("v2/wall/{wallKey}/img/{etag?}")]
+        [EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders: "ETag")]
+        public HttpResponseMessage WallImageSize(string etag = null, string wallKey = null)
+        {
+            var result = new HttpResponseMessage();
+
+            if (string.IsNullOrWhiteSpace(etag))
+                return result;
+
+            var image = _wallOperations.GetFullWallImage(wallKey);
+            if (image == null)
+            {
+                result.StatusCode = HttpStatusCode.NotFound;
+            }
+            else
+            {
+                result.Headers.ETag = new EntityTagHeaderValue("\"" + image.LongLength + "\""); ;
+                var sentEtag = long.Parse(etag);
+                if (sentEtag == image.LongLength)
+                {
+                    result.StatusCode = HttpStatusCode.NotModified;
+                }
+            }
+            return result;
+        }
 
     }
 }

@@ -15,6 +15,7 @@ using massive_moose.services.caching;
 using massive_moose.caching;
 using System.Drawing.Imaging;
 using System.Drawing;
+using log4net;
 
 namespace massive_moose.services
 {
@@ -24,16 +25,19 @@ namespace massive_moose.services
         private readonly ISessionFactory _sessionFactory;
         private readonly IObjectCache<Wall> _wallCache;
         private readonly IObjectCache<BrickWallSet> _wallAtLocationCache;
+        private readonly ILog _log;
 
         public WallOperations(IFileStorage fileStorage, 
             ISessionFactory sessionFactory,
             IObjectCache<Wall> wallCache,
-            IObjectCache<BrickWallSet> wallAtLocationCache)
+            IObjectCache<BrickWallSet> wallAtLocationCache,
+            ILog log)
         {
             _fileStorage = fileStorage;
             _sessionFactory = sessionFactory;
             _wallCache = wallCache;
             _wallAtLocationCache = wallAtLocationCache;
+            _log = log;
         }
         public Wall GetWallByKeyOrDefault(string wallKey, IStatelessSession session)
         {
@@ -154,6 +158,7 @@ namespace massive_moose.services
 
                     GetLatestWallSnapshotAndUpdateCache(0, 0, drawingSession.Wall.InviteCode, session);
 
+
                     session.Save(wallHistoryItem);
                     tx.Commit();
 
@@ -166,6 +171,10 @@ namespace massive_moose.services
                 }
             }
 
+            var wallImageFilename = string.Format("{0}/w_{1}.png",
+                ConfigurationManager.AppSettings["storageContainer"],
+                wallInviteCode);
+            Task.Factory.StartNew(() => UpdateFullWallImage(wallInviteCode, wallImageFilename));
         }
 
         public IList<DrawingSession> GetActiveDrawingSessions(int wallId, IStatelessSession session)
@@ -280,6 +289,7 @@ namespace massive_moose.services
 
         private byte[] UpdateFullWallImage(string wallKey, string wallImageFilename)
         {
+            _log.Debug("Updating wall image " + wallKey);
             int thumbnailWidth = 0, thumbnailHeight = 0;
             int.TryParse(ConfigurationManager.AppSettings["thumbnailWidth"], out thumbnailWidth);
             int.TryParse(ConfigurationManager.AppSettings["thumbnailHeight"], out thumbnailHeight);
@@ -317,6 +327,7 @@ namespace massive_moose.services
                     var outstream = new System.IO.MemoryStream();
                     newImage.Save(outstream, ImageFormat.Png);
                     _fileStorage.Store(wallImageFilename, outstream.ToArray(), true);
+                    _log.Debug("Updated wall image " + wallKey);
                     return outstream.ToArray();
                 }
             }
